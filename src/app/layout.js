@@ -1,4 +1,5 @@
 import { IBM_Plex_Mono, Inter } from "next/font/google";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 import NavComponent from "@/components/layout/topnav";
 import SideNav from "@/components/layout/sidenav";
@@ -25,7 +26,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col">
         <SmoothScrollProvider>

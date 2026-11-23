@@ -9,7 +9,10 @@ export default function SideNav() {
   const pathname = usePathname();
 
   return (
-    <main className="w-[15%] h-screen z-99 flex flex-col fixed inset-0 left-0 overflow-y-auto no-scrollbar bg-[#030712] mt-14">
+    <aside
+      data-lenis-prevent
+      className="w-[15%] h-[calc(100vh-3.5rem)] z-40 flex flex-col fixed top-14 left-0 overflow-y-auto no-scrollbar bg-[#030712] border-r border-white/5"
+    >
       <div className="text-white flex flex-col gap-6 p-6">
         {SideNavData.map((val) => (
           <div key={val.id} className="w-full flex flex-col gap-3">
@@ -39,6 +42,6 @@ export default function SideNav() {
           </div>
         ))}
       </div>
-    </main>
+    </aside>
   );
 }

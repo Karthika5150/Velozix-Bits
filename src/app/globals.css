@@ -49,9 +49,17 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+html {
+  scroll-behavior: auto !important;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
 body {
   background: #030712; /*030712 */
-  scroll-behavior: smooth;
 }
 
 :root {
