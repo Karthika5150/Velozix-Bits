@@ -6,6 +6,7 @@ import {
   DEFAULT_PRESETS,
 } from "@/components/ui/blob-morph-hero";
 import { PropsTable } from "@/components/ui/props-table";
+import { InstallTabs } from "@/components/ui/install-tabs";
 import {
   Copy,
   Check,
@@ -144,7 +145,6 @@ export default function BannerComponentPage() {
   const [showAmbientBlobs, setShowAmbientBlobs] = useState(true);
   const [customImgs, setCustomImgs] = useState({ base: "", equipped: "" });
   const [liveProgress, setLiveProgress] = useState(0);
-  const [packageManager, setPackageManager] = useState("npm");
 
   const handlePresetChange = (presetId) => {
     setSelectedPresetId(presetId);
@@ -199,13 +199,6 @@ export default function HeroSection() {
     </div>
   );
 }`;
-
-  const cliCommands = {
-    npm: "npm install motion lucide-react",
-    pnpm: "pnpm add motion lucide-react",
-    yarn: "yarn add motion lucide-react",
-    bun: "bun add motion lucide-react",
-  };
 
   return (
     <div className="w-full min-h-screen px-4 md:px-10 py-6 max-w-7xl mx-auto text-gray-200 font-plex">
@@ -533,44 +526,17 @@ export default function HeroSection() {
 
       {/* Installation & Guide Section */}
       <div className="mt-12 space-y-10">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold font-sans text-white">
-            Installation
-          </h2>
-          <p className="mt-2 text-sm text-gray-400">
-            Install the required peer dependencies for animation and icons.
-          </p>
-
-          {/* Package Manager Selector */}
-          <div className="mt-4 rounded-xl border border-white/10 bg-zinc-950 overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 bg-zinc-900/40">
-              <div className="flex items-center gap-2">
-                {["npm", "pnpm", "yarn", "bun"].map((pm) => (
-                  <button
-                    key={pm}
-                    onClick={() => setPackageManager(pm)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-mono cursor-pointer transition ${
-                      packageManager === pm
-                        ? "bg-white/10 text-white font-bold"
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    {pm}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => copyToClipboard(cliCommands[packageManager])}
-                className="text-zinc-400 hover:text-white transition p-1"
-                title="Copy command"
-              >
-                <Copy className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <div className="p-4 font-mono text-xs text-lime-300 flex items-center gap-2">
-              <span className="text-zinc-500 select-none">$</span>
-              <span>{cliCommands[packageManager]}</span>
-            </div>
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-xl md:text-2xl font-bold font-sans text-white">
+              Installation
+            </h2>
+            <p className="text-sm text-gray-400">
+              Install the component using the Adaptive UI CLI or your preferred package manager.
+            </p>
+          </div>
+          <div className="max-w-2xl">
+            <InstallTabs packages="adaptive-ui" component="blob-banner" />
           </div>
         </div>
 

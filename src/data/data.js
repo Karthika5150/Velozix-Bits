@@ -17,85 +17,12 @@ export const SideNavData = [
     },
     {
         id: 1,
-        title: 'CORE CONCEPTS',
-        items: [
-            {
-                id: 0,
-                name: 'Responsive design',
-                href: '/'
-            },
-            {
-                id: 1,
-                name: 'Dark mode',
-                href: '/'
-            },
-            {
-                id: 2,
-                name: 'Colors',
-                href: '/'
-            },
-        ]
-    },
-    {
-        id: 2,
-        title: 'LAYOUT',
-        items: [
-            {
-                id: 0,
-                name: 'button',
-                href: '/'
-            },
-            {
-                id: 1,
-                name: 'Columns',
-                href: '/'
-            },
-            {
-                id: 2,
-                name: 'Break-before',
-                href: '/'
-            },
-            {
-                id: 3,
-                name: 'Display',
-                href: '/'
-            },
-        ]
-    },
-    {
-        id: 3,
-        title: 'FLEX BOX & GRID',
-        items: [
-            {
-                id: 0,
-                name: 'flex-wrap',
-                href: '/'
-            },
-            {
-                id: 1,
-                name: 'flex-col',
-                href: '/'
-            },
-            {
-                id: 2,
-                name: 'order',
-                href: '/'
-            },
-            {
-                id: 3,
-                name: 'gap',
-                href: '/'
-            },
-        ]
-    },
-    {
-        id: 4,
         title: 'COMPONENTS',
         items: [
             {
                 id: 0,
                 name: 'Liquid Blob Hero',
-                href: '/installation/components/banner'
+                href: '/installation/components/blob-banner'
             },
             {
                 id: 1,
@@ -106,6 +33,11 @@ export const SideNavData = [
                 id: 2,
                 name: 'Infinite Tunnel Hero',
                 href: '/installation/components/infinite-tunnel'
+            },
+            {
+                id: 3,
+                name: 'Image Scroll',
+                href: '/installation/components/image-scroll'
             },
         ]
     },

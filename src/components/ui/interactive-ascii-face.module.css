@@ -4,12 +4,16 @@
   display: grid;
   place-items: center;
   width: 100%;
-  min-height: clamp(26rem, 82svh, 58rem);
+  min-height: clamp(28rem, 82svh, 58rem);
   overflow: hidden;
   padding: clamp(1rem, 4vw, 2.5rem);
-  border: 1px solid #183427;
+  border: 1px solid #163620;
   border-radius: 1rem;
-  background: radial-gradient(ellipse at center, #07120b, #020504 74%);
+  background: radial-gradient(ellipse at center, #06190d 0%, #010603 85%);
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9), 0 20px 45px rgba(0, 0, 0, 0.7);
+  cursor: crosshair;
+  user-select: none;
+  touch-action: none;
 }
 
 .field {
@@ -20,10 +24,75 @@
   pointer-events: none;
 }
 
+/* Subtle CRT Scanline Overlay */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.32) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 10;
+  opacity: 0.75;
+}
+
+/* CRT Screen Corner Vignette */
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.8) 100%);
+  border-radius: 1rem;
+  z-index: 11;
+}
+
+/* Retro CRT Terminal status badge at bottom-left */
+.terminalTag {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #5cfc87;
+  text-shadow: 0 0 8px rgba(92, 252, 135, 0.6);
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.terminalTag::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #5cfc87;
+  box-shadow: 0 0 8px #5cfc87;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
 .frame {
   position: relative;
   width: min(100%, 34rem, 65svh);
   aspect-ratio: 500 / 610;
+  pointer-events: none;
 }
 
 .status {
@@ -31,7 +100,8 @@
   height: 100%;
   place-content: center;
   padding: 1rem;
-  color: #9be6b6;
-  font: 0.85rem/1.5 monospace;
+  color: #5cfc87;
+  text-shadow: 0 0 8px rgba(92, 252, 135, 0.5);
+  font: 0.9rem/1.5 ui-monospace, monospace;
   text-align: center;
 }

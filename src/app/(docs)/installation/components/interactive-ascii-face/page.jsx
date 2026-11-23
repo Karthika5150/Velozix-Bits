@@ -7,20 +7,26 @@ import {
   Eye,
   Layers,
   MousePointer2,
+  RotateCcw,
+  Sparkles,
   Upload,
 } from "lucide-react";
 import { InteractiveAsciiFace } from "@/components/ui/interactive-ascii-face";
 import { PropsTable } from "@/components/ui/props-table";
+import { InstallTabs } from "@/components/ui/install-tabs";
 
 const props = [
   { prop: "src", type: "string | File", default: "Reference preview", description: "Source photo to convert. Use an uploaded file, local path, or CORS-enabled URL." },
-  { prop: "alt", type: "string", default: '"Human portrait formed from green ASCII characters"', description: "Accessible description of the image." },
-  { prop: "maxOffset", type: "number", default: "22", description: "Maximum pointer translation in pixels." },
-  { prop: "color", type: "string", default: '"#60ed83"', description: "CSS color for all ASCII rain, including the uploaded image shape." },
-  { prop: "lineSpeed", type: "number", default: "1", description: "Downward Matrix-rain speed multiplier." },
-  { prop: "mouseSpeed", type: "number", default: "1", description: "Pointer response speed." },
-  { prop: "imageClarity", type: "number", default: "1.35", description: "Balances image detail and contrast in the static ASCII rendering." },
-  { prop: "className", type: "string", default: '""', description: "Extra classes for the stage." },
+  { prop: "alt", type: "string", default: '"Phosphor CRT ASCII portrait formed from green code characters"', description: "Accessible description of the image." },
+  { prop: "color", type: "string", default: '"#5cfc87"', description: "Primary phosphor green color for the CRT terminal characters." },
+  { prop: "mouseSpeed", type: "number", default: "1", description: "Cursor repulsion force and particle dispersion strength." },
+  { prop: "lineSpeed", type: "number", default: "1", description: "Spring return speed pulling particles back to original positions." },
+  { prop: "imageClarity", type: "number", default: "1.4", description: "Contrast and facial feature detail boost with auto-levels normalization." },
+  { prop: "cutoff", type: "number", default: "0.05", description: "Background dark threshold. Lower values preserve more background; higher isolates the subject." },
+  { prop: "invert", type: "boolean", default: "false", description: "Inverts character luminance. Essential for photos with white or light backgrounds." },
+  { prop: "scanlines", type: "boolean", default: "true", description: "Toggles retro CRT monitor scanlines overlay." },
+  { prop: "glow", type: "boolean", default: "true", description: "Toggles phosphor bloom text glow." },
+  { prop: "className", type: "string", default: '""', description: "Extra CSS classes for the container stage." },
 ];
 
 const usage = `"use client";
@@ -32,8 +38,8 @@ export default function AsciiDemo() {
   const [photo, setPhoto] = useState();
 
   return (
-    <>
-      <label>
+    <div className="flex flex-col items-center gap-4">
+      <label className="cursor-pointer rounded-lg bg-emerald-600 px-4 py-2 font-mono text-sm text-white hover:bg-emerald-500">
         Upload photo
         <input
           type="file"
@@ -42,10 +48,15 @@ export default function AsciiDemo() {
             const file = event.target.files?.[0];
             if (file) setPhoto(file);
           }}
+          className="sr-only"
         />
       </label>
-      <InteractiveAsciiFace src={photo} />
-    </>
+      <InteractiveAsciiFace
+        src={photo}
+        color="#5cfc87"
+        imageClarity={1.4}
+      />
+    </div>
   );
 }`;
 
@@ -53,20 +64,15 @@ const copyButton = "flex items-center gap-2 rounded-xl border border-white/10 bg
 
 export default function InteractiveAsciiFacePage() {
   const [activeTab, setActiveTab] = useState("preview");
-  const [color, setColor] = useState("#60ed83");
+  const [color, setColor] = useState("#5cfc87");
   const [lineSpeed, setLineSpeed] = useState(1);
   const [mouseSpeed, setMouseSpeed] = useState(1);
-  const [imageClarity, setImageClarity] = useState(1.35);
+  const [imageClarity, setImageClarity] = useState(1.4);
+  const [cutoff, setCutoff] = useState(0.05);
+  const [invert, setInvert] = useState(false);
+  const [scanlines, setScanlines] = useState(true);
   const [photo, setPhoto] = useState(null);
   const [copyStatus, setCopyStatus] = useState("");
-  const [packageManager, setPackageManager] = useState("npm");
-
-  const installCommands = {
-    npm: "npm install lucide-react",
-    pnpm: "pnpm add lucide-react",
-    yarn: "yarn add lucide-react",
-    bun: "bun add lucide-react",
-  };
 
   async function copyUsage(text = usage) {
     try {
@@ -94,17 +100,17 @@ export default function InteractiveAsciiFacePage() {
               NEW COMPONENT
             </span>
             <span className="rounded-full border border-white/5 bg-zinc-800 px-2.5 py-1 font-mono text-xs text-zinc-400">
-              BACKGROUND / CANVAS
+              CRT TERMINAL
             </span>
             <span className="rounded-full border border-white/5 bg-zinc-800 px-2.5 py-1 font-mono text-xs text-zinc-400">
-              INTERACTIVE ASCII
+              PARTICLE DISPERSION
             </span>
           </div>
           <h1 className="font-sans text-3xl font-black tracking-tight text-white md:text-4xl">
             Interactive ASCII Face
           </h1>
           <p className="mt-2 max-w-2xl font-sans text-sm leading-relaxed text-gray-400 md:text-base">
-            Upload a photo to reveal the complete image through crisp Matrix-style digital rain.
+            Upload any photo or portrait to render it into glowing phosphor green ASCII terminal typography. Hovering the cursor scatters the code characters like interactive particles, which then smoothly spring back to their original position.
           </p>
         </div>
         <div className="shrink-0">
@@ -138,22 +144,27 @@ export default function InteractiveAsciiFacePage() {
           </div>
           <div className="hidden items-center gap-2 font-mono text-xs text-zinc-400 sm:flex">
             <span className="inline-block size-2 animate-pulse rounded-full bg-emerald-500" />
-            <span>ASCII Stream: Running</span>
+            <span>CRT Terminal: Online</span>
           </div>
         </div>
 
         <div id="ascii-preview" hidden={activeTab !== "preview"}>
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/60 shadow-2xl">
+          <div className="relative overflow-hidden rounded-2xl border border-emerald-950/60 bg-black shadow-2xl">
             <InteractiveAsciiFace
               src={photo ?? undefined}
               color={color}
               lineSpeed={lineSpeed}
               mouseSpeed={mouseSpeed}
               imageClarity={imageClarity}
+              cutoff={cutoff}
+              invert={invert}
+              scanlines={scanlines}
               className="rounded-none! border-0!"
             />
-            <div className="absolute inset-x-4 top-4 flex justify-end">
-              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/15 bg-zinc-900/90 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-800 focus-within:ring-2 focus-within:ring-lime-400">
+
+            {/* Upload Button */}
+            <div className="absolute inset-x-4 top-4 z-20 flex justify-end">
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-emerald-500/25 bg-zinc-950/85 px-3.5 py-1.5 text-xs font-mono text-emerald-300 backdrop-blur shadow-lg hover:bg-zinc-900 focus-within:ring-2 focus-within:ring-emerald-400">
                 <Upload aria-hidden="true" className="size-3.5" />
                 Upload photo
                 <input
@@ -167,12 +178,28 @@ export default function InteractiveAsciiFacePage() {
                 />
               </label>
             </div>
-            <div className="absolute inset-x-4 bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/15 bg-zinc-950/90 p-3 font-mono text-xs text-white shadow-2xl backdrop-blur-md">
-              <span className="min-w-0 truncate text-zinc-400" title={photo?.name}>
-                {photo?.name ?? "Sample image"}
-              </span>
+
+            {/* Controls Bar */}
+            <div className="absolute inset-x-4 bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-900/35 bg-zinc-950/92 p-3 font-mono text-xs text-white shadow-2xl backdrop-blur-md">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="max-w-[140px] truncate text-emerald-400/80 sm:max-w-[200px]" title={photo?.name}>
+                  {photo?.name ?? "Sample portrait"}
+                </span>
+                {photo && (
+                  <button
+                    type="button"
+                    onClick={() => setPhoto(null)}
+                    className="flex cursor-pointer items-center gap-1 rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    title="Reset to default image"
+                  >
+                    <RotateCcw className="size-3" />
+                    Reset
+                  </button>
+                )}
+              </div>
+
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
                   Color
                   <input
                     type="color"
@@ -181,20 +208,81 @@ export default function InteractiveAsciiFacePage() {
                     className="h-6 w-7 cursor-pointer rounded border border-white/15 bg-transparent"
                   />
                 </label>
-                <label className="flex items-center gap-2">Line speed<input type="range" min="0" max="3" step="0.1" value={lineSpeed} onChange={(event) => setLineSpeed(Number(event.target.value))} className="w-16 accent-lime-400" /><span>{lineSpeed.toFixed(1)}×</span></label>
-                <label className="flex items-center gap-2">Mouse speed<input type="range" min="0.3" max="1.8" step="0.1" value={mouseSpeed} onChange={(event) => setMouseSpeed(Number(event.target.value))} className="w-16 accent-lime-400" /><span>{mouseSpeed.toFixed(1)}×</span></label>
-                <label className="flex items-center gap-2">
+
+                <label className="flex items-center gap-2 cursor-pointer" title="Cursor repulsion radius and power">
+                  Repulsion
+                  <input
+                    type="range"
+                    min="0.3"
+                    max="2.5"
+                    step="0.1"
+                    value={mouseSpeed}
+                    onChange={(event) => setMouseSpeed(Number(event.target.value))}
+                    className="w-16 accent-emerald-400"
+                  />
+                  <span>{mouseSpeed.toFixed(1)}×</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer" title="Particle return spring speed">
+                  Return
+                  <input
+                    type="range"
+                    min="0.2"
+                    max="2.5"
+                    step="0.1"
+                    value={lineSpeed}
+                    onChange={(event) => setLineSpeed(Number(event.target.value))}
+                    className="w-16 accent-emerald-400"
+                  />
+                  <span>{lineSpeed.toFixed(1)}×</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer" title="Contrast and facial feature detail">
                   Clarity
                   <input
                     type="range"
-                    min="0.7"
+                    min="0.6"
                     max="2.5"
                     step="0.05"
                     value={imageClarity}
                     onChange={(event) => setImageClarity(Number(event.target.value))}
-                    className="w-16 accent-lime-400"
+                    className="w-16 accent-emerald-400"
                   />
                   <span>{imageClarity.toFixed(2)}×</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer" title="Background darkness cutoff">
+                  Cutoff
+                  <input
+                    type="range"
+                    min="0.00"
+                    max="0.20"
+                    step="0.01"
+                    value={cutoff}
+                    onChange={(event) => setCutoff(Number(event.target.value))}
+                    className="w-14 accent-emerald-400"
+                  />
+                  <span>{cutoff.toFixed(2)}</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 cursor-pointer text-zinc-300 hover:text-white" title="Invert light and dark (for white backgrounds)">
+                  <input
+                    type="checkbox"
+                    checked={invert}
+                    onChange={(e) => setInvert(e.target.checked)}
+                    className="rounded border-zinc-700 bg-zinc-900 text-emerald-400 accent-emerald-400 focus:ring-0"
+                  />
+                  <span>Invert</span>
+                </label>
+
+                <label className="flex items-center gap-1.5 cursor-pointer text-zinc-300 hover:text-white" title="Toggle CRT scanlines">
+                  <input
+                    type="checkbox"
+                    checked={scanlines}
+                    onChange={(e) => setScanlines(e.target.checked)}
+                    className="rounded border-zinc-700 bg-zinc-900 text-emerald-400 accent-emerald-400 focus:ring-0"
+                  />
+                  <span>CRT</span>
                 </label>
               </div>
             </div>
@@ -222,38 +310,15 @@ export default function InteractiveAsciiFacePage() {
       </section>
 
       <section className="mt-12 space-y-10">
-        <div>
-          <h2 className="font-sans text-xl font-bold text-white md:text-2xl">Installation</h2>
-          <p className="mt-2 text-sm text-gray-400">
-            Install the icon dependency used by the component documentation controls.
-          </p>
-          <div className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-zinc-950">
-            <div className="flex items-center justify-between border-b border-white/10 bg-zinc-900/40 px-4 py-2">
-              <div className="flex items-center gap-2">
-                {["npm", "pnpm", "yarn", "bun"].map((manager) => (
-                  <button
-                    key={manager}
-                    type="button"
-                    onClick={() => setPackageManager(manager)}
-                    className={`cursor-pointer rounded-md px-2.5 py-1 font-mono text-xs transition ${packageManager === manager ? "bg-white/10 font-bold text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-                  >
-                    {manager}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => copyUsage(installCommands[packageManager])}
-                className="p-1 text-zinc-400 transition hover:text-white"
-                title="Copy command"
-              >
-                <Copy aria-hidden="true" className="size-3.5" />
-              </button>
-            </div>
-            <div className="flex items-center gap-2 p-4 font-mono text-xs text-lime-300">
-              <span className="select-none text-zinc-500">$</span>
-              <span>{installCommands[packageManager]}</span>
-            </div>
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="font-sans text-xl font-bold text-white md:text-2xl">Installation</h2>
+            <p className="text-sm text-gray-400">
+              Install the component using the Adaptive UI CLI or your preferred package manager.
+            </p>
+          </div>
+          <div className="max-w-2xl">
+            <InstallTabs packages="adaptive-ui" component="interactive-ascii-face" />
           </div>
         </div>
 
@@ -261,25 +326,25 @@ export default function InteractiveAsciiFacePage() {
           <h3 className="text-lg font-semibold text-white">1. Add the component files</h3>
           <p className="text-sm text-gray-400">
             Copy <code className="rounded border border-white/10 bg-zinc-900 px-2 py-0.5 font-mono text-xs text-zinc-200">src/components/ui/interactive-ascii-face.jsx</code>{" "}
-            and its CSS module into your project. Use the read-only example in the Code tab for image upload state.
+            and its CSS module into your project.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           <div className="space-y-2 rounded-2xl border border-white/10 bg-zinc-900/40 p-5">
             <div className="flex size-8 items-center justify-center rounded-lg border border-lime-400/20 bg-lime-400/10 text-lime-400"><Layers className="size-4" /></div>
-            <h3 className="text-sm font-semibold text-white">Full Image Portrait</h3>
-            <p className="text-xs leading-relaxed text-gray-400">Every visible photo pixel is mapped into the same crisp Matrix-style glyph pattern.</p>
+            <h3 className="text-sm font-semibold text-white">High-Definition CRT Sampling</h3>
+            <p className="text-xs leading-relaxed text-gray-400">Auto-contrast levels and 12-tier alphanumeric typography translate eyes, lips, and facial contours with 100% solid opacity.</p>
           </div>
           <div className="space-y-2 rounded-2xl border border-white/10 bg-zinc-900/40 p-5">
-            <div className="flex size-8 items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-400/10 text-cyan-400"><Upload className="size-4" /></div>
-            <h3 className="text-sm font-semibold text-white">Client-side Upload</h3>
-            <p className="text-xs leading-relaxed text-gray-400">The browser samples the uploaded photo locally and recreates it using the same ASCII glyph field.</p>
+            <div className="flex size-8 items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-400/10 text-cyan-400"><MousePointer2 className="size-4" /></div>
+            <h3 className="text-sm font-semibold text-white">Interactive Particle Physics</h3>
+            <p className="text-xs leading-relaxed text-gray-400">Hovering the cursor scatters the code characters like physical particles, which smoothly spring back into place.</p>
           </div>
           <div className="space-y-2 rounded-2xl border border-white/10 bg-zinc-900/40 p-5">
-            <div className="flex size-8 items-center justify-center rounded-lg border border-amber-400/20 bg-amber-400/10 text-amber-400"><MousePointer2 className="size-4" /></div>
-            <h3 className="text-sm font-semibold text-white">Pointer Response</h3>
-            <p className="text-xs leading-relaxed text-gray-400">Move over the preview to gently shift the portrait; the Movement slider has been removed.</p>
+            <div className="flex size-8 items-center justify-center rounded-lg border border-amber-400/20 bg-amber-400/10 text-amber-400"><Sparkles className="size-4" /></div>
+            <h3 className="text-sm font-semibold text-white">Phosphor Glow & Scanlines</h3>
+            <p className="text-xs leading-relaxed text-gray-400">Vibrant green phosphor emission and authentic CRT scanlines reproduce the retro terminal self-portrait look.</p>
           </div>
         </div>
         <PropsTable title="InteractiveAsciiFace Props" data={props} />

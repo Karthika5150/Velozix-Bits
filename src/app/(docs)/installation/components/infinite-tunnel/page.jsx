@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, Code2, Copy, Eye, Gauge, Orbit } from "lucide-react";
 import { InfiniteTunnelHero } from "@/components/ui/infinite-tunnel-hero";
 import { PropsTable } from "@/components/ui/props-table";
+import { InstallTabs } from "@/components/ui/install-tabs";
 
 const tunnelProps = [
   { prop: "color", type: "string", default: '"#ff52ef"', description: "Hex color used for the neon grid, horizon line, and glow." },
   { prop: "backgroundColor", type: "string", default: '"#1f0038"', description: "Base color for the tunnel background." },
-  { prop: "backgroundImage", type: "string", default: '""', description: "Optional image URL layered behind the tunnel grid." },
-  { prop: "imageOpacity", type: "number", default: "0.3", description: "Opacity of the optional background image from 0 to 1." },
   { prop: "speed", type: "number", default: "1", description: "Forward travel speed. Use 0 to hold a still tunnel." },
-  { prop: "segments", type: "number", default: "12", description: "Grid density on the ceiling and floor planes." },
   { prop: "className", type: "string", default: '""', description: "Extra classes applied to the hero container." },
   { prop: "label", type: "string", default: '"Animated infinite tunnel"', description: "Accessible name for the canvas animation." },
 ];
@@ -24,7 +22,6 @@ export default function Hero() {
       color="#ff52ef"
       backgroundColor="#1f0038"
       speed={1}
-      segments={12}
     />
   );
 }`;
@@ -33,15 +30,9 @@ export default function InfiniteTunnelPage() {
   const [activeTab, setActiveTab] = useState("preview");
   const [color, setColor] = useState("#ff52ef");
   const [backgroundColor, setBackgroundColor] = useState("#1f0038");
-  const [backgroundImage, setBackgroundImage] = useState("");
-  const [imageOpacity, setImageOpacity] = useState(0.3);
   const [speed, setSpeed] = useState(1);
-  const [segments, setSegments] = useState(12);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => () => {
-    if (backgroundImage.startsWith("blob:")) URL.revokeObjectURL(backgroundImage);
-  }, [backgroundImage]);
 
   async function copyUsage() {
     await navigator.clipboard.writeText(usage);
@@ -90,16 +81,18 @@ export default function InfiniteTunnelPage() {
 
         {activeTab === "preview" ? (
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
-            <InfiniteTunnelHero color={color} backgroundColor={backgroundColor} backgroundImage={backgroundImage} imageOpacity={imageOpacity} speed={speed} segments={segments} />
-            <div className="absolute inset-x-4 bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/15 bg-zinc-950/90 p-3 font-mono text-xs text-white shadow-2xl backdrop-blur-md">
+            <InfiniteTunnelHero
+              key={`${color}-${backgroundColor}-${speed}`}
+              color={color}
+              backgroundColor={backgroundColor}
+              speed={speed}
+            />
+            <div className="absolute inset-x-4 bottom-4 z-30 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/15 bg-zinc-950/90 p-3 font-mono text-xs text-white shadow-2xl backdrop-blur-md">
               <div className="flex items-center gap-2 text-zinc-400"><Orbit className="size-3.5 text-pink-300" />Autonomous tunnel loop</div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <label className="flex items-center gap-2">Grid<input type="color" value={color} onChange={(event) => setColor(event.target.value)} className="size-6 cursor-pointer rounded border border-white/15 bg-transparent" /></label>
                 <label className="flex items-center gap-2">BG<input type="color" value={backgroundColor} onChange={(event) => setBackgroundColor(event.target.value)} className="size-6 cursor-pointer rounded border border-white/15 bg-transparent" /></label>
-                <label className="flex cursor-pointer items-center gap-2">Image<input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0]; if (!file) return; if (backgroundImage.startsWith("blob:")) URL.revokeObjectURL(backgroundImage); setBackgroundImage(URL.createObjectURL(file)); }} className="max-w-28 text-[10px] text-zinc-400 file:mr-1 file:cursor-pointer file:rounded file:border-0 file:bg-white/10 file:px-1.5 file:py-1 file:text-white" /></label>
-                {backgroundImage && <label className="flex items-center gap-2">Image<input type="range" min="0" max="1" step="0.05" value={imageOpacity} onChange={(event) => setImageOpacity(Number(event.target.value))} className="w-14 accent-pink-300" /><span>{Math.round(imageOpacity * 100)}%</span></label>}
                 <label className="flex items-center gap-2">Speed<input type="range" min="0" max="3" step="0.1" value={speed} onChange={(event) => setSpeed(Number(event.target.value))} className="w-16 accent-pink-300" /><span>{speed.toFixed(1)}×</span></label>
-                <label className="flex items-center gap-2">Grid<input type="range" min="5" max="24" step="1" value={segments} onChange={(event) => setSegments(Number(event.target.value))} className="w-16 accent-pink-300" /><span>{segments}</span></label>
               </div>
             </div>
           </div>
@@ -117,6 +110,22 @@ export default function InfiniteTunnelPage() {
           <div className="space-y-2 rounded-2xl border border-white/10 bg-zinc-900/40 p-5"><div className="flex size-8 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-400/10 text-violet-300"><Orbit className="size-4" /></div><h2 className="text-sm font-semibold text-white">Fixed Vanishing Point</h2><p className="text-xs leading-relaxed text-gray-400">The horizon remains locked in the center for a clean, uninterrupted tunnel loop.</p></div>
           <div className="space-y-2 rounded-2xl border border-white/10 bg-zinc-900/40 p-5"><div className="flex size-8 items-center justify-center rounded-lg border border-amber-400/20 bg-amber-400/10 text-amber-300"><Gauge className="size-4" /></div><h2 className="text-sm font-semibold text-white">Live Tuning</h2><p className="text-xs leading-relaxed text-gray-400">Adjust ring count, travel speed, color, and pointer response directly in the preview.</p></div>
         </div>
+
+        {/* Installation */}
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="font-sans text-xl font-bold text-white md:text-2xl">
+              Installation
+            </h2>
+            <p className="text-sm text-gray-400">
+              Install the component using the Adaptive UI CLI or your preferred package manager.
+            </p>
+          </div>
+          <div className="max-w-2xl">
+            <InstallTabs packages="adaptive-ui" component="infinite-tunnel" />
+          </div>
+        </div>
+
         <PropsTable title="InfiniteTunnelHero Props" description="Customize the tunnel depth, color, movement, and interaction." data={tunnelProps} />
       </section>
     </article>
