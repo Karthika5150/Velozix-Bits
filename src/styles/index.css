@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+@import "../components/ui/image-scroll.module.css";
+@import "../components/ui/interactive-ascii-face.module.css";
+@import "../components/ui/infinite-tunnel-hero.module.css";
+
+/* Lenis Smooth Scroll Core Rules */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}

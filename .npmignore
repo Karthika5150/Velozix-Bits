@@ -1,0 +1,14 @@
+.next/
+.git/
+node_modules/
+public/
+src/app/
+src/components/layout/
+src/components/docs/
+src/data/
+next.config.mjs
+eslint.config.mjs
+components.json
+jsconfig.json
+tsconfig.tsbuildinfo
+*.log

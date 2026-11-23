@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
 import Lenis from "lenis";
 
-export default function SmoothScrollProvider({ children }) {
+export function SmoothScrollProvider({ children, pathname: propPathname }) {
   const lenisRef = useRef(null);
-  const pathname = usePathname();
+  const [currentPath, setCurrentPath] = useState(() =>
+    typeof window !== "undefined" ? window.location.pathname : ""
+  );
 
   useEffect(() => {
     // Initialize Lenis
@@ -39,13 +40,24 @@ export default function SmoothScrollProvider({ children }) {
       resizeObserver.observe(document.body);
     }
 
+    // Listen to browser navigation changes
+    const handlePopState = () => {
+      if (typeof window !== "undefined") {
+        setCurrentPath(window.location.pathname);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+
     return () => {
+      window.removeEventListener("popstate", handlePopState);
       cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
       lenis.destroy();
       lenisRef.current = null;
     };
   }, []);
+
+  const activePath = propPathname !== undefined ? propPathname : currentPath;
 
   // When route changes, recalculate height and scroll immediately to top
   useEffect(() => {
@@ -54,13 +66,15 @@ export default function SmoothScrollProvider({ children }) {
     // Reset scroll to top on page change
     lenisRef.current.scrollTo(0, { immediate: true });
 
-    // Allow Next.js DOM to commit, then resize Lenis bounds
+    // Allow Next.js / DOM to commit, then resize Lenis bounds
     const timeout = setTimeout(() => {
       lenisRef.current?.resize();
     }, 50);
 
     return () => clearTimeout(timeout);
-  }, [pathname]);
+  }, [activePath]);
 
   return <>{children}</>;
 }
+
+export default SmoothScrollProvider;
