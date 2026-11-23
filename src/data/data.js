@@ -97,6 +97,16 @@ export const SideNavData = [
                 name: 'Liquid Blob Hero',
                 href: '/installation/components/banner'
             },
+            {
+                id: 1,
+                name: 'Interactive ASCII Face',
+                href: '/installation/components/interactive-ascii-face'
+            },
+            {
+                id: 2,
+                name: 'Infinite Tunnel Hero',
+                href: '/installation/components/infinite-tunnel'
+            },
         ]
     },
 ]

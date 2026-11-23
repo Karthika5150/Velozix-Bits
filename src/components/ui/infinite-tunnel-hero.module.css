@@ -1,0 +1,35 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 32rem;
+  overflow: hidden;
+  background: #1f0038;
+  cursor: crosshair;
+}
+
+.svg,
+.vignette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.svg {
+  display: block;
+}
+
+.glow { animation: tunnel-breathe 1.5s ease-in-out infinite alternate; }
+
+.vignette {
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 24%, rgb(4 0 10 / 0.36) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow { animation: none; }
+}
+
+@keyframes tunnel-breathe { to { opacity: .62; } }
