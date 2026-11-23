@@ -1,6 +1,7 @@
 {
   "name": "adaptive-ui-react",
-  "version": "0.1.1",
+  "version": "0.1.4",
+  "type": "module",
   "description": "Production-ready reusable React & Next.js animated UI components",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

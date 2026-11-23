@@ -1,13 +1,14 @@
 "use client";
 
 // src/components/ui/image-scroll.jsx
-import React2, { useState } from "react";
+import React, { useState } from "react";
 
 // src/components/ui/image-scroll.module.css
 var image_scroll_default = {};
 
 // src/components/ui/image-scroll.jsx
 import { ArrowUpRight, Image as ImageIcon } from "lucide-react";
+import { jsx, jsxs } from "react/jsx-runtime";
 var DEFAULT_SCROLL_IMAGES = [
   {
     id: 1,
@@ -79,7 +80,7 @@ function DefaultImageCard({ item, cardWidth, cardHeight, onCardClick }) {
   const title = typeof item === "string" ? "Creative Asset" : (item == null ? void 0 : item.title) || "Visual Frame";
   const category = typeof item === "string" ? "ASSET" : (item == null ? void 0 : item.category) || "GALLERY";
   const accent = typeof item === "object" && (item == null ? void 0 : item.accent) ? item.accent : "#10b981";
-  return /* @__PURE__ */ React2.createElement(
+  return /* @__PURE__ */ jsxs(
     "div",
     {
       onClick: () => onCardClick == null ? void 0 : onCardClick(item),
@@ -87,55 +88,66 @@ function DefaultImageCard({ item, cardWidth, cardHeight, onCardClick }) {
         width: cardWidth,
         height: cardHeight
       },
-      className: "group relative shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/90 shadow-xl transition-all duration-300 hover:border-white/25 hover:shadow-2xl hover:shadow-black/60"
-    },
-    /* @__PURE__ */ React2.createElement(
-      "div",
-      {
-        className: "absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black",
-        style: {
-          backgroundImage: imgError ? `radial-gradient(circle at 50% 30%, ${accent}25, transparent 70%), linear-gradient(to bottom, #18181b, #09090b)` : void 0
-        }
-      }
-    ),
-    !imgError && src && // eslint-disable-next-line @next/next/no-img-element
-    /* @__PURE__ */ React2.createElement(
-      "img",
-      {
-        src,
-        alt: title,
-        loading: "lazy",
-        decoding: "async",
-        onError: () => setImgError(true),
-        className: "absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-      }
-    ),
-    imgError && /* @__PURE__ */ React2.createElement("div", { className: "absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center" }, /* @__PURE__ */ React2.createElement(
-      "div",
-      {
-        className: "flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm",
-        style: { color: accent }
-      },
-      /* @__PURE__ */ React2.createElement(ImageIcon, { className: "size-5" })
-    ), /* @__PURE__ */ React2.createElement("span", { className: "font-mono text-xs uppercase tracking-wider text-zinc-400" }, title)),
-    /* @__PURE__ */ React2.createElement("div", { className: "pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent transition-opacity duration-300 group-hover:from-black/90" }),
-    /* @__PURE__ */ React2.createElement(
-      "div",
-      {
-        className: "pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100",
-        style: {
-          boxShadow: `inset 0 0 0 1px ${accent}66, 0 0 24px -6px ${accent}40`
-        }
-      }
-    ),
-    /* @__PURE__ */ React2.createElement("div", { className: "absolute inset-x-0 bottom-0 flex flex-col justify-end p-3 sm:p-4" }, /* @__PURE__ */ React2.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React2.createElement(
-      "span",
-      {
-        className: "inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/60 px-2 py-0.5 font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-white backdrop-blur-md",
-        style: { borderLeftColor: accent, borderLeftWidth: "2.5px" }
-      },
-      category
-    ), /* @__PURE__ */ React2.createElement("span", { className: "flex size-6 sm:size-7 items-center justify-center rounded-full bg-white/10 text-white/70 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110" }, /* @__PURE__ */ React2.createElement(ArrowUpRight, { className: "size-3 sm:size-3.5" }))), /* @__PURE__ */ React2.createElement("h4", { className: "mt-1.5 line-clamp-1 font-sans text-xs sm:text-sm font-bold tracking-wide text-white drop-shadow" }, title))
+      className: "group relative shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/90 shadow-xl transition-all duration-300 hover:border-white/25 hover:shadow-2xl hover:shadow-black/60",
+      children: [
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black",
+            style: {
+              backgroundImage: imgError ? `radial-gradient(circle at 50% 30%, ${accent}25, transparent 70%), linear-gradient(to bottom, #18181b, #09090b)` : void 0
+            }
+          }
+        ),
+        !imgError && src && // eslint-disable-next-line @next/next/no-img-element
+        /* @__PURE__ */ jsx(
+          "img",
+          {
+            src,
+            alt: title,
+            loading: "lazy",
+            decoding: "async",
+            onError: () => setImgError(true),
+            className: "absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+          }
+        ),
+        imgError && /* @__PURE__ */ jsxs("div", { className: "absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center", children: [
+          /* @__PURE__ */ jsx(
+            "div",
+            {
+              className: "flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm",
+              style: { color: accent },
+              children: /* @__PURE__ */ jsx(ImageIcon, { className: "size-5" })
+            }
+          ),
+          /* @__PURE__ */ jsx("span", { className: "font-mono text-xs uppercase tracking-wider text-zinc-400", children: title })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent transition-opacity duration-300 group-hover:from-black/90" }),
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100",
+            style: {
+              boxShadow: `inset 0 0 0 1px ${accent}66, 0 0 24px -6px ${accent}40`
+            }
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { className: "absolute inset-x-0 bottom-0 flex flex-col justify-end p-3 sm:p-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+            /* @__PURE__ */ jsx(
+              "span",
+              {
+                className: "inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/60 px-2 py-0.5 font-mono text-[10px] sm:text-[11px] font-semibold tracking-wider uppercase text-white backdrop-blur-md",
+                style: { borderLeftColor: accent, borderLeftWidth: "2.5px" },
+                children: category
+              }
+            ),
+            /* @__PURE__ */ jsx("span", { className: "flex size-6 sm:size-7 items-center justify-center rounded-full bg-white/10 text-white/70 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:scale-110", children: /* @__PURE__ */ jsx(ArrowUpRight, { className: "size-3 sm:size-3.5" }) })
+          ] }),
+          /* @__PURE__ */ jsx("h4", { className: "mt-1.5 line-clamp-1 font-sans text-xs sm:text-sm font-bold tracking-wide text-white drop-shadow", children: title })
+        ] })
+      ]
+    }
   );
 }
 function prepareTrackItems(items) {
@@ -185,7 +197,7 @@ function ImageScroll({
     "--container-height": height,
     ...style
   };
-  return /* @__PURE__ */ React2.createElement(
+  return /* @__PURE__ */ jsx(
     "div",
     {
       style: containerStyles,
@@ -196,72 +208,73 @@ function ImageScroll({
         ${isVertical && blurEdges ? image_scroll_default.fadeMaskVertical : ""}
         ${!isVertical && blurEdges ? image_scroll_default.fadeMaskHorizontal : ""}
         ${className}
-      `
-    },
-    /* @__PURE__ */ React2.createElement("div", { className: tilt ? image_scroll_default.tiltInner : "" }, isVertical ? (
-      /* ================= VERTICAL COLUMNS ================= */
-      /* @__PURE__ */ React2.createElement("div", { className: image_scroll_default.verticalWrapper }, trackItemGroups.map((group, colIdx) => {
-        const isColReverse = staggerDirection ? colIdx % 2 === 1 ? !reverse : reverse : reverse;
-        const colSpeed = staggerDirection ? baseDuration * (1 + colIdx % 3 * 0.15) : baseDuration;
-        const trackItems = prepareTrackItems(group);
-        return /* @__PURE__ */ React2.createElement(
-          "div",
-          {
-            key: `col-${colIdx}`,
-            className: isColReverse ? image_scroll_default.verticalTrackReverse : image_scroll_default.verticalTrack,
-            style: {
-              animationDuration: `${colSpeed}s`
-            }
-          },
-          trackItems.map((item, itemIdx) => /* @__PURE__ */ React2.createElement(React2.Fragment, { key: `v-item-${colIdx}-${itemIdx}` }, renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ React2.createElement(
-            DefaultImageCard,
+      `,
+      children: /* @__PURE__ */ jsx("div", { className: tilt ? image_scroll_default.tiltInner : "", children: isVertical ? (
+        /* ================= VERTICAL COLUMNS ================= */
+        /* @__PURE__ */ jsx("div", { className: image_scroll_default.verticalWrapper, children: trackItemGroups.map((group, colIdx) => {
+          const isColReverse = staggerDirection ? colIdx % 2 === 1 ? !reverse : reverse : reverse;
+          const colSpeed = staggerDirection ? baseDuration * (1 + colIdx % 3 * 0.15) : baseDuration;
+          const trackItems = prepareTrackItems(group);
+          return /* @__PURE__ */ jsx(
+            "div",
             {
-              item,
-              cardWidth: defaultWidth,
-              cardHeight: defaultHeight,
-              onCardClick
-            }
-          )))
-        );
-      }))
-    ) : (
-      /* ================= HORIZONTAL ROWS ================= */
-      /* @__PURE__ */ React2.createElement("div", { className: image_scroll_default.horizontalWrapper }, trackItemGroups.map((group, rowIdx) => {
-        const isRowReverse = staggerDirection ? rowIdx % 2 === 1 ? !reverse : reverse : reverse;
-        const rowSpeed = staggerDirection ? baseDuration * (1 + rowIdx % 3 * 0.15) : baseDuration;
-        const trackItems = prepareTrackItems(group);
-        return /* @__PURE__ */ React2.createElement(
-          "div",
-          {
-            key: `row-${rowIdx}`,
-            className: isRowReverse ? image_scroll_default.horizontalTrackReverse : image_scroll_default.horizontalTrack,
-            style: {
-              animationDuration: `${rowSpeed}s`
-            }
-          },
-          trackItems.map((item, itemIdx) => /* @__PURE__ */ React2.createElement(React2.Fragment, { key: `h-item-${rowIdx}-${itemIdx}` }, renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ React2.createElement(
-            DefaultImageCard,
+              className: isColReverse ? image_scroll_default.verticalTrackReverse : image_scroll_default.verticalTrack,
+              style: {
+                animationDuration: `${colSpeed}s`
+              },
+              children: trackItems.map((item, itemIdx) => /* @__PURE__ */ jsx(React.Fragment, { children: renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ jsx(
+                DefaultImageCard,
+                {
+                  item,
+                  cardWidth: defaultWidth,
+                  cardHeight: defaultHeight,
+                  onCardClick
+                }
+              ) }, `v-item-${colIdx}-${itemIdx}`))
+            },
+            `col-${colIdx}`
+          );
+        }) })
+      ) : (
+        /* ================= HORIZONTAL ROWS ================= */
+        /* @__PURE__ */ jsx("div", { className: image_scroll_default.horizontalWrapper, children: trackItemGroups.map((group, rowIdx) => {
+          const isRowReverse = staggerDirection ? rowIdx % 2 === 1 ? !reverse : reverse : reverse;
+          const rowSpeed = staggerDirection ? baseDuration * (1 + rowIdx % 3 * 0.15) : baseDuration;
+          const trackItems = prepareTrackItems(group);
+          return /* @__PURE__ */ jsx(
+            "div",
             {
-              item,
-              cardWidth: defaultWidth,
-              cardHeight: defaultHeight,
-              onCardClick
-            }
-          )))
-        );
-      }))
-    ))
+              className: isRowReverse ? image_scroll_default.horizontalTrackReverse : image_scroll_default.horizontalTrack,
+              style: {
+                animationDuration: `${rowSpeed}s`
+              },
+              children: trackItems.map((item, itemIdx) => /* @__PURE__ */ jsx(React.Fragment, { children: renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ jsx(
+                DefaultImageCard,
+                {
+                  item,
+                  cardWidth: defaultWidth,
+                  cardHeight: defaultHeight,
+                  onCardClick
+                }
+              ) }, `h-item-${rowIdx}-${itemIdx}`))
+            },
+            `row-${rowIdx}`
+          );
+        }) })
+      ) })
+    }
   );
 }
 var InfiniteImageScroll = ImageScroll;
 
 // src/components/ui/interactive-ascii-face.jsx
-import { useEffect, useRef, useState as useState2 } from "react";
+import React2, { useEffect, useRef, useState as useState2 } from "react";
 
 // src/components/ui/interactive-ascii-face.module.css
 var interactive_ascii_face_default = {};
 
 // src/components/ui/interactive-ascii-face.jsx
+import { jsx as jsx2, jsxs as jsxs2 } from "react/jsx-runtime";
 var REFERENCE = "/images/ascii-portrait.png";
 var GLYPHS = [".:;|`", "il/+=:", "xovucz", "7TZH28", "NWM#@%"];
 var MASK_WIDTH = 360;
@@ -456,38 +469,41 @@ function InteractiveAsciiFace({
     const y = event.clientY - bounds.top;
     pointer.current = { position: { x, y }, offset: { x: (x / bounds.width * 2 - 1) * offset, y: (y / bounds.height * 2 - 1) * offset } };
   }
-  return /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ jsxs2(
     "div",
     {
       className: [interactive_ascii_face_default.stage, className].filter(Boolean).join(" "),
       onPointerMove: movePortrait,
       onPointerLeave: () => {
         pointer.current = null;
-      }
-    },
-    /* @__PURE__ */ React.createElement(
-      "canvas",
-      {
-        ref: fieldRef,
-        className: interactive_ascii_face_default.field,
-        role: mask ? "img" : void 0,
-        "aria-label": mask ? alt : void 0,
-        "aria-hidden": !mask
-      }
-    ),
-    /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        ref: portraitRef,
-        className: interactive_ascii_face_default.frame
       },
-      !mask && /* @__PURE__ */ React.createElement("p", { className: interactive_ascii_face_default.status, role: "status" }, current ? "Couldn\u2019t read this image. Try a PNG, JPEG, or WebP." : "Converting image to ASCII\u2026")
-    )
+      children: [
+        /* @__PURE__ */ jsx2(
+          "canvas",
+          {
+            ref: fieldRef,
+            className: interactive_ascii_face_default.field,
+            role: mask ? "img" : void 0,
+            "aria-label": mask ? alt : void 0,
+            "aria-hidden": !mask
+          }
+        ),
+        /* @__PURE__ */ jsx2(
+          "div",
+          {
+            ref: portraitRef,
+            className: interactive_ascii_face_default.frame,
+            children: !mask && /* @__PURE__ */ jsx2("p", { className: interactive_ascii_face_default.status, role: "status", children: current ? "Couldn\u2019t read this image. Try a PNG, JPEG, or WebP." : "Converting image to ASCII\u2026" })
+          }
+        )
+      ]
+    }
   );
 }
 
 // src/components/ui/blob-morph-hero.jsx
 import React3, { useEffect as useEffect2, useId, useMemo, useRef as useRef2, useState as useState3 } from "react";
+import { Fragment, jsx as jsx3, jsxs as jsxs3 } from "react/jsx-runtime";
 var BASE_IMG = "/images/banner-crypto-base.webp";
 var EQUIPPED_IMG = "/images/banner-crypto-equipped.png";
 var DEFAULT_PRESETS = [
@@ -996,106 +1012,142 @@ function BlobMorphHero({
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
-  return /* @__PURE__ */ React3.createElement(
+  return /* @__PURE__ */ jsxs3(
     "div",
     {
       ref: rootRef,
       className: `relative h-full w-full overflow-hidden ${className}`,
-      style: { background: bg }
-    },
-    /* @__PURE__ */ React3.createElement("canvas", { ref: topoRef, className: "absolute inset-0 h-full w-full" }),
-    /* @__PURE__ */ React3.createElement(
-      "canvas",
-      {
-        ref: ambRef,
-        className: "pointer-events-none absolute inset-0 h-full w-full",
-        style: { opacity: 1 }
-      }
-    ),
-    showHeadline && /* @__PURE__ */ React3.createElement("div", { className: "pointer-events-none absolute inset-0 flex select-none items-center justify-center" }, /* @__PURE__ */ React3.createElement(
-      "span",
-      {
-        className: "font-black uppercase leading-none",
-        style: {
-          fontSize: "clamp(80px, 20vw, 280px)",
-          color: "transparent",
-          WebkitTextStroke: `1px ${wire}66`
-        }
-      },
-      headline
-    )),
-    /* @__PURE__ */ React3.createElement(
-      "div",
-      {
-        className: "absolute",
-        style: { left: box.x, top: box.y, width: box.w, height: box.h }
-      },
-      /* @__PURE__ */ React3.createElement(
-        "img",
-        {
-          src: baseSrc,
-          alt: "",
-          draggable: false,
-          className: "absolute inset-0 h-full w-full select-none",
-          style: flipBase ? { transform: "scaleX(-1)" } : void 0
-        }
-      ),
-      /* @__PURE__ */ React3.createElement(
-        "canvas",
-        {
-          ref: revRef,
-          className: "absolute inset-0 h-full w-full",
-          style: debugAlign ? { opacity: 0.5 } : void 0
-        }
-      ),
-      showHud && /* @__PURE__ */ React3.createElement(React3.Fragment, null, /* @__PURE__ */ React3.createElement(
-        "svg",
-        {
-          viewBox: `${HEAD_VB.x} ${HEAD_VB.y} ${HEAD_VB.w} ${HEAD_VB.h}`,
-          preserveAspectRatio: stretchHud ? "none" : "xMidYMid meet",
-          className: "pointer-events-none absolute",
-          style: {
-            left: `${hb.x * 100}%`,
-            top: `${hb.y * 100}%`,
-            width: `${hb.w * 100}%`,
-            height: `${hb.h * 100}%`,
-            outline: debugHead ? "1px dashed #ff00ff" : "none"
-          },
-          fill: "none",
-          stroke: wire,
-          strokeWidth: "1",
-          strokeLinecap: "round",
-          strokeLinejoin: "round",
-          shapeRendering: "geometricPrecision"
-        },
-        /* @__PURE__ */ React3.createElement("defs", null, /* @__PURE__ */ React3.createElement("clipPath", { id: shellId }, /* @__PURE__ */ React3.createElement("path", { d: HELMET.shell })), /* @__PURE__ */ React3.createElement("clipPath", { id: wipeId }, /* @__PURE__ */ React3.createElement("rect", { ref: wipeRef, x: HEAD_VB.x, y: HEAD_VB.y, width: HEAD_VB.w, height: "0" }))),
-        /* @__PURE__ */ React3.createElement("g", { clipPath: `url(#${wipeId})` }, customSvgMarkup ? /* @__PURE__ */ React3.createElement("g", { dangerouslySetInnerHTML: { __html: customSvgMarkup } }) : /* @__PURE__ */ React3.createElement("g", null, /* @__PURE__ */ React3.createElement("path", { d: HELMET.shell, fill: "#ffffff", fillOpacity: "0.16", stroke: "none" }), /* @__PURE__ */ React3.createElement("path", { d: HELMET.visor, fill: wire, fillOpacity: "0.07", stroke: "none" }), /* @__PURE__ */ React3.createElement("g", { clipPath: `url(#${shellId})`, opacity: "0.5", strokeWidth: "0.6" }, HELMET.latitudes.map((d, i) => /* @__PURE__ */ React3.createElement("path", { key: "la" + i, d, ...VE })), HELMET.meridians.map((d, i) => /* @__PURE__ */ React3.createElement("path", { key: "me" + i, d, ...VE }))), /* @__PURE__ */ React3.createElement("path", { d: HELMET.shell, strokeWidth: "1.2", ...VE }), /* @__PURE__ */ React3.createElement("path", { d: HELMET.visor, strokeWidth: "1", ...VE }), HELMET.details.map((d, i) => /* @__PURE__ */ React3.createElement("path", { key: "de" + i, d, opacity: "0.6", ...VE })))),
-        /* @__PURE__ */ React3.createElement("g", { ref: scanRef, opacity: "0" }, /* @__PURE__ */ React3.createElement("line", { x1: HEAD_VB.x, x2: HEAD_VB.x + HEAD_VB.w, y1: "0", y2: "0", stroke: wire, strokeWidth: "4", opacity: "0.18", ...VE }), /* @__PURE__ */ React3.createElement("line", { x1: HEAD_VB.x, x2: HEAD_VB.x + HEAD_VB.w, y1: "0", y2: "0", stroke: wire, strokeWidth: "1.2", opacity: "0.9", ...VE }))
-      ), showTelemetry && /* @__PURE__ */ React3.createElement(
-        "div",
-        {
-          className: "pointer-events-none absolute left-3 top-3 font-mono text-[11px] leading-4",
-          style: { color: wire }
-        },
-        /* @__PURE__ */ React3.createElement("div", null, "SPD ", /* @__PURE__ */ React3.createElement("span", { ref: spdRef }, "0 KM/H")),
-        /* @__PURE__ */ React3.createElement("div", null, "LIVERY ", /* @__PURE__ */ React3.createElement("span", { ref: covRef }, "0%"))
-      ))
-    ),
-    showNextRace && /* @__PURE__ */ React3.createElement(
-      "div",
-      {
-        className: "pointer-events-none absolute left-6 top-6 text-xs",
-        style: { color: "#111111" }
-      },
-      /* @__PURE__ */ React3.createElement("div", { className: "opacity-60" }, "Next race"),
-      /* @__PURE__ */ React3.createElement("div", { className: "text-sm font-semibold" }, "Las Vegas GP")
-    )
+      style: { background: bg },
+      children: [
+        /* @__PURE__ */ jsx3("canvas", { ref: topoRef, className: "absolute inset-0 h-full w-full" }),
+        /* @__PURE__ */ jsx3(
+          "canvas",
+          {
+            ref: ambRef,
+            className: "pointer-events-none absolute inset-0 h-full w-full",
+            style: { opacity: 1 }
+          }
+        ),
+        showHeadline && /* @__PURE__ */ jsx3("div", { className: "pointer-events-none absolute inset-0 flex select-none items-center justify-center", children: /* @__PURE__ */ jsx3(
+          "span",
+          {
+            className: "font-black uppercase leading-none",
+            style: {
+              fontSize: "clamp(80px, 20vw, 280px)",
+              color: "transparent",
+              WebkitTextStroke: `1px ${wire}66`
+            },
+            children: headline
+          }
+        ) }),
+        /* @__PURE__ */ jsxs3(
+          "div",
+          {
+            className: "absolute",
+            style: { left: box.x, top: box.y, width: box.w, height: box.h },
+            children: [
+              /* @__PURE__ */ jsx3(
+                "img",
+                {
+                  src: baseSrc,
+                  alt: "",
+                  draggable: false,
+                  className: "absolute inset-0 h-full w-full select-none",
+                  style: flipBase ? { transform: "scaleX(-1)" } : void 0
+                }
+              ),
+              /* @__PURE__ */ jsx3(
+                "canvas",
+                {
+                  ref: revRef,
+                  className: "absolute inset-0 h-full w-full",
+                  style: debugAlign ? { opacity: 0.5 } : void 0
+                }
+              ),
+              showHud && /* @__PURE__ */ jsxs3(Fragment, { children: [
+                /* @__PURE__ */ jsxs3(
+                  "svg",
+                  {
+                    viewBox: `${HEAD_VB.x} ${HEAD_VB.y} ${HEAD_VB.w} ${HEAD_VB.h}`,
+                    preserveAspectRatio: stretchHud ? "none" : "xMidYMid meet",
+                    className: "pointer-events-none absolute",
+                    style: {
+                      left: `${hb.x * 100}%`,
+                      top: `${hb.y * 100}%`,
+                      width: `${hb.w * 100}%`,
+                      height: `${hb.h * 100}%`,
+                      outline: debugHead ? "1px dashed #ff00ff" : "none"
+                    },
+                    fill: "none",
+                    stroke: wire,
+                    strokeWidth: "1",
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    shapeRendering: "geometricPrecision",
+                    children: [
+                      /* @__PURE__ */ jsxs3("defs", { children: [
+                        /* @__PURE__ */ jsx3("clipPath", { id: shellId, children: /* @__PURE__ */ jsx3("path", { d: HELMET.shell }) }),
+                        /* @__PURE__ */ jsx3("clipPath", { id: wipeId, children: /* @__PURE__ */ jsx3("rect", { ref: wipeRef, x: HEAD_VB.x, y: HEAD_VB.y, width: HEAD_VB.w, height: "0" }) })
+                      ] }),
+                      /* @__PURE__ */ jsx3("g", { clipPath: `url(#${wipeId})`, children: customSvgMarkup ? /* @__PURE__ */ jsx3("g", { dangerouslySetInnerHTML: { __html: customSvgMarkup } }) : /* @__PURE__ */ jsxs3("g", { children: [
+                        /* @__PURE__ */ jsx3("path", { d: HELMET.shell, fill: "#ffffff", fillOpacity: "0.16", stroke: "none" }),
+                        /* @__PURE__ */ jsx3("path", { d: HELMET.visor, fill: wire, fillOpacity: "0.07", stroke: "none" }),
+                        /* @__PURE__ */ jsxs3("g", { clipPath: `url(#${shellId})`, opacity: "0.5", strokeWidth: "0.6", children: [
+                          HELMET.latitudes.map((d, i) => /* @__PURE__ */ jsx3("path", { d, ...VE }, "la" + i)),
+                          HELMET.meridians.map((d, i) => /* @__PURE__ */ jsx3("path", { d, ...VE }, "me" + i))
+                        ] }),
+                        /* @__PURE__ */ jsx3("path", { d: HELMET.shell, strokeWidth: "1.2", ...VE }),
+                        /* @__PURE__ */ jsx3("path", { d: HELMET.visor, strokeWidth: "1", ...VE }),
+                        HELMET.details.map((d, i) => /* @__PURE__ */ jsx3("path", { d, opacity: "0.6", ...VE }, "de" + i))
+                      ] }) }),
+                      /* @__PURE__ */ jsxs3("g", { ref: scanRef, opacity: "0", children: [
+                        /* @__PURE__ */ jsx3("line", { x1: HEAD_VB.x, x2: HEAD_VB.x + HEAD_VB.w, y1: "0", y2: "0", stroke: wire, strokeWidth: "4", opacity: "0.18", ...VE }),
+                        /* @__PURE__ */ jsx3("line", { x1: HEAD_VB.x, x2: HEAD_VB.x + HEAD_VB.w, y1: "0", y2: "0", stroke: wire, strokeWidth: "1.2", opacity: "0.9", ...VE })
+                      ] })
+                    ]
+                  }
+                ),
+                showTelemetry && /* @__PURE__ */ jsxs3(
+                  "div",
+                  {
+                    className: "pointer-events-none absolute left-3 top-3 font-mono text-[11px] leading-4",
+                    style: { color: wire },
+                    children: [
+                      /* @__PURE__ */ jsxs3("div", { children: [
+                        "SPD ",
+                        /* @__PURE__ */ jsx3("span", { ref: spdRef, children: "0 KM/H" })
+                      ] }),
+                      /* @__PURE__ */ jsxs3("div", { children: [
+                        "LIVERY ",
+                        /* @__PURE__ */ jsx3("span", { ref: covRef, children: "0%" })
+                      ] })
+                    ]
+                  }
+                )
+              ] })
+            ]
+          }
+        ),
+        showNextRace && /* @__PURE__ */ jsxs3(
+          "div",
+          {
+            className: "pointer-events-none absolute left-6 top-6 text-xs",
+            style: { color: "#111111" },
+            children: [
+              /* @__PURE__ */ jsx3("div", { className: "opacity-60", children: "Next race" }),
+              /* @__PURE__ */ jsx3("div", { className: "text-sm font-semibold", children: "Las Vegas GP" })
+            ]
+          }
+        )
+      ]
+    }
   );
 }
 
 // src/components/ui/infinite-tunnel-hero.jsx
-import { useEffect as useEffect3, useRef as useRef3 } from "react";
+import React4, { useEffect as useEffect3, useRef as useRef3 } from "react";
 import gsap from "gsap";
+import { jsx as jsx4, jsxs as jsxs4 } from "react/jsx-runtime";
 var SHAPES = [
   [[523.9, 887.7], [391.2, 887.7], [520.1, 824], [624.3, 824]],
   [[137.3, 845.2], [0, 886.1], [0, 923.1], [24.2, 923.1], [250.9, 845.2]],
@@ -1304,183 +1356,233 @@ function InfiniteTunnelHero({
     return () => ctx.revert();
   }, [speed]);
   const shapeCount = SHAPES.length * SHAPE_COPIES;
-  return /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ jsxs4(
     "div",
     {
       className: `relative h-screen w-full overflow-hidden  ${className}`,
-      style: { background: backgroundColor }
-    },
-    /* @__PURE__ */ React.createElement(
-      "svg",
-      {
-        ref: rootRef,
-        className: "pointer-events-none absolute inset-0 h-full w-full",
-        viewBox: `0 0 ${W} ${H}`,
-        preserveAspectRatio: "xMidYMid slice",
-        "aria-hidden": "true"
-      },
-      /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("linearGradient", { id: "slabBottom", x1: "0", y1: "1", x2: "0", y2: "0" }, /* @__PURE__ */ React.createElement("stop", { offset: "0", stopColor: color, stopOpacity: "0.9" }), /* @__PURE__ */ React.createElement("stop", { offset: "1", stopColor: color, stopOpacity: "0.35" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "slabTop", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0", stopColor: color, stopOpacity: "0.9" }), /* @__PURE__ */ React.createElement("stop", { offset: "1", stopColor: color, stopOpacity: "0.35" })), /* @__PURE__ */ React.createElement(
-        "linearGradient",
-        {
-          id: "gridStroke",
-          gradientUnits: "userSpaceOnUse",
-          x1: "0",
-          y1: BOTTOM_EDGE,
-          x2: "0",
-          y2: "1100"
-        },
-        /* @__PURE__ */ React.createElement("stop", { offset: "0", stopColor: color, stopOpacity: "1" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.08", stopColor: color, stopOpacity: "0.95" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.2", stopColor: color, stopOpacity: "0.8" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.45", stopColor: color, stopOpacity: "0.9" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "1", stopColor: color, stopOpacity: "0.45" })
-      ), /* @__PURE__ */ React.createElement(
-        "linearGradient",
-        {
-          id: "gridFade",
-          gradientUnits: "userSpaceOnUse",
-          x1: "-480",
-          y1: "0",
-          x2: "2400",
-          y2: "0"
-        },
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.02", stopColor: "#292929" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.05", stopColor: "#565656" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.09", stopColor: "#7E7E7E" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.12", stopColor: "#A1A1A1" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.2", stopColor: "#D6D6D6" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.3", stopColor: "#F5F5F5" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.54", stopColor: "#FFFFFF" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.74", stopColor: "#E2E2E2" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.88", stopColor: "#8B8B8B" }),
-        /* @__PURE__ */ React.createElement("stop", { offset: "0.96", stopColor: "#323232" })
-      ), /* @__PURE__ */ React.createElement(
-        "mask",
-        {
-          id: "gridMask",
-          maskUnits: "userSpaceOnUse",
-          x: "-480",
-          y: "0",
-          width: "2880",
-          height: "1300"
-        },
-        /* @__PURE__ */ React.createElement("rect", { x: "-480", y: "0", width: "2880", height: "1300", fill: "url(#gridFade)" })
-      ), /* @__PURE__ */ React.createElement("radialGradient", { id: "glow", cx: "50%", cy: "50%", r: "50%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0.02", stopColor: color, stopOpacity: "1" }), /* @__PURE__ */ React.createElement("stop", { offset: "0.07", stopColor: color, stopOpacity: "0.95" }), /* @__PURE__ */ React.createElement("stop", { offset: "0.19", stopColor: color, stopOpacity: "0.8" }), /* @__PURE__ */ React.createElement("stop", { offset: "0.45", stopColor: color, stopOpacity: "0.45" }), /* @__PURE__ */ React.createElement("stop", { offset: "1", stopColor: color, stopOpacity: "0" }))),
-      /* @__PURE__ */ React.createElement("g", { transform: `translate(0 ${GAP})` }, GLOW_ON && /* @__PURE__ */ React.createElement("g", { className: "tunnel-glow" }, /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          x: VX - 1400,
-          y: BOTTOM_EDGE + 60,
-          width: 2800,
-          height: 60,
-          fill: "url(#glow)"
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          x: VX - 1e3,
-          y: BOTTOM_EDGE - 110,
-          width: 2e3,
-          height: 220,
-          fill: "url(#glow)",
-          opacity: "0.22"
-        }
-      )), /* @__PURE__ */ React.createElement("g", { stroke: "url(#gridStroke)", strokeWidth: "0.8", mask: "url(#gridMask)" }, RADIAL_X.map((x) => /* @__PURE__ */ React.createElement("line", { key: `rb-${x}`, x1: x, y1: RADIAL_Y0, x2: radialEnd(x), y2: H })), Array.from({ length: GRID_Y.length + 1 }).map((_, i) => /* @__PURE__ */ React.createElement(
-        "line",
-        {
-          key: `hb-${i}`,
-          ref: (el) => {
-            hLines.current[i] = el;
-          },
-          x1: -480,
-          x2: 2400,
-          y1: GRID_Y[0],
-          y2: GRID_Y[0],
-          opacity: "0"
-        }
-      ))), /* @__PURE__ */ React.createElement("g", { style: { mixBlendMode: "screen" } }, Array.from({ length: shapeCount }).map((_, k) => /* @__PURE__ */ React.createElement(
-        "polygon",
-        {
-          key: `sb-${k}`,
-          ref: (el) => {
-            shapesBottom.current[k] = el;
-          },
-          points: toPoints(SHAPES[Math.floor(k / SHAPE_COPIES)], false),
-          fill: "url(#slabBottom)",
-          stroke: color,
-          strokeWidth: "1.5",
-          vectorEffect: "non-scaling-stroke",
-          opacity: "0"
-        }
-      )), PARTICLES.map((d, i) => /* @__PURE__ */ React.createElement(
-        "circle",
-        {
-          key: `pb-${i}`,
-          ref: (el) => {
-            dotsBottom.current[i] = el;
-          },
-          cx: d.x,
-          cy: VY + d.dy,
-          r: d.r,
-          fill: d.color === "#FFFFFF" ? "#FFFFFF" : color,
-          opacity: "0"
-        }
-      )))),
-      /* @__PURE__ */ React.createElement("g", { transform: `translate(0 ${-GAP})` }, GLOW_ON && /* @__PURE__ */ React.createElement("g", { className: "tunnel-glow" }, /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          x: VX - 1400,
-          y: TOP_EDGE - 130,
-          width: 2800,
-          height: 60,
-          fill: "url(#glow)"
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "rect",
-        {
-          x: VX - 1e3,
-          y: TOP_EDGE - 110,
-          width: 2e3,
-          height: 220,
-          fill: "url(#glow)",
-          opacity: "0.22"
-        }
-      )), /* @__PURE__ */ React.createElement("g", { style: { mixBlendMode: "screen" } }, Array.from({ length: shapeCount }).map((_, k) => /* @__PURE__ */ React.createElement(
-        "polygon",
-        {
-          key: `st-${k}`,
-          ref: (el) => {
-            shapesTop.current[k] = el;
-          },
-          points: toPoints(SHAPES[Math.floor(k / SHAPE_COPIES)], true),
-          fill: "url(#slabTop)",
-          stroke: color,
-          strokeWidth: "1.5",
-          vectorEffect: "non-scaling-stroke",
-          opacity: "0"
-        }
-      )), PARTICLES.map((d, i) => /* @__PURE__ */ React.createElement(
-        "circle",
-        {
-          key: `pt-${i}`,
-          ref: (el) => {
-            dotsTop.current[i] = el;
-          },
-          cx: W - d.x,
-          cy: VY - d.dy,
-          r: d.r,
-          fill: d.color === "#FFFFFF" ? "#FFFFFF" : color,
-          opacity: "0"
-        }
-      ))))
-    ),
-    /* @__PURE__ */ React.createElement("div", { className: "relative z-10  flex h-full w-full items-center justify-center" }, children)
+      style: { background: backgroundColor },
+      children: [
+        /* @__PURE__ */ jsxs4(
+          "svg",
+          {
+            ref: rootRef,
+            className: "pointer-events-none absolute inset-0 h-full w-full",
+            viewBox: `0 0 ${W} ${H}`,
+            preserveAspectRatio: "xMidYMid slice",
+            "aria-hidden": "true",
+            children: [
+              /* @__PURE__ */ jsxs4("defs", { children: [
+                /* @__PURE__ */ jsxs4("linearGradient", { id: "slabBottom", x1: "0", y1: "1", x2: "0", y2: "0", children: [
+                  /* @__PURE__ */ jsx4("stop", { offset: "0", stopColor: color, stopOpacity: "0.9" }),
+                  /* @__PURE__ */ jsx4("stop", { offset: "1", stopColor: color, stopOpacity: "0.35" })
+                ] }),
+                /* @__PURE__ */ jsxs4("linearGradient", { id: "slabTop", x1: "0", y1: "0", x2: "0", y2: "1", children: [
+                  /* @__PURE__ */ jsx4("stop", { offset: "0", stopColor: color, stopOpacity: "0.9" }),
+                  /* @__PURE__ */ jsx4("stop", { offset: "1", stopColor: color, stopOpacity: "0.35" })
+                ] }),
+                /* @__PURE__ */ jsxs4(
+                  "linearGradient",
+                  {
+                    id: "gridStroke",
+                    gradientUnits: "userSpaceOnUse",
+                    x1: "0",
+                    y1: BOTTOM_EDGE,
+                    x2: "0",
+                    y2: "1100",
+                    children: [
+                      /* @__PURE__ */ jsx4("stop", { offset: "0", stopColor: color, stopOpacity: "1" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.08", stopColor: color, stopOpacity: "0.95" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.2", stopColor: color, stopOpacity: "0.8" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.45", stopColor: color, stopOpacity: "0.9" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "1", stopColor: color, stopOpacity: "0.45" })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs4(
+                  "linearGradient",
+                  {
+                    id: "gridFade",
+                    gradientUnits: "userSpaceOnUse",
+                    x1: "-480",
+                    y1: "0",
+                    x2: "2400",
+                    y2: "0",
+                    children: [
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.02", stopColor: "#292929" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.05", stopColor: "#565656" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.09", stopColor: "#7E7E7E" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.12", stopColor: "#A1A1A1" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.2", stopColor: "#D6D6D6" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.3", stopColor: "#F5F5F5" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.54", stopColor: "#FFFFFF" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.74", stopColor: "#E2E2E2" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.88", stopColor: "#8B8B8B" }),
+                      /* @__PURE__ */ jsx4("stop", { offset: "0.96", stopColor: "#323232" })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsx4(
+                  "mask",
+                  {
+                    id: "gridMask",
+                    maskUnits: "userSpaceOnUse",
+                    x: "-480",
+                    y: "0",
+                    width: "2880",
+                    height: "1300",
+                    children: /* @__PURE__ */ jsx4("rect", { x: "-480", y: "0", width: "2880", height: "1300", fill: "url(#gridFade)" })
+                  }
+                ),
+                /* @__PURE__ */ jsxs4("radialGradient", { id: "glow", cx: "50%", cy: "50%", r: "50%", children: [
+                  /* @__PURE__ */ jsx4("stop", { offset: "0.02", stopColor: color, stopOpacity: "1" }),
+                  /* @__PURE__ */ jsx4("stop", { offset: "0.07", stopColor: color, stopOpacity: "0.95" }),
+                  /* @__PURE__ */ jsx4("stop", { offset: "0.19", stopColor: color, stopOpacity: "0.8" }),
+                  /* @__PURE__ */ jsx4("stop", { offset: "0.45", stopColor: color, stopOpacity: "0.45" }),
+                  /* @__PURE__ */ jsx4("stop", { offset: "1", stopColor: color, stopOpacity: "0" })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxs4("g", { transform: `translate(0 ${GAP})`, children: [
+                GLOW_ON && /* @__PURE__ */ jsxs4("g", { className: "tunnel-glow", children: [
+                  /* @__PURE__ */ jsx4(
+                    "rect",
+                    {
+                      x: VX - 1400,
+                      y: BOTTOM_EDGE + 60,
+                      width: 2800,
+                      height: 60,
+                      fill: "url(#glow)"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx4(
+                    "rect",
+                    {
+                      x: VX - 1e3,
+                      y: BOTTOM_EDGE - 110,
+                      width: 2e3,
+                      height: 220,
+                      fill: "url(#glow)",
+                      opacity: "0.22"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxs4("g", { stroke: "url(#gridStroke)", strokeWidth: "0.8", mask: "url(#gridMask)", children: [
+                  RADIAL_X.map((x) => /* @__PURE__ */ jsx4("line", { x1: x, y1: RADIAL_Y0, x2: radialEnd(x), y2: H }, `rb-${x}`)),
+                  Array.from({ length: GRID_Y.length + 1 }).map((_, i) => /* @__PURE__ */ jsx4(
+                    "line",
+                    {
+                      ref: (el) => {
+                        hLines.current[i] = el;
+                      },
+                      x1: -480,
+                      x2: 2400,
+                      y1: GRID_Y[0],
+                      y2: GRID_Y[0],
+                      opacity: "0"
+                    },
+                    `hb-${i}`
+                  ))
+                ] }),
+                /* @__PURE__ */ jsxs4("g", { style: { mixBlendMode: "screen" }, children: [
+                  Array.from({ length: shapeCount }).map((_, k) => /* @__PURE__ */ jsx4(
+                    "polygon",
+                    {
+                      ref: (el) => {
+                        shapesBottom.current[k] = el;
+                      },
+                      points: toPoints(SHAPES[Math.floor(k / SHAPE_COPIES)], false),
+                      fill: "url(#slabBottom)",
+                      stroke: color,
+                      strokeWidth: "1.5",
+                      vectorEffect: "non-scaling-stroke",
+                      opacity: "0"
+                    },
+                    `sb-${k}`
+                  )),
+                  PARTICLES.map((d, i) => /* @__PURE__ */ jsx4(
+                    "circle",
+                    {
+                      ref: (el) => {
+                        dotsBottom.current[i] = el;
+                      },
+                      cx: d.x,
+                      cy: VY + d.dy,
+                      r: d.r,
+                      fill: d.color === "#FFFFFF" ? "#FFFFFF" : color,
+                      opacity: "0"
+                    },
+                    `pb-${i}`
+                  ))
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxs4("g", { transform: `translate(0 ${-GAP})`, children: [
+                GLOW_ON && /* @__PURE__ */ jsxs4("g", { className: "tunnel-glow", children: [
+                  /* @__PURE__ */ jsx4(
+                    "rect",
+                    {
+                      x: VX - 1400,
+                      y: TOP_EDGE - 130,
+                      width: 2800,
+                      height: 60,
+                      fill: "url(#glow)"
+                    }
+                  ),
+                  /* @__PURE__ */ jsx4(
+                    "rect",
+                    {
+                      x: VX - 1e3,
+                      y: TOP_EDGE - 110,
+                      width: 2e3,
+                      height: 220,
+                      fill: "url(#glow)",
+                      opacity: "0.22"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxs4("g", { style: { mixBlendMode: "screen" }, children: [
+                  Array.from({ length: shapeCount }).map((_, k) => /* @__PURE__ */ jsx4(
+                    "polygon",
+                    {
+                      ref: (el) => {
+                        shapesTop.current[k] = el;
+                      },
+                      points: toPoints(SHAPES[Math.floor(k / SHAPE_COPIES)], true),
+                      fill: "url(#slabTop)",
+                      stroke: color,
+                      strokeWidth: "1.5",
+                      vectorEffect: "non-scaling-stroke",
+                      opacity: "0"
+                    },
+                    `st-${k}`
+                  )),
+                  PARTICLES.map((d, i) => /* @__PURE__ */ jsx4(
+                    "circle",
+                    {
+                      ref: (el) => {
+                        dotsTop.current[i] = el;
+                      },
+                      cx: W - d.x,
+                      cy: VY - d.dy,
+                      r: d.r,
+                      fill: d.color === "#FFFFFF" ? "#FFFFFF" : color,
+                      opacity: "0"
+                    },
+                    `pt-${i}`
+                  ))
+                ] })
+              ] })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx4("div", { className: "relative z-10  flex h-full w-full items-center justify-center", children })
+      ]
+    }
   );
 }
 
 // src/components/ui/scrollsmoothprovider.jsx
-import React4, { useEffect as useEffect4, useRef as useRef4, useState as useState4 } from "react";
+import React5, { useEffect as useEffect4, useRef as useRef4, useState as useState4 } from "react";
 import Lenis from "lenis";
+import { Fragment as Fragment2, jsx as jsx5 } from "react/jsx-runtime";
 function SmoothScrollProvider({ children, pathname: propPathname }) {
   const lenisRef = useRef4(null);
   const [currentPath, setCurrentPath] = useState4(
@@ -1533,34 +1635,36 @@ function SmoothScrollProvider({ children, pathname: propPathname }) {
     }, 50);
     return () => clearTimeout(timeout);
   }, [activePath]);
-  return /* @__PURE__ */ React4.createElement(React4.Fragment, null, children);
+  return /* @__PURE__ */ jsx5(Fragment2, { children });
 }
 
 // src/components/ui/liquidGlassButton.jsx
-import React5 from "react";
+import React6 from "react";
+import { jsx as jsx6 } from "react/jsx-runtime";
 function LiquidGlassButton({
   children = "Liquid Glass Button",
   className = "",
   onClick,
   ...props
 }) {
-  return /* @__PURE__ */ React5.createElement(
+  return /* @__PURE__ */ jsx6(
     "button",
     {
       type: "button",
       onClick,
       className: `relative inline-flex items-center justify-center px-6 py-2.5 rounded-xl font-medium transition-all duration-300 ${className}`,
-      ...props
-    },
-    children
+      ...props,
+      children
+    }
   );
 }
 var liquidGlassButton = LiquidGlassButton;
 
 // src/components/ui/install-tabs.jsx
-import { useId as useId2, useState as useState5, useSyncExternalStore } from "react";
+import React7, { useId as useId2, useState as useState5, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Terminal, Package } from "lucide-react";
+import { Fragment as Fragment3, jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
 var managers = ["npm", "pnpm", "yarn", "bun"];
 var getCommand = (manager, packages = "adaptive-ui", component, mode = "cli", dev = false) => {
   if (mode === "cli" && component) {
@@ -1626,98 +1730,123 @@ function InstallTabs({
     } catch {
     }
   }
-  return /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ jsxs5(
     "div",
     {
-      className: `w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950/90 shadow-2xl backdrop-blur-md ${className}`
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-zinc-900/60 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { role: "tablist", "aria-label": "Package manager", className: "flex items-center gap-1" }, managers.map((option, index) => {
-      const isSelected = manager === option;
-      return /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key: option,
-          id: `${id}-${option}`,
-          role: "tab",
-          "aria-selected": isSelected,
-          "aria-controls": `${id}-panel`,
-          tabIndex: isSelected ? 0 : -1,
-          onClick: () => choose(option),
-          onKeyDown: (event) => onKey(event, index),
-          className: `relative flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 font-mono text-xs transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-emerald-400 ${isSelected ? "text-white font-semibold" : "text-zinc-400 hover:text-white"}`
-        },
-        isSelected && /* @__PURE__ */ React.createElement(
-          motion.span,
-          {
-            layoutId: `${id}-pill`,
-            "aria-hidden": true,
-            className: "absolute inset-0 rounded-lg border border-white/15 bg-white/10 shadow-sm",
-            transition: {
-              type: "spring",
-              stiffness: 400,
-              damping: 30
+      className: `w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950/90 shadow-2xl backdrop-blur-md ${className}`,
+      children: [
+        /* @__PURE__ */ jsxs5("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-zinc-900/60 px-3 py-2", children: [
+          /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx7("div", { role: "tablist", "aria-label": "Package manager", className: "flex items-center gap-1", children: managers.map((option, index) => {
+              const isSelected = manager === option;
+              return /* @__PURE__ */ jsxs5(
+                "button",
+                {
+                  id: `${id}-${option}`,
+                  role: "tab",
+                  "aria-selected": isSelected,
+                  "aria-controls": `${id}-panel`,
+                  tabIndex: isSelected ? 0 : -1,
+                  onClick: () => choose(option),
+                  onKeyDown: (event) => onKey(event, index),
+                  className: `relative flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 font-mono text-xs transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-emerald-400 ${isSelected ? "text-white font-semibold" : "text-zinc-400 hover:text-white"}`,
+                  children: [
+                    isSelected && /* @__PURE__ */ jsx7(
+                      motion.span,
+                      {
+                        layoutId: `${id}-pill`,
+                        "aria-hidden": true,
+                        className: "absolute inset-0 rounded-lg border border-white/15 bg-white/10 shadow-sm",
+                        transition: {
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 30
+                        }
+                      }
+                    ),
+                    /* @__PURE__ */ jsx7("span", { className: "relative z-10", children: option })
+                  ]
+                },
+                option
+              );
+            }) }),
+            component && /* @__PURE__ */ jsxs5("div", { className: "ml-2 hidden items-center rounded-lg border border-white/10 bg-black/40 p-0.5 sm:flex", children: [
+              /* @__PURE__ */ jsxs5(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setMode("cli"),
+                  className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "cli" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`,
+                  children: [
+                    /* @__PURE__ */ jsx7(Terminal, { className: "size-3" }),
+                    "CLI"
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs5(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setMode("package"),
+                  className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "package" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`,
+                  children: [
+                    /* @__PURE__ */ jsx7(Package, { className: "size-3" }),
+                    "NPM"
+                  ]
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx7(
+            "button",
+            {
+              type: "button",
+              onClick: copyCommand,
+              className: "flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-xs text-zinc-300 transition hover:bg-white/15 hover:text-white",
+              "aria-label": "Copy install command",
+              children: copied ? /* @__PURE__ */ jsxs5(Fragment3, { children: [
+                /* @__PURE__ */ jsx7(Check, { className: "size-3.5 text-emerald-400" }),
+                /* @__PURE__ */ jsx7("span", { className: "text-emerald-400 font-medium", children: "Copied!" })
+              ] }) : /* @__PURE__ */ jsx7(Fragment3, { children: /* @__PURE__ */ jsx7("span", { className: "text-zinc-400", children: "Copy" }) })
             }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs5(
+          "div",
+          {
+            id: `${id}-panel`,
+            role: "tabpanel",
+            "aria-labelledby": `${id}-${manager}`,
+            className: "relative overflow-hidden px-4 py-3.5 font-mono text-xs sm:text-sm bg-black/40",
+            children: [
+              /* @__PURE__ */ jsx7(AnimatePresence, { mode: "wait", initial: false, children: /* @__PURE__ */ jsxs5(
+                motion.div,
+                {
+                  initial: { opacity: 0, x: -28 },
+                  animate: { opacity: 1, x: 0 },
+                  exit: { opacity: 0, x: 28 },
+                  transition: { duration: 0.22, ease: "easeOut" },
+                  className: "flex items-center gap-2.5 whitespace-nowrap text-zinc-200",
+                  children: [
+                    /* @__PURE__ */ jsx7("span", { className: "select-none font-bold text-emerald-400", children: "$" }),
+                    /* @__PURE__ */ jsx7("span", { className: "tracking-wide", children: currentText })
+                  ]
+                },
+                `${manager}-${mode}`
+              ) }),
+              /* @__PURE__ */ jsx7("span", { role: "status", className: "sr-only", children: copied ? "Copied" : "" })
+            ]
           }
-        ),
-        /* @__PURE__ */ React.createElement("span", { className: "relative z-10" }, option)
-      );
-    })), component && /* @__PURE__ */ React.createElement("div", { className: "ml-2 hidden items-center rounded-lg border border-white/10 bg-black/40 p-0.5 sm:flex" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => setMode("cli"),
-        className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "cli" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`
-      },
-      /* @__PURE__ */ React.createElement(Terminal, { className: "size-3" }),
-      "CLI"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => setMode("package"),
-        className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "package" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`
-      },
-      /* @__PURE__ */ React.createElement(Package, { className: "size-3" }),
-      "NPM"
-    ))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: copyCommand,
-        className: "flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-xs text-zinc-300 transition hover:bg-white/15 hover:text-white",
-        "aria-label": "Copy install command"
-      },
-      copied ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Check, { className: "size-3.5 text-emerald-400" }), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-400 font-medium" }, "Copied!")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-zinc-400" }, "Copy"))
-    )),
-    /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        id: `${id}-panel`,
-        role: "tabpanel",
-        "aria-labelledby": `${id}-${manager}`,
-        className: "relative overflow-hidden px-4 py-3.5 font-mono text-xs sm:text-sm bg-black/40"
-      },
-      /* @__PURE__ */ React.createElement(AnimatePresence, { mode: "wait", initial: false }, /* @__PURE__ */ React.createElement(
-        motion.div,
-        {
-          key: `${manager}-${mode}`,
-          initial: { opacity: 0, x: -28 },
-          animate: { opacity: 1, x: 0 },
-          exit: { opacity: 0, x: 28 },
-          transition: { duration: 0.22, ease: "easeOut" },
-          className: "flex items-center gap-2.5 whitespace-nowrap text-zinc-200"
-        },
-        /* @__PURE__ */ React.createElement("span", { className: "select-none font-bold text-emerald-400" }, "$"),
-        /* @__PURE__ */ React.createElement("span", { className: "tracking-wide" }, currentText)
-      )),
-      /* @__PURE__ */ React.createElement("span", { role: "status", className: "sr-only" }, copied ? "Copied" : "")
-    )
+        )
+      ]
+    }
   );
 }
 
 // src/components/ui/props-table.jsx
-import React6, { useState as useState6 } from "react";
+import React8, { useState as useState6 } from "react";
 import { Search, Copy, Check as Check2, SlidersHorizontal } from "lucide-react";
+import { jsx as jsx8, jsxs as jsxs6 } from "react/jsx-runtime";
 function PropsTable({
   data = [],
   title = "Props Reference",
@@ -1752,51 +1881,84 @@ function PropsTable({
       console.warn("Clipboard copy failed:", e);
     }
   };
-  return /* @__PURE__ */ React6.createElement("div", { className: `space-y-4 w-full ${className}` }, /* @__PURE__ */ React6.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3" }, /* @__PURE__ */ React6.createElement("div", null, /* @__PURE__ */ React6.createElement("h3", { className: "text-xl md:text-2xl font-bold font-sans text-white flex items-center gap-2" }, /* @__PURE__ */ React6.createElement(SlidersHorizontal, { className: "w-5 h-5 text-lime-400" }), /* @__PURE__ */ React6.createElement("span", null, title)), description && /* @__PURE__ */ React6.createElement("p", { className: "mt-1 text-xs md:text-sm text-gray-400 font-sans" }, description)), /* @__PURE__ */ React6.createElement("div", { className: "relative w-full sm:w-64" }, /* @__PURE__ */ React6.createElement(Search, { className: "w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" }), /* @__PURE__ */ React6.createElement(
-    "input",
-    {
-      type: "text",
-      value: searchQuery,
-      onChange: (e) => setSearchQuery(e.target.value),
-      placeholder: "Search props, types...",
-      className: "w-full bg-zinc-900/80 border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/50 transition font-sans"
-    }
-  ), searchQuery && /* @__PURE__ */ React6.createElement(
-    "button",
-    {
-      onClick: () => setSearchQuery(""),
-      className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs font-mono"
-    },
-    "\xD7"
-  ))), /* @__PURE__ */ React6.createElement("div", { className: "rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shadow-xl" }, /* @__PURE__ */ React6.createElement("div", { className: "overflow-x-auto" }, /* @__PURE__ */ React6.createElement("table", { className: "w-full text-left text-xs font-sans" }, /* @__PURE__ */ React6.createElement("thead", { className: "bg-zinc-900/70 border-b border-white/10 font-mono text-zinc-400" }, /* @__PURE__ */ React6.createElement("tr", null, /* @__PURE__ */ React6.createElement("th", { className: "py-3 px-4 font-semibold w-1/4" }, "Prop"), /* @__PURE__ */ React6.createElement("th", { className: "py-3 px-4 font-semibold w-1/5" }, "Type"), /* @__PURE__ */ React6.createElement("th", { className: "py-3 px-4 font-semibold w-1/6" }, "Default"), /* @__PURE__ */ React6.createElement("th", { className: "py-3 px-4 font-semibold" }, "Description"))), /* @__PURE__ */ React6.createElement("tbody", { className: "divide-y divide-white/5 text-zinc-300" }, filteredData.length > 0 ? filteredData.map((item, idx) => /* @__PURE__ */ React6.createElement(
-    "tr",
-    {
-      key: item.prop || idx,
-      className: "hover:bg-white/[0.02] transition-colors group"
-    },
-    /* @__PURE__ */ React6.createElement("td", { className: "py-3.5 px-4 font-mono" }, /* @__PURE__ */ React6.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React6.createElement(
-      "button",
-      {
-        onClick: () => copyPropName(item.prop),
-        className: "font-semibold text-lime-400 hover:text-lime-300 transition flex items-center gap-1 cursor-pointer",
-        title: "Click to copy prop name"
-      },
-      /* @__PURE__ */ React6.createElement("span", null, item.prop),
-      copiedProp === item.prop ? /* @__PURE__ */ React6.createElement(Check2, { className: "w-3 h-3 text-emerald-400 shrink-0" }) : /* @__PURE__ */ React6.createElement(Copy, { className: "w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition shrink-0" })
-    ), item.required && /* @__PURE__ */ React6.createElement("span", { className: "text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-sans" }, "required"))),
-    /* @__PURE__ */ React6.createElement("td", { className: "py-3.5 px-4 font-mono text-[11px]" }, /* @__PURE__ */ React6.createElement("span", { className: "inline-block px-2 py-0.5 rounded-md bg-zinc-900 text-cyan-300 border border-white/5" }, item.type)),
-    /* @__PURE__ */ React6.createElement("td", { className: "py-3.5 px-4 font-mono text-[11px] text-zinc-400" }, item.default ? /* @__PURE__ */ React6.createElement("code", { className: "bg-zinc-900 px-1.5 py-0.5 rounded text-amber-300/90 border border-white/5" }, item.default) : /* @__PURE__ */ React6.createElement("span", { className: "text-zinc-600" }, "\u2014")),
-    /* @__PURE__ */ React6.createElement("td", { className: "py-3.5 px-4 text-gray-300 leading-relaxed font-sans" }, item.description)
-  )) : /* @__PURE__ */ React6.createElement("tr", null, /* @__PURE__ */ React6.createElement(
-    "td",
-    {
-      colSpan: 4,
-      className: "py-8 text-center text-zinc-500 font-mono text-xs"
-    },
-    'No matching props found for "',
-    searchQuery,
-    '".'
-  )))))));
+  return /* @__PURE__ */ jsxs6("div", { className: `space-y-4 w-full ${className}`, children: [
+    /* @__PURE__ */ jsxs6("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3", children: [
+      /* @__PURE__ */ jsxs6("div", { children: [
+        /* @__PURE__ */ jsxs6("h3", { className: "text-xl md:text-2xl font-bold font-sans text-white flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx8(SlidersHorizontal, { className: "w-5 h-5 text-lime-400" }),
+          /* @__PURE__ */ jsx8("span", { children: title })
+        ] }),
+        description && /* @__PURE__ */ jsx8("p", { className: "mt-1 text-xs md:text-sm text-gray-400 font-sans", children: description })
+      ] }),
+      /* @__PURE__ */ jsxs6("div", { className: "relative w-full sm:w-64", children: [
+        /* @__PURE__ */ jsx8(Search, { className: "w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" }),
+        /* @__PURE__ */ jsx8(
+          "input",
+          {
+            type: "text",
+            value: searchQuery,
+            onChange: (e) => setSearchQuery(e.target.value),
+            placeholder: "Search props, types...",
+            className: "w-full bg-zinc-900/80 border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/50 transition font-sans"
+          }
+        ),
+        searchQuery && /* @__PURE__ */ jsx8(
+          "button",
+          {
+            onClick: () => setSearchQuery(""),
+            className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white text-xs font-mono",
+            children: "\xD7"
+          }
+        )
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx8("div", { className: "rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shadow-xl", children: /* @__PURE__ */ jsx8("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs6("table", { className: "w-full text-left text-xs font-sans", children: [
+      /* @__PURE__ */ jsx8("thead", { className: "bg-zinc-900/70 border-b border-white/10 font-mono text-zinc-400", children: /* @__PURE__ */ jsxs6("tr", { children: [
+        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold w-1/4", children: "Prop" }),
+        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold w-1/5", children: "Type" }),
+        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold w-1/6", children: "Default" }),
+        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold", children: "Description" })
+      ] }) }),
+      /* @__PURE__ */ jsx8("tbody", { className: "divide-y divide-white/5 text-zinc-300", children: filteredData.length > 0 ? filteredData.map((item, idx) => /* @__PURE__ */ jsxs6(
+        "tr",
+        {
+          className: "hover:bg-white/[0.02] transition-colors group",
+          children: [
+            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 font-mono", children: /* @__PURE__ */ jsxs6("div", { className: "flex items-center gap-1.5", children: [
+              /* @__PURE__ */ jsxs6(
+                "button",
+                {
+                  onClick: () => copyPropName(item.prop),
+                  className: "font-semibold text-lime-400 hover:text-lime-300 transition flex items-center gap-1 cursor-pointer",
+                  title: "Click to copy prop name",
+                  children: [
+                    /* @__PURE__ */ jsx8("span", { children: item.prop }),
+                    copiedProp === item.prop ? /* @__PURE__ */ jsx8(Check2, { className: "w-3 h-3 text-emerald-400 shrink-0" }) : /* @__PURE__ */ jsx8(Copy, { className: "w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition shrink-0" })
+                  ]
+                }
+              ),
+              item.required && /* @__PURE__ */ jsx8("span", { className: "text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-sans", children: "required" })
+            ] }) }),
+            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 font-mono text-[11px]", children: /* @__PURE__ */ jsx8("span", { className: "inline-block px-2 py-0.5 rounded-md bg-zinc-900 text-cyan-300 border border-white/5", children: item.type }) }),
+            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 font-mono text-[11px] text-zinc-400", children: item.default ? /* @__PURE__ */ jsx8("code", { className: "bg-zinc-900 px-1.5 py-0.5 rounded text-amber-300/90 border border-white/5", children: item.default }) : /* @__PURE__ */ jsx8("span", { className: "text-zinc-600", children: "\u2014" }) }),
+            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 text-gray-300 leading-relaxed font-sans", children: item.description })
+          ]
+        },
+        item.prop || idx
+      )) : /* @__PURE__ */ jsx8("tr", { children: /* @__PURE__ */ jsxs6(
+        "td",
+        {
+          colSpan: 4,
+          className: "py-8 text-center text-zinc-500 font-mono text-xs",
+          children: [
+            'No matching props found for "',
+            searchQuery,
+            '".'
+          ]
+        }
+      ) }) })
+    ] }) }) })
+  ] });
 }
 export {
   BlobMorphHero,

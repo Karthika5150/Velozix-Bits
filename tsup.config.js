@@ -7,6 +7,9 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
+  esbuildOptions(options) {
+    options.jsx = "automatic";
+  },
   outExtension({ format }) {
     return {
       js: format === "esm" ? ".js" : ".cjs",
@@ -15,5 +18,5 @@ export default defineConfig({
   banner: {
     js: '"use client";',
   },
-  external: ["react", "react-dom", "next"],
+  external: ["react", "react-dom", "react/jsx-runtime", "next"],
 });
