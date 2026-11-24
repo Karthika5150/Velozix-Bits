@@ -28,6 +28,12 @@ export {
 } from "./components/ui/stacked-cards-scroll";
 
 export {
+  GooeyGridCursor,
+  GooeyGridCursor as LorenzoGridCursor,
+  GooeyGridCursor as GridCursorTrail,
+} from "./components/ui/lorenzo-grid-cursor";
+
+export {
   CurvedGridCanvas,
   CurvedGridCanvas as FullpageCurvedGrid,
 } from "./components/ui/curved-grid-canvas";

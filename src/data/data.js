@@ -21,15 +21,15 @@ export const SideNavData = [
         items: [
             {
                 id: 0,
-                name: 'Liquid Blob Hero',
-                href: '/installation/components/blob-banner',
-                badge: 'Popular',
+                name: 'Gooey Grid Cursor',
+                href: '/installation/components/lorenzo-grid-cursor',
+                badge: 'Trending',
             },
             {
                 id: 1,
-                name: '20×20 Snake Grid',
-                href: '/',
-                badge: 'New',
+                name: 'Liquid Blob Hero',
+                href: '/installation/components/blob-banner',
+                badge: 'Popular',
             },
             {
                 id: 2,

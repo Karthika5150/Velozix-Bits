@@ -18,7 +18,10 @@ import {
   MousePointer2,
   Grid,
 } from "lucide-react";
-import { CurvedGridCanvas } from "@/components/ui/curved-grid-canvas";
+import {
+  GooeyGridCursor,
+  LorenzoGridCursor,
+} from "@/components/ui/lorenzo-grid-cursor";
 import { StackedCardsScroll } from "@/components/ui/stacked-cards-scroll";
 import { CodeTypewriter } from "@/components/ui/code-typewriter";
 import { InstallTabs } from "@/components/ui/install-tabs";
@@ -44,12 +47,12 @@ export default function Home() {
 
   const showcaseComponents = [
     {
-      title: "Full-Page 50×50 Curved Grid",
-      category: "Canvas & Matrix",
-      badge: "Interactive",
+      title: "Gooey Grid Cursor",
+      category: "Cursor & Matrix",
+      badge: "Trending",
       description:
-        "Full-screen 50×50 square matrix where cursor hover and drag morphs squares and smoothly joins their center points with glowing bezier curves.",
-      href: "/installation",
+        "Fluid grid cursor trail with SVG gooey metaball filtering, dynamic color cycling, and zero-gap Supercover tracking.",
+      href: "/installation/components/lorenzo-grid-cursor",
     },
     {
       title: "Stacked Cards 3D",
@@ -78,9 +81,17 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-white selection:bg-purple-500/30 selection:text-purple-200 overflow-hidden font-mono pt-14">
-      {/* FULL-PAGE 50x50 INTERACTIVE CURVED GRID BACKGROUND */}
-      <CurvedGridCanvas cellSize={50} />
+    <div className="relative min-h-screen bg-[#030712] text-white selection:bg-purple-500/30 selection:text-purple-200 overflow-x-clip font-mono">
+      {/* GOOEY GRID CURSOR WITH DYNAMIC ACCENT COLORS */}
+      <GooeyGridCursor
+        color="auto"
+        cellSize={50}
+        borderRadius="20%"
+        trailDuration={220}
+        blurAmount={6.0}
+        blendMode="screen"
+        showGridLines={true}
+      />
 
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.22),rgba(126,34,206,0.06)_50%,transparent_100%)] blur-2xl" />
@@ -91,7 +102,7 @@ export default function Home() {
       <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-20 flex flex-col items-center text-center">
         {/* Release Announcement Pill */}
         <Link
-          href="/installation/components/stacked-cards"
+          href="/installation/components/lorenzo-grid-cursor"
           className="group relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-xl text-xs font-mono text-purple-200 hover:text-white transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_0_20px_rgba(168,85,247,0.15)] mb-8 cursor-pointer"
         >
           <span
@@ -100,7 +111,7 @@ export default function Home() {
           />
           <span>Velozix Bits v0.1.5 is Live</span>
           <span className="text-zinc-400 group-hover:text-purple-200 transition-colors">
-            • 50×50 Curved Grid + 3D Pinned Deck
+            • Gooey Grid Cursor + Pinned Scrollytelling Deck
           </span>
           <ArrowRight
             size={12}
@@ -128,7 +139,7 @@ export default function Home() {
         {/* Subtitle (IBM Plex Mono font) */}
         <p className="mt-6 font-mono text-xs sm:text-sm md:text-base text-purple-200/80 max-w-2xl leading-relaxed">
           A production collection of interactive React & Next.js animated components.
-          Move or drag your cursor across the full page to reveal the 50×50 reactive grid with organic curved center-point bridges.
+          Move your cursor across the screen to experience fluid gooey grid merges with dynamic theme colors.
         </p>
 
         {/* CTAs & Terminal Copy Pill */}
@@ -142,11 +153,11 @@ export default function Home() {
           </Link>
 
           <Link
-            href="/installation/components/stacked-cards"
+            href="/installation/components/lorenzo-grid-cursor"
             className="flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-xl text-white font-medium font-sans text-sm transition-all hover:border-purple-400/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] cursor-pointer"
           >
-            <Boxes size={16} style={{ color: "var(--brand-accent, #a855f7)" }} />
-            <span>3D Stacked Deck</span>
+            <Grid size={16} style={{ color: "var(--brand-accent, #a855f7)" }} />
+            <span>Gooey Grid Cursor</span>
           </Link>
 
           {/* Quick Copy Command */}
@@ -168,7 +179,7 @@ export default function Home() {
         {/* Interactive hint banner */}
         <div className="mt-12 inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-black/40 backdrop-blur-md text-xs font-mono text-zinc-400">
           <MousePointer2 size={13} style={{ color: "var(--brand-accent, #a855f7)" }} />
-          <span>Interactive Grid: Hover or drag anywhere to connect 50×50 square centers</span>
+          <span>Gooey Grid Cursor: Move across the screen to experience fluid gooey curved square merges</span>
         </div>
 
         {/* Metric Badges */}
@@ -210,29 +221,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3D STACKED CARDS DECK SPOTLIGHT (Pinned scroll mode & Single Word Display) */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-16">
-        <div className="flex flex-col items-center text-center mb-8">
+      {/* 3D STACKED CARDS DECK SPOTLIGHT (GSAP ScrollTrigger pin: true & Means & Methods Scroller) */}
+      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col items-center text-center mb-8 pt-16">
           <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-purple-300 bg-purple-500/15 px-3 py-1 rounded-full border border-purple-500/30 mb-3">
             <Sparkles size={13} />
-            <span>3D Card Deck Spotlight</span>
+            <span>GSAP Pinned Scrollytelling Deck</span>
           </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Top-Layered 3D Stack & Single Word Arc
+          <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+            Stacked Cards with Dynamic Topic Scroller
           </h2>
-          <p className="mt-2 font-mono text-xs sm:text-sm text-purple-200/80 max-w-lg">
-            Cards are layered from the top with odd/even alternating rotations.
-            Scroll your mouse wheel or click through to watch the single word transition along the right side of the ring.
+          <p className="mt-2 font-mono text-xs sm:text-sm text-purple-200/80 max-w-xl">
+            Scroll down the page to watch the deck pin in place (pin: true) as each 3D card rotates and the side topic list advances smoothly with glowing highlights.
           </p>
         </div>
 
-        {/* Live Instance of StackedCardsScroll */}
-        <div className="relative group rounded-3xl p-[1px] overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.25)]">
-          <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,rgba(168,85,247,0.95)_25%,rgba(216,180,254,0.85)_50%,transparent_75%)] opacity-40 group-hover:opacity-100 group-hover:animate-[spin_5s_linear_infinite] transition-opacity duration-500 pointer-events-none" />
-          <div className="relative rounded-[23px] overflow-hidden">
-            <StackedCardsScroll enableWheelScroll={true} />
-          </div>
-        </div>
+        {/* Live Pinned Instance of StackedCardsScroll */}
+        <StackedCardsScroll pin={true} pinHeight="320vh" />
       </section>
 
       {/* CODE TYPEWRITER & ARCHITECTURE SECTION */}
@@ -267,7 +272,7 @@ export default function Home() {
               {
                 icon: Zap,
                 title: "Hardware Accelerated 60FPS",
-                desc: "Intensive 50×50 grid canvas and topography algorithms execute directly in requestAnimationFrame GPU loops.",
+                desc: "Intensive DOM block pooling and topography algorithms execute directly with zero React re-render lag.",
               },
               {
                 icon: Layers,
@@ -379,7 +384,7 @@ export default function Home() {
               Ready to Build with Velozix Bits?
             </h2>
             <p className="mt-4 font-mono text-xs sm:text-sm text-purple-200/80 max-w-xl">
-              Install the package and start adding the full-page 50×50 curved grid, liquid heroes,
+              Install the package and start adding the Gooey grid cursor, liquid heroes,
               and 3D stacked cards to your project right now.
             </p>
 
@@ -416,10 +421,10 @@ export default function Home() {
             Frameworks
           </Link>
           <Link
-            href="/installation/components/stacked-cards"
+            href="/installation/components/lorenzo-grid-cursor"
             className="hover:text-white transition-colors"
           >
-            Stacked Cards 3D
+            Gooey Grid Cursor
           </Link>
         </div>
       </footer>

@@ -11,7 +11,7 @@ import React, { useEffect, useRef, useState } from "react";
  * - Dynamically syncs with active theme accent color (--brand-accent)
  */
 export function CurvedGridCanvas({
-  cellSize = 50,
+  cellSize = 60,
   accentColor: propAccentColor,
   fadeSpeed = 0.65, // energy decay per second
   className = "",
@@ -71,8 +71,16 @@ export function CurvedGridCanvas({
 
     // Pointer event listeners on window so dragging / hovering works everywhere
     const handlePointerMove = (e) => {
-      const mx = e.clientX;
-      const my = e.clientY;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      if (mx < 0 || my < 0 || mx > rect.width || my > rect.height) {
+        mouseRef.current.lastCol = -1;
+        mouseRef.current.lastRow = -1;
+        return;
+      }
+
       mouseRef.current.x = mx;
       mouseRef.current.y = my;
 

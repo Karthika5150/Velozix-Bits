@@ -2234,119 +2234,6 @@ var DEFAULT_STACKED_CARDS = [
     borderGlow: "rgba(168, 85, 247, 0.5)"
   }
 ];
-function HalfRingGauge({
-  currentIndex,
-  total = 10,
-  accentColor = "#a855f7"
-}) {
-  const radius = 80;
-  const cx = 100;
-  const cy = 100;
-  const arcLength = Math.PI * radius;
-  const progress = total > 1 ? currentIndex / (total - 1) : 0;
-  const strokeOffset = arcLength * (1 - progress);
-  const angle = Math.PI * (1 - progress);
-  const dotX = cx + radius * Math.cos(angle);
-  const dotY = cy - radius * Math.sin(angle);
-  return /* @__PURE__ */ jsxs5("div", { className: "relative flex items-center justify-center select-none", children: [
-    /* @__PURE__ */ jsxs5(
-      "svg",
-      {
-        viewBox: "0 0 200 120",
-        className: "w-48 sm:w-56 h-28 sm:h-32 overflow-visible drop-shadow-[0_0_20px_rgba(168,85,247,0.4)]",
-        children: [
-          /* @__PURE__ */ jsxs5("defs", { children: [
-            /* @__PURE__ */ jsxs5("linearGradient", { id: "purpleRingGrad", x1: "0%", y1: "0%", x2: "100%", y2: "0%", children: [
-              /* @__PURE__ */ jsx7("stop", { offset: "0%", stopColor: "#7e22ce" }),
-              /* @__PURE__ */ jsx7("stop", { offset: "50%", stopColor: "#a855f7" }),
-              /* @__PURE__ */ jsx7("stop", { offset: "100%", stopColor: "#e9d5ff" })
-            ] }),
-            /* @__PURE__ */ jsxs5("filter", { id: "purpleGlow", x: "-20%", y: "-20%", width: "140%", height: "140%", children: [
-              /* @__PURE__ */ jsx7("feGaussianBlur", { stdDeviation: "5", result: "blur" }),
-              /* @__PURE__ */ jsxs5("feMerge", { children: [
-                /* @__PURE__ */ jsx7("feMergeNode", { in: "blur" }),
-                /* @__PURE__ */ jsx7("feMergeNode", { in: "SourceGraphic" })
-              ] })
-            ] })
-          ] }),
-          Array.from({ length: 19 }).map((_, i) => {
-            const tAngle = Math.PI * (1 - i / 18);
-            const r1 = radius + 8;
-            const r2 = radius + (i % 2 === 0 ? 15 : 12);
-            const x1 = cx + r1 * Math.cos(tAngle);
-            const y1 = cy - r1 * Math.sin(tAngle);
-            const x2 = cx + r2 * Math.cos(tAngle);
-            const y2 = cy - r2 * Math.sin(tAngle);
-            const isPassed = i / 18 <= progress;
-            return /* @__PURE__ */ jsx7(
-              "line",
-              {
-                x1,
-                y1,
-                x2,
-                y2,
-                stroke: isPassed ? "#c084fc" : "#27272a",
-                strokeWidth: i % 2 === 0 ? 1.5 : 1,
-                strokeOpacity: isPassed ? 1 : 0.4,
-                className: "transition-colors duration-300"
-              },
-              i
-            );
-          }),
-          /* @__PURE__ */ jsx7(
-            "path",
-            {
-              d: "M 20 100 A 80 80 0 0 1 180 100",
-              fill: "none",
-              stroke: "#1e1830",
-              strokeWidth: "7",
-              strokeLinecap: "round"
-            }
-          ),
-          /* @__PURE__ */ jsx7(
-            "path",
-            {
-              d: "M 20 100 A 80 80 0 0 1 180 100",
-              fill: "none",
-              stroke: "url(#purpleRingGrad)",
-              strokeWidth: "7",
-              strokeLinecap: "round",
-              strokeDasharray: arcLength,
-              strokeDashoffset: strokeOffset,
-              filter: "url(#purpleGlow)",
-              className: "transition-all duration-500 ease-out"
-            }
-          ),
-          /* @__PURE__ */ jsx7(
-            "circle",
-            {
-              cx: dotX,
-              cy: dotY,
-              r: "6",
-              fill: "#ffffff",
-              className: "transition-all duration-500 ease-out drop-shadow-[0_0_10px_#c084fc]"
-            }
-          ),
-          /* @__PURE__ */ jsx7(
-            "circle",
-            {
-              cx: dotX,
-              cy: dotY,
-              r: "10",
-              fill: "#a855f7",
-              fillOpacity: "0.5",
-              className: "transition-all duration-500 ease-out animate-pulse"
-            }
-          )
-        ]
-      }
-    ),
-    /* @__PURE__ */ jsx7("div", { className: "absolute bottom-2 flex flex-col items-center", children: /* @__PURE__ */ jsxs5("span", { className: "font-mono text-xl sm:text-2xl font-black tracking-tight text-white", children: [
-      String(currentIndex + 1).padStart(2, "0"),
-      /* @__PURE__ */ jsx7("span", { className: "text-xs font-normal text-purple-300/60 ml-1", children: "/10" })
-    ] }) })
-  ] });
-}
 function StackedCardsScroll({
   cards = DEFAULT_STACKED_CARDS,
   initialIndex = 0,
@@ -2384,9 +2271,22 @@ function StackedCardsScroll({
       if (index >= 0 && index < totalCards) {
         setActiveIndex(index);
         if (onChange) onChange(index, cards[index]);
+        if (pin && pinTrackRef.current) {
+          const track = pinTrackRef.current;
+          const rect = track.getBoundingClientRect();
+          const scrollTop = window.scrollY || window.pageYOffset;
+          const trackTop = scrollTop + rect.top;
+          const windowHeight = window.innerHeight;
+          const totalDistance = track.offsetHeight - windowHeight;
+          if (totalDistance > 0) {
+            const startOffset = 96;
+            const targetScroll = trackTop - startOffset + index / (totalCards - 1) * totalDistance;
+            window.scrollTo({ top: targetScroll, behavior: "smooth" });
+          }
+        }
       }
     },
-    [totalCards, cards, onChange]
+    [totalCards, cards, onChange, pin]
   );
   const handleWheel = useCallback(
     (e) => {
@@ -2414,9 +2314,10 @@ function StackedCardsScroll({
         window.requestAnimationFrame(() => {
           const rect = track.getBoundingClientRect();
           const windowHeight = window.innerHeight;
+          const startOffset = 96;
           const totalDistance = rect.height - windowHeight;
           if (totalDistance > 0) {
-            const scrolled = -rect.top;
+            const scrolled = startOffset - rect.top;
             const progress = Math.min(Math.max(scrolled / totalDistance, 0), 1);
             const targetIndex = Math.min(
               Math.floor(progress * totalCards),
@@ -2582,34 +2483,132 @@ function StackedCardsScroll({
               card.id
             );
           }) }) }),
-          /* @__PURE__ */ jsx7("div", { className: "lg:col-span-6 flex items-center justify-center py-6", children: /* @__PURE__ */ jsxs5("div", { className: "relative flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 p-6 sm:p-8 rounded-3xl border border-purple-500/20 bg-purple-950/20 backdrop-blur-xl w-full max-w-lg shadow-[0_0_40px_rgba(168,85,247,0.1)]", children: [
-            /* @__PURE__ */ jsx7("div", { className: "shrink-0", children: /* @__PURE__ */ jsx7(
-              HalfRingGauge,
-              {
-                currentIndex: activeIndex,
-                total: totalCards,
-                accentColor: "#a855f7"
-              }
-            ) }),
-            /* @__PURE__ */ jsxs5("div", { className: "flex flex-col items-center sm:items-start text-center sm:text-left justify-center min-w-[180px]", children: [
-              /* @__PURE__ */ jsxs5("span", { className: "text-[11px] font-mono tracking-widest uppercase text-purple-400/80 font-semibold", children: [
-                "STAGE ",
-                currentCard.number
+          /* @__PURE__ */ jsxs5("div", { className: "lg:col-span-6 flex flex-col justify-center py-4 px-2 sm:px-6", children: [
+            /* @__PURE__ */ jsxs5("div", { className: "flex items-center justify-between pb-4 border-b border-purple-500/20 mb-4", children: [
+              /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-3", children: [
+                /* @__PURE__ */ jsxs5("span", { className: "text-xs font-mono font-bold tracking-widest uppercase text-purple-400", children: [
+                  "STAGE ",
+                  currentCard.number,
+                  " / ",
+                  String(totalCards).padStart(2, "0")
+                ] }),
+                /* @__PURE__ */ jsx7("span", { className: "text-zinc-600", children: "\u2022" }),
+                /* @__PURE__ */ jsx7("span", { className: "text-[11px] font-mono uppercase tracking-wider text-purple-300/80 font-semibold truncate max-w-[150px] sm:max-w-[200px]", children: currentCard.tag })
               ] }),
-              /* @__PURE__ */ jsx7(
-                "h2",
-                {
-                  className: "font-sans text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white mt-1 animate-[fadeIn_0.35s_ease-out]",
-                  style: {
-                    textShadow: "0 0 30px rgba(168, 85, 247, 0.7), 0 0 60px rgba(168, 85, 247, 0.3)"
-                  },
-                  children: currentCard.oneWord
+              /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-1.5", children: [
+                /* @__PURE__ */ jsx7(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: handlePrev,
+                    "aria-label": "Previous topic",
+                    className: "size-7 rounded-lg border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 hover:text-white flex items-center justify-center transition-all cursor-pointer",
+                    children: /* @__PURE__ */ jsx7(ChevronLeft, { size: 14 })
+                  }
+                ),
+                /* @__PURE__ */ jsx7(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: handleNext,
+                    "aria-label": "Next topic",
+                    className: "size-7 rounded-lg border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 hover:text-white flex items-center justify-center transition-all cursor-pointer",
+                    children: /* @__PURE__ */ jsx7(ChevronRight, { size: 14 })
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ jsx7(
+              "div",
+              {
+                className: "relative h-[340px] sm:h-[380px] overflow-hidden select-none",
+                style: {
+                  maskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)"
                 },
-                currentCard.oneWord
-              ),
-              /* @__PURE__ */ jsx7("span", { className: "text-xs font-mono text-purple-300/70 mt-1", children: currentCard.subtitle })
+                children: /* @__PURE__ */ jsx7(
+                  "div",
+                  {
+                    className: "flex flex-col gap-4 sm:gap-5",
+                    style: {
+                      transform: `translateY(${-(activeIndex * 58) + 150}px)`,
+                      transition: "transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1)"
+                    },
+                    children: cards.map((cardItem, idx) => {
+                      const isActive = idx === activeIndex;
+                      const distance = Math.abs(idx - activeIndex);
+                      const opacity = isActive ? 1 : Math.max(0.18, 0.65 - distance * 0.18);
+                      const scale = isActive ? 1 : Math.max(0.88, 1 - distance * 0.035);
+                      return /* @__PURE__ */ jsxs5(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => handleSelect(idx),
+                          className: "group text-left flex items-start sm:items-center gap-3.5 sm:gap-4 py-1.5 px-2 rounded-xl transition-all duration-300 cursor-pointer focus:outline-none",
+                          style: {
+                            opacity,
+                            transform: `scale(${scale})`,
+                            transformOrigin: "left center"
+                          },
+                          children: [
+                            /* @__PURE__ */ jsx7("div", { className: "shrink-0 mt-2 sm:mt-0 flex items-center justify-center size-4", children: isActive ? /* @__PURE__ */ jsx7(
+                              "span",
+                              {
+                                className: "size-2.5 rounded-full animate-pulse transition-all duration-300 shadow-[0_0_14px_var(--brand-accent,#a855f7)]",
+                                style: {
+                                  backgroundColor: "var(--brand-accent, #a855f7)"
+                                }
+                              }
+                            ) : /* @__PURE__ */ jsx7("span", { className: "size-1.5 rounded-full bg-zinc-600 group-hover:bg-purple-400 group-hover:scale-125 transition-all" }) }),
+                            /* @__PURE__ */ jsxs5("div", { className: "flex flex-col", children: [
+                              /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-3", children: [
+                                /* @__PURE__ */ jsx7(
+                                  "span",
+                                  {
+                                    className: `font-sans tracking-tight transition-all duration-300 ${isActive ? "text-2xl sm:text-3xl md:text-4xl font-extrabold text-white" : "text-lg sm:text-xl font-medium text-zinc-400 group-hover:text-purple-200"}`,
+                                    style: isActive ? {
+                                      textShadow: "0 0 25px rgba(168, 85, 247, 0.45)"
+                                    } : void 0,
+                                    children: cardItem.title
+                                  }
+                                ),
+                                isActive && /* @__PURE__ */ jsx7(
+                                  "span",
+                                  {
+                                    className: "font-mono text-[10px] tracking-widest uppercase font-bold px-2 py-0.5 rounded-full border bg-purple-950/80 border-purple-400/50 text-purple-200 animate-[fadeIn_0.3s_ease-out]",
+                                    style: {
+                                      boxShadow: "0 0 12px rgba(168, 85, 247, 0.35)"
+                                    },
+                                    children: cardItem.oneWord
+                                  }
+                                )
+                              ] }),
+                              isActive && /* @__PURE__ */ jsxs5("span", { className: "font-mono text-xs sm:text-sm text-purple-300/80 mt-1 animate-[fadeIn_0.35s_ease-out]", children: [
+                                cardItem.subtitle,
+                                " \u2022 ",
+                                cardItem.tag
+                              ] })
+                            ] })
+                          ]
+                        },
+                        cardItem.id || idx
+                      );
+                    })
+                  }
+                )
+              }
+            ),
+            /* @__PURE__ */ jsxs5("div", { className: "pt-4 border-t border-purple-500/20 mt-4 flex items-center justify-between text-xs font-mono text-purple-300/70", children: [
+              /* @__PURE__ */ jsxs5("span", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx7("span", { className: "size-2 rounded-full bg-purple-400 animate-ping" }),
+                /* @__PURE__ */ jsx7("span", { children: "Means & Methods Active Scrollytelling" })
+              ] }),
+              /* @__PURE__ */ jsxs5("span", { className: "font-bold text-white", children: [
+                Math.round((activeIndex + 1) / totalCards * 100),
+                "% Complete"
+              ] })
             ] })
-          ] }) })
+          ] })
         ] })
       ]
     }
@@ -2621,34 +2620,286 @@ function StackedCardsScroll({
         ref: pinTrackRef,
         style: { minHeight: pinHeight },
         className: "relative w-full",
-        children: /* @__PURE__ */ jsx7("div", { className: "sticky top-20 w-full z-20", children: deckNode })
+        children: /* @__PURE__ */ jsx7("div", { className: "sticky top-24 w-full z-20", children: deckNode })
       }
     );
   }
   return deckNode;
 }
 
-// src/components/ui/curved-grid-canvas.jsx
-import React8, { useEffect as useEffect6, useRef as useRef6, useState as useState6 } from "react";
-import { jsx as jsx8 } from "react/jsx-runtime";
-function CurvedGridCanvas({
+// src/components/ui/lorenzo-grid-cursor.jsx
+import React8, { useEffect as useEffect6, useRef as useRef6, useId as useId2, useState as useState6 } from "react";
+import { jsx as jsx8, jsxs as jsxs6 } from "react/jsx-runtime";
+function GooeyGridCursor({
+  color = "auto",
+  // "auto" uses var(--brand-accent), or custom hex/rgb
+  gridSize = 28,
+  // balanced ~50px squares
   cellSize = 50,
+  // default exact 50px x 50px square
+  borderRadius = "20%",
+  // clean squircle curvature
+  trailDuration = 240,
+  // fluid, responsive trail duration (ms)
+  speed = 1,
+  // speed multiplier
+  blurAmount = 7,
+  // liquid gooey merge strength
+  blendMode = "screen",
+  // vibrant neon luminosity on dark backgrounds
+  showGridLines = true,
+  // subtle background grid mesh
+  gridLineColor = "rgba(255, 255, 255, 0.035)",
+  zIndex = 30,
+  className = ""
+}) {
+  const containerRef = useRef6(null);
+  const cursorInnerRef = useRef6(null);
+  const rawId = useId2();
+  const filterId = `lorenzo-gooey-${rawId.replace(/:/g, "")}`;
+  const lastPosRef = useRef6({ bx: -1, by: -1 });
+  const activeCellsRef = useRef6(/* @__PURE__ */ new Map());
+  const [computedCellSize, setComputedCellSize] = useState6(cellSize || 50);
+  useEffect6(() => {
+    const updateSize = () => {
+      if (cellSize) {
+        setComputedCellSize(cellSize);
+      } else {
+        const container = containerRef.current;
+        const width = container ? container.clientWidth : window.innerWidth;
+        const size = Math.floor(width / Math.max(gridSize, 1));
+        setComputedCellSize(Math.max(size, 24));
+      }
+    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, [cellSize, gridSize]);
+  useEffect6(() => {
+    const inner = cursorInnerRef.current;
+    const container = containerRef.current;
+    if (!inner || !container) return;
+    const actualDuration = Math.max(100, Math.round(trailDuration / speed));
+    const fadeDuration = Math.round(actualDuration * 1);
+    const getActiveColor = () => {
+      if (color === "auto") {
+        if (typeof window !== "undefined") {
+          const style = getComputedStyle(document.documentElement);
+          const brand = style.getPropertyValue("--brand-accent").trim();
+          if (brand) return brand;
+        }
+        return "#a855f7";
+      }
+      return color;
+    };
+    const appendCursorBlock = (bx, by) => {
+      if (bx < 0 || by < 0) return;
+      const cellKey = `${bx},${by}`;
+      const now = performance.now();
+      const lastSpawned = activeCellsRef.current.get(cellKey);
+      if (lastSpawned && now - lastSpawned < 30) {
+        return;
+      }
+      activeCellsRef.current.set(cellKey, now);
+      const size = computedCellSize;
+      const bleed = 4;
+      const blockSize = size + bleed;
+      const block = document.createElement("div");
+      block.className = "lorenzo-cursor-block";
+      const fillBg = getActiveColor();
+      const radiusValue = typeof borderRadius === "number" ? `${borderRadius}px` : borderRadius;
+      block.style.position = "absolute";
+      block.style.left = `${bx * size - bleed / 2}px`;
+      block.style.top = `${by * size - bleed / 2}px`;
+      block.style.width = `${blockSize}px`;
+      block.style.height = `${blockSize}px`;
+      block.style.backgroundColor = fillBg;
+      block.style.borderRadius = radiusValue;
+      block.style.pointerEvents = "none";
+      block.style.boxShadow = `0 0 16px ${fillBg}45`;
+      block.style.opacity = "1";
+      block.style.willChange = "opacity";
+      block.style.transition = `opacity ${fadeDuration}ms ease-out`;
+      inner.appendChild(block);
+      const fadeTimer = setTimeout(() => {
+        block.style.opacity = "0";
+        const removeTimer = setTimeout(() => {
+          if (block.parentNode === inner) {
+            inner.removeChild(block);
+          }
+          activeCellsRef.current.delete(cellKey);
+        }, fadeDuration);
+        block._removeTimer = removeTimer;
+      }, actualDuration);
+      block._fadeTimer = fadeTimer;
+    };
+    const fillConnectedPath = (x0, y0, x1, y1) => {
+      const dx = Math.abs(x1 - x0);
+      const dy = Math.abs(y1 - y0);
+      const sx = x0 < x1 ? 1 : -1;
+      const sy = y0 < y1 ? 1 : -1;
+      let currX = x0;
+      let currY = y0;
+      let err = dx - dy;
+      const maxSteps = Math.min(dx + dy + 2, 16);
+      let steps = 0;
+      while ((currX !== x1 || currY !== y1) && steps < maxSteps) {
+        steps++;
+        const e2 = 2 * err;
+        if (e2 > -dy && e2 < dx) {
+          if (dx >= dy) {
+            currX += sx;
+            appendCursorBlock(currX, currY);
+            currY += sy;
+            appendCursorBlock(currX, currY);
+          } else {
+            currY += sy;
+            appendCursorBlock(currX, currY);
+            currX += sx;
+            appendCursorBlock(currX, currY);
+          }
+          err += dx - dy;
+        } else {
+          if (e2 > -dy) {
+            err -= dy;
+            currX += sx;
+          }
+          if (e2 < dx) {
+            err += dx;
+            currY += sy;
+          }
+          appendCursorBlock(currX, currY);
+        }
+      }
+    };
+    const handleMouseMove = (e) => {
+      const rect = container.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      if (mx < 0 || my < 0 || mx > rect.width || my > rect.height) {
+        lastPosRef.current.bx = -1;
+        lastPosRef.current.by = -1;
+        return;
+      }
+      const bx = Math.floor(mx / computedCellSize);
+      const by = Math.floor(my / computedCellSize);
+      const last = lastPosRef.current;
+      if (last.bx === -1 || last.by === -1) {
+        appendCursorBlock(bx, by);
+      } else if (last.bx !== bx || last.by !== by) {
+        fillConnectedPath(last.bx, last.by, bx, by);
+      }
+      lastPosRef.current.bx = bx;
+      lastPosRef.current.by = by;
+    };
+    const handleMouseLeave = () => {
+      lastPosRef.current.bx = -1;
+      lastPosRef.current.by = -1;
+    };
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mouseleave", handleMouseLeave, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      if (inner) {
+        while (inner.firstChild) {
+          const child = inner.firstChild;
+          if (child._fadeTimer) clearTimeout(child._fadeTimer);
+          if (child._removeTimer) clearTimeout(child._removeTimer);
+          inner.removeChild(child);
+        }
+      }
+      activeCellsRef.current.clear();
+    };
+  }, [computedCellSize, color, borderRadius, trailDuration, speed]);
+  return /* @__PURE__ */ jsxs6(
+    "div",
+    {
+      ref: containerRef,
+      className: `fixed inset-0 pointer-events-none select-none overflow-hidden ${className}`,
+      style: {
+        zIndex,
+        mixBlendMode: blendMode
+      },
+      "aria-hidden": "true",
+      children: [
+        showGridLines && /* @__PURE__ */ jsx8(
+          "div",
+          {
+            className: "absolute inset-0 pointer-events-none transition-opacity duration-500",
+            style: {
+              backgroundImage: `
+              linear-gradient(to right, ${gridLineColor} 1px, transparent 1px),
+              linear-gradient(to bottom, ${gridLineColor} 1px, transparent 1px)
+            `,
+              backgroundSize: `${computedCellSize}px ${computedCellSize}px`
+            }
+          }
+        ),
+        /* @__PURE__ */ jsx8(
+          "svg",
+          {
+            className: "fixed top-0 left-0 w-0 h-0 pointer-events-none opacity-0 overflow-hidden",
+            "aria-hidden": "true",
+            children: /* @__PURE__ */ jsx8("defs", { children: /* @__PURE__ */ jsxs6("filter", { id: filterId, x: "-20%", y: "-20%", width: "140%", height: "140%", children: [
+              /* @__PURE__ */ jsx8(
+                "feGaussianBlur",
+                {
+                  in: "SourceGraphic",
+                  stdDeviation: blurAmount,
+                  result: "blur"
+                }
+              ),
+              /* @__PURE__ */ jsx8(
+                "feColorMatrix",
+                {
+                  in: "blur",
+                  mode: "matrix",
+                  values: "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9",
+                  result: "gooeyFilter"
+                }
+              ),
+              /* @__PURE__ */ jsx8("feComposite", { in: "SourceGraphic", in2: "gooeyFilter", operator: "atop" })
+            ] }) })
+          }
+        ),
+        /* @__PURE__ */ jsx8(
+          "div",
+          {
+            ref: cursorInnerRef,
+            className: "w-full h-full relative",
+            style: {
+              filter: `url(#${filterId})`,
+              WebkitFilter: `url(#${filterId})`
+            }
+          }
+        )
+      ]
+    }
+  );
+}
+
+// src/components/ui/curved-grid-canvas.jsx
+import React9, { useEffect as useEffect7, useRef as useRef7, useState as useState7 } from "react";
+import { jsx as jsx9 } from "react/jsx-runtime";
+function CurvedGridCanvas({
+  cellSize = 60,
   accentColor: propAccentColor,
   fadeSpeed = 0.65,
   // energy decay per second
   className = ""
 }) {
-  const canvasRef = useRef6(null);
-  const activeSquaresRef = useRef6(/* @__PURE__ */ new Map());
-  const trailRef = useRef6([]);
-  const mouseRef = useRef6({
+  const canvasRef = useRef7(null);
+  const activeSquaresRef = useRef7(/* @__PURE__ */ new Map());
+  const trailRef = useRef7([]);
+  const mouseRef = useRef7({
     x: -9999,
     y: -9999,
     isDown: false,
     lastCol: -1,
     lastRow: -1
   });
-  useEffect6(() => {
+  useEffect7(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -2684,8 +2935,14 @@ function CurvedGridCanvas({
     handleResize();
     window.addEventListener("resize", handleResize);
     const handlePointerMove = (e) => {
-      const mx = e.clientX;
-      const my = e.clientY;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      if (mx < 0 || my < 0 || mx > rect.width || my > rect.height) {
+        mouseRef.current.lastCol = -1;
+        mouseRef.current.lastRow = -1;
+        return;
+      }
       mouseRef.current.x = mx;
       mouseRef.current.y = my;
       const col = Math.floor(mx / cellSize);
@@ -2869,7 +3126,7 @@ function CurvedGridCanvas({
       window.removeEventListener("pointerup", handlePointerUp);
     };
   }, [cellSize, propAccentColor, fadeSpeed]);
-  return /* @__PURE__ */ jsx8(
+  return /* @__PURE__ */ jsx9(
     "canvas",
     {
       ref: canvasRef,
@@ -2882,9 +3139,9 @@ function CurvedGridCanvas({
 }
 
 // src/components/layout/theme-customizer.jsx
-import React9, { useState as useState7, useEffect as useEffect7, useCallback as useCallback2 } from "react";
+import React10, { useState as useState8, useEffect as useEffect8, useCallback as useCallback2 } from "react";
 import { Palette, Check } from "lucide-react";
-import { jsx as jsx9, jsxs as jsxs6 } from "react/jsx-runtime";
+import { jsx as jsx10, jsxs as jsxs7 } from "react/jsx-runtime";
 var ACCENT_PRESETS = [
   {
     id: "violet",
@@ -2952,7 +3209,7 @@ function applyAccent(accentId, persist = true) {
   }
 }
 function useAutoCycleAccent(enabled = true, intervalMs = 3600) {
-  useEffect7(() => {
+  useEffect8(() => {
     if (!enabled) return;
     let currentIndex = 0;
     const interval = setInterval(() => {
@@ -2964,8 +3221,8 @@ function useAutoCycleAccent(enabled = true, intervalMs = 3600) {
   }, [enabled, intervalMs]);
 }
 function ThemeCustomizer({ className = "", compact = false }) {
-  const [selectedAccent, setSelectedAccent] = useState7("violet");
-  useEffect7(() => {
+  const [selectedAccent, setSelectedAccent] = useState8("violet");
+  useEffect8(() => {
     const saved = localStorage.getItem("velozix-accent");
     if (saved && ACCENT_PRESETS.some((p) => p.id === saved)) {
       applyAccent(saved, false);
@@ -2978,10 +3235,10 @@ function ThemeCustomizer({ className = "", compact = false }) {
     setSelectedAccent(id);
     applyAccent(id, true);
   };
-  return /* @__PURE__ */ jsxs6("div", { className: `flex flex-col gap-2 ${className}`, children: [
-    /* @__PURE__ */ jsx9("div", { className: "flex items-center gap-1.5 p-1.5 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md", children: ACCENT_PRESETS.map((preset) => {
+  return /* @__PURE__ */ jsxs7("div", { className: `flex flex-col gap-2 ${className}`, children: [
+    /* @__PURE__ */ jsx10("div", { className: "flex items-center gap-1.5 p-1.5 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md", children: ACCENT_PRESETS.map((preset) => {
       const isSelected = selectedAccent === preset.id;
-      return /* @__PURE__ */ jsx9(
+      return /* @__PURE__ */ jsx10(
         "button",
         {
           type: "button",
@@ -2989,12 +3246,12 @@ function ThemeCustomizer({ className = "", compact = false }) {
           style: { backgroundColor: preset.color },
           title: `Switch accent to ${preset.name}`,
           className: `size-5 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center ${isSelected ? "ring-2 ring-white scale-110 shadow-[0_0_12px_var(--brand-accent)]" : "opacity-60 hover:opacity-100 hover:scale-105"}`,
-          children: isSelected && /* @__PURE__ */ jsx9(Check, { size: 11, className: "text-white drop-shadow stroke-[3]" })
+          children: isSelected && /* @__PURE__ */ jsx10(Check, { size: 11, className: "text-white drop-shadow stroke-[3]" })
         },
         preset.id
       );
     }) }),
-    !compact && /* @__PURE__ */ jsxs6("span", { className: "text-[10px] font-mono text-zinc-400 capitalize", children: [
+    !compact && /* @__PURE__ */ jsxs7("span", { className: "text-[10px] font-mono text-zinc-400 capitalize", children: [
       "Active: ",
       selectedAccent
     ] })
@@ -3002,9 +3259,9 @@ function ThemeCustomizer({ className = "", compact = false }) {
 }
 
 // src/components/ui/interactive-snake-grid.jsx
-import React10, { useState as useState8, useEffect as useEffect8, useRef as useRef7, useCallback as useCallback3 } from "react";
+import React11, { useState as useState9, useEffect as useEffect9, useRef as useRef8, useCallback as useCallback3 } from "react";
 import { Sparkles as Sparkles2, Gamepad2, RotateCcw } from "lucide-react";
-import { jsx as jsx10, jsxs as jsxs7 } from "react/jsx-runtime";
+import { jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
 var GRID_COLS = 20;
 var GRID_ROWS = 20;
 var MAX_TRAIL_LENGTH = 16;
@@ -3013,12 +3270,12 @@ function InteractiveSnakeGrid({
   className = "",
   showControls = true
 }) {
-  const [trail, setTrail] = useState8([]);
-  const [food, setFood] = useState8({ x: 14, y: 8 });
-  const [score, setScore] = useState8(0);
-  const [isHovered, setIsHovered] = useState8(false);
-  const decayTimerRef = useRef7(null);
-  const autoSnakeRef = useRef7({
+  const [trail, setTrail] = useState9([]);
+  const [food, setFood] = useState9({ x: 14, y: 8 });
+  const [score, setScore] = useState9(0);
+  const [isHovered, setIsHovered] = useState9(false);
+  const decayTimerRef = useRef8(null);
+  const autoSnakeRef = useRef8({
     x: 5,
     y: 10,
     dx: 1,
@@ -3055,7 +3312,7 @@ function InteractiveSnakeGrid({
     },
     [food, spawnFood]
   );
-  useEffect8(() => {
+  useEffect9(() => {
     decayTimerRef.current = setInterval(() => {
       setTrail((prev) => {
         if (prev.length === 0) return prev;
@@ -3064,7 +3321,7 @@ function InteractiveSnakeGrid({
     }, 75);
     return () => clearInterval(decayTimerRef.current);
   }, []);
-  useEffect8(() => {
+  useEffect9(() => {
     if (isHovered) return;
     const interval = setInterval(() => {
       const snake = autoSnakeRef.current;
@@ -3100,7 +3357,7 @@ function InteractiveSnakeGrid({
     }, 180);
     return () => clearInterval(interval);
   }, [isHovered, food, spawnFood]);
-  const trailMap = React10.useMemo(() => {
+  const trailMap = React11.useMemo(() => {
     const map = /* @__PURE__ */ new Map();
     trail.forEach((pos, idx) => {
       const key = `${pos.x}-${pos.y}`;
@@ -3114,14 +3371,14 @@ function InteractiveSnakeGrid({
     });
     return map;
   }, [trail]);
-  return /* @__PURE__ */ jsxs7(
+  return /* @__PURE__ */ jsxs8(
     "div",
     {
       onMouseEnter: () => setIsHovered(true),
       onMouseLeave: () => setIsHovered(false),
       className: `relative flex flex-col items-center justify-center p-4 sm:p-6 rounded-2xl border border-white/10 bg-[#060913]/90 backdrop-blur-xl shadow-2xl select-none ${className}`,
       children: [
-        /* @__PURE__ */ jsx10(
+        /* @__PURE__ */ jsx11(
           "div",
           {
             className: "pointer-events-none absolute inset-0 rounded-2xl blur-3xl opacity-20 transition-all duration-500",
@@ -3130,21 +3387,21 @@ function InteractiveSnakeGrid({
             }
           }
         ),
-        showControls && /* @__PURE__ */ jsxs7("div", { className: "relative z-10 w-full flex items-center justify-between pb-3 mb-3 border-b border-white/8 text-xs font-mono", children: [
-          /* @__PURE__ */ jsxs7("div", { className: "flex items-center gap-2 text-white", children: [
-            /* @__PURE__ */ jsx10(Gamepad2, { size: 15, style: { color: accentColor } }),
-            /* @__PURE__ */ jsx10("span", { className: "font-semibold tracking-wide", children: "20\xD720 Interactive Snake Grid" })
+        showControls && /* @__PURE__ */ jsxs8("div", { className: "relative z-10 w-full flex items-center justify-between pb-3 mb-3 border-b border-white/8 text-xs font-mono", children: [
+          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-2 text-white", children: [
+            /* @__PURE__ */ jsx11(Gamepad2, { size: 15, style: { color: accentColor } }),
+            /* @__PURE__ */ jsx11("span", { className: "font-semibold tracking-wide", children: "20\xD720 Interactive Snake Grid" })
           ] }),
-          /* @__PURE__ */ jsxs7("div", { className: "flex items-center gap-4", children: [
-            /* @__PURE__ */ jsxs7("span", { className: "text-zinc-400", children: [
+          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-4", children: [
+            /* @__PURE__ */ jsxs8("span", { className: "text-zinc-400", children: [
               "Score:",
               " ",
-              /* @__PURE__ */ jsx10("strong", { className: "text-white font-mono", style: { color: accentColor }, children: score })
+              /* @__PURE__ */ jsx11("strong", { className: "text-white font-mono", style: { color: accentColor }, children: score })
             ] }),
-            /* @__PURE__ */ jsx10("span", { className: "text-[10px] text-zinc-500 uppercase px-2 py-0.5 rounded bg-white/5 border border-white/5", children: isHovered ? "Mouse Active" : "Auto Wandering" })
+            /* @__PURE__ */ jsx11("span", { className: "text-[10px] text-zinc-500 uppercase px-2 py-0.5 rounded bg-white/5 border border-white/5", children: isHovered ? "Mouse Active" : "Auto Wandering" })
           ] })
         ] }),
-        /* @__PURE__ */ jsx10(
+        /* @__PURE__ */ jsx11(
           "div",
           {
             style: {
@@ -3178,7 +3435,7 @@ function InteractiveSnakeGrid({
                 } else if (isFood) {
                   scale = 1.05;
                 }
-                return /* @__PURE__ */ jsx10(
+                return /* @__PURE__ */ jsx11(
                   "div",
                   {
                     onMouseEnter: () => handleCellHover(c, r),
@@ -3197,9 +3454,9 @@ function InteractiveSnakeGrid({
             )
           }
         ),
-        showControls && /* @__PURE__ */ jsxs7("div", { className: "relative z-10 mt-3 text-[11px] font-mono text-zinc-400 flex items-center justify-between w-full", children: [
-          /* @__PURE__ */ jsx10("span", { children: "Move mouse across squares to control the worm trail" }),
-          /* @__PURE__ */ jsxs7(
+        showControls && /* @__PURE__ */ jsxs8("div", { className: "relative z-10 mt-3 text-[11px] font-mono text-zinc-400 flex items-center justify-between w-full", children: [
+          /* @__PURE__ */ jsx11("span", { children: "Move mouse across squares to control the worm trail" }),
+          /* @__PURE__ */ jsxs8(
             "button",
             {
               type: "button",
@@ -3210,8 +3467,8 @@ function InteractiveSnakeGrid({
               },
               className: "flex items-center gap-1 text-zinc-400 hover:text-white transition-colors cursor-pointer",
               children: [
-                /* @__PURE__ */ jsx10(RotateCcw, { size: 11 }),
-                /* @__PURE__ */ jsx10("span", { children: "Reset" })
+                /* @__PURE__ */ jsx11(RotateCcw, { size: 11 }),
+                /* @__PURE__ */ jsx11("span", { children: "Reset" })
               ]
             }
           )
@@ -3222,9 +3479,9 @@ function InteractiveSnakeGrid({
 }
 
 // src/components/ui/code-typewriter.jsx
-import React11, { useState as useState9, useEffect as useEffect9 } from "react";
+import React12, { useState as useState10, useEffect as useEffect10 } from "react";
 import { Check as Check2, Copy, Terminal, Play, Pause, RotateCcw as RotateCcw2 } from "lucide-react";
-import { Fragment as Fragment3, jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
+import { Fragment as Fragment3, jsx as jsx12, jsxs as jsxs9 } from "react/jsx-runtime";
 var CODE_SNIPPETS = [
   {
     fileName: "page.jsx",
@@ -3286,18 +3543,18 @@ var CODE_SNIPPETS = [
   }
 ];
 function CodeTypewriter({ className = "" }) {
-  const [activeTab, setActiveTab] = useState9(0);
-  const [displayedLineCount, setDisplayedLineCount] = useState9(0);
-  const [displayedCharCount, setDisplayedCharCount] = useState9(0);
-  const [isTypingPaused, setIsTypingPaused] = useState9(false);
-  const [copied, setCopied] = useState9(false);
+  const [activeTab, setActiveTab] = useState10(0);
+  const [displayedLineCount, setDisplayedLineCount] = useState10(0);
+  const [displayedCharCount, setDisplayedCharCount] = useState10(0);
+  const [isTypingPaused, setIsTypingPaused] = useState10(false);
+  const [copied, setCopied] = useState10(false);
   const snippet = CODE_SNIPPETS[activeTab];
   const fullText = snippet.lines.join("\n");
-  useEffect9(() => {
+  useEffect10(() => {
     setDisplayedLineCount(0);
     setDisplayedCharCount(0);
   }, [activeTab]);
-  useEffect9(() => {
+  useEffect10(() => {
     if (isTypingPaused) return;
     const currentLine = snippet.lines[displayedLineCount] || "";
     if (displayedCharCount < currentLine.length) {
@@ -3334,18 +3591,18 @@ function CodeTypewriter({ className = "" }) {
     setDisplayedLineCount(0);
     setDisplayedCharCount(0);
   };
-  return /* @__PURE__ */ jsxs8(
+  return /* @__PURE__ */ jsxs9(
     "div",
     {
       className: `relative rounded-2xl border border-white/10 bg-[#070b14]/95 shadow-2xl backdrop-blur-xl overflow-hidden font-mono text-xs select-none ${className}`,
       children: [
-        /* @__PURE__ */ jsxs8("div", { className: "flex items-center justify-between px-4 py-3 border-b border-white/8 bg-black/40", children: [
-          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx11("div", { className: "size-3 rounded-full bg-rose-500/80 border border-rose-600/40" }),
-            /* @__PURE__ */ jsx11("div", { className: "size-3 rounded-full bg-amber-500/80 border border-amber-600/40" }),
-            /* @__PURE__ */ jsx11("div", { className: "size-3 rounded-full bg-emerald-500/80 border border-emerald-600/40" })
+        /* @__PURE__ */ jsxs9("div", { className: "flex items-center justify-between px-4 py-3 border-b border-white/8 bg-black/40", children: [
+          /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx12("div", { className: "size-3 rounded-full bg-rose-500/80 border border-rose-600/40" }),
+            /* @__PURE__ */ jsx12("div", { className: "size-3 rounded-full bg-amber-500/80 border border-amber-600/40" }),
+            /* @__PURE__ */ jsx12("div", { className: "size-3 rounded-full bg-emerald-500/80 border border-emerald-600/40" })
           ] }),
-          /* @__PURE__ */ jsx11("div", { className: "flex items-center gap-1", children: CODE_SNIPPETS.map((item, idx) => /* @__PURE__ */ jsx11(
+          /* @__PURE__ */ jsx12("div", { className: "flex items-center gap-1", children: CODE_SNIPPETS.map((item, idx) => /* @__PURE__ */ jsx12(
             "button",
             {
               type: "button",
@@ -3355,57 +3612,57 @@ function CodeTypewriter({ className = "" }) {
             },
             item.fileName
           )) }),
-          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx11(
+          /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx12(
               "button",
               {
                 type: "button",
                 onClick: () => setIsTypingPaused((p) => !p),
                 className: "p-1 rounded text-zinc-400 hover:text-white transition-colors cursor-pointer",
                 title: isTypingPaused ? "Resume typing" : "Pause typing",
-                children: isTypingPaused ? /* @__PURE__ */ jsx11(Play, { size: 12 }) : /* @__PURE__ */ jsx11(Pause, { size: 12 })
+                children: isTypingPaused ? /* @__PURE__ */ jsx12(Play, { size: 12 }) : /* @__PURE__ */ jsx12(Pause, { size: 12 })
               }
             ),
-            /* @__PURE__ */ jsx11(
+            /* @__PURE__ */ jsx12(
               "button",
               {
                 type: "button",
                 onClick: handleRestart,
                 className: "p-1 rounded text-zinc-400 hover:text-white transition-colors cursor-pointer",
                 title: "Restart typing",
-                children: /* @__PURE__ */ jsx11(RotateCcw2, { size: 12 })
+                children: /* @__PURE__ */ jsx12(RotateCcw2, { size: 12 })
               }
             ),
-            /* @__PURE__ */ jsx11(
+            /* @__PURE__ */ jsx12(
               "button",
               {
                 type: "button",
                 onClick: handleCopy,
                 className: "p-1 rounded text-zinc-400 hover:text-white transition-colors cursor-pointer",
                 title: "Copy snippet",
-                children: copied ? /* @__PURE__ */ jsx11(Check2, { size: 12, className: "text-emerald-400" }) : /* @__PURE__ */ jsx11(Copy, { size: 12 })
+                children: copied ? /* @__PURE__ */ jsx12(Check2, { size: 12, className: "text-emerald-400" }) : /* @__PURE__ */ jsx12(Copy, { size: 12 })
               }
             )
           ] })
         ] }),
-        /* @__PURE__ */ jsx11("div", { className: "p-4 sm:p-6 overflow-x-auto min-h-[300px]", children: snippet.lines.map((line, lIdx) => {
+        /* @__PURE__ */ jsx12("div", { className: "p-4 sm:p-6 overflow-x-auto min-h-[300px]", children: snippet.lines.map((line, lIdx) => {
           if (lIdx > displayedLineCount) return null;
           const isCurrentTypingLine = lIdx === displayedLineCount;
           const textToRender = isCurrentTypingLine ? line.slice(0, displayedCharCount) : line;
-          return /* @__PURE__ */ jsxs8("div", { className: "flex leading-6", children: [
-            /* @__PURE__ */ jsx11("span", { className: "w-8 shrink-0 text-right pr-4 text-zinc-600 select-none", children: lIdx + 1 }),
-            /* @__PURE__ */ jsxs8("span", { className: "text-zinc-300 whitespace-pre", children: [
+          return /* @__PURE__ */ jsxs9("div", { className: "flex leading-6", children: [
+            /* @__PURE__ */ jsx12("span", { className: "w-8 shrink-0 text-right pr-4 text-zinc-600 select-none", children: lIdx + 1 }),
+            /* @__PURE__ */ jsxs9("span", { className: "text-zinc-300 whitespace-pre", children: [
               colorizeLine(textToRender),
-              isCurrentTypingLine && /* @__PURE__ */ jsx11("span", { className: "inline-block w-2 h-4 bg-emerald-400 ml-0.5 align-middle animate-pulse" })
+              isCurrentTypingLine && /* @__PURE__ */ jsx12("span", { className: "inline-block w-2 h-4 bg-emerald-400 ml-0.5 align-middle animate-pulse" })
             ] })
           ] }, lIdx);
         }) }),
-        /* @__PURE__ */ jsxs8("div", { className: "px-4 py-2 border-t border-white/5 bg-black/60 flex items-center justify-between text-[10px] text-zinc-500", children: [
-          /* @__PURE__ */ jsxs8("span", { className: "flex items-center gap-1.5", children: [
-            /* @__PURE__ */ jsx11("span", { className: "size-1.5 rounded-full bg-emerald-400 animate-pulse" }),
-            /* @__PURE__ */ jsx11("span", { children: "TypeScript / React 19 JSX" })
+        /* @__PURE__ */ jsxs9("div", { className: "px-4 py-2 border-t border-white/5 bg-black/60 flex items-center justify-between text-[10px] text-zinc-500", children: [
+          /* @__PURE__ */ jsxs9("span", { className: "flex items-center gap-1.5", children: [
+            /* @__PURE__ */ jsx12("span", { className: "size-1.5 rounded-full bg-emerald-400 animate-pulse" }),
+            /* @__PURE__ */ jsx12("span", { children: "TypeScript / React 19 JSX" })
           ] }),
-          /* @__PURE__ */ jsx11("span", { children: "UTF-8 \u2022 60 FPS Engine" })
+          /* @__PURE__ */ jsx12("span", { children: "UTF-8 \u2022 60 FPS Engine" })
         ] })
       ]
     }
@@ -3413,32 +3670,32 @@ function CodeTypewriter({ className = "" }) {
 }
 function colorizeLine(text) {
   if (text.startsWith("//") || text.startsWith("/*") || text.includes("{/*")) {
-    return /* @__PURE__ */ jsx11("span", { className: "text-zinc-500 italic", children: text });
+    return /* @__PURE__ */ jsx12("span", { className: "text-zinc-500 italic", children: text });
   }
   if (text.startsWith("import ") || text.startsWith("export ") || text.startsWith("return")) {
     const parts = text.split(" ");
-    return /* @__PURE__ */ jsxs8(Fragment3, { children: [
-      /* @__PURE__ */ jsxs8("span", { className: "text-fuchsia-400 font-semibold", children: [
+    return /* @__PURE__ */ jsxs9(Fragment3, { children: [
+      /* @__PURE__ */ jsxs9("span", { className: "text-fuchsia-400 font-semibold", children: [
         parts[0],
         " "
       ] }),
-      /* @__PURE__ */ jsx11("span", { children: parts.slice(1).join(" ") })
+      /* @__PURE__ */ jsx12("span", { children: parts.slice(1).join(" ") })
     ] });
   }
   if (text.includes("pin={true}") || text.includes("enableWheelScroll={true}")) {
-    return /* @__PURE__ */ jsx11("span", { className: "text-amber-300", children: text });
+    return /* @__PURE__ */ jsx12("span", { className: "text-amber-300", children: text });
   }
   if (text.includes("<") && text.includes(">")) {
-    return /* @__PURE__ */ jsx11("span", { className: "text-cyan-300", children: text });
+    return /* @__PURE__ */ jsx12("span", { className: "text-cyan-300", children: text });
   }
   return text;
 }
 
 // src/components/ui/install-tabs.jsx
-import React12, { useId as useId2, useState as useState10, useSyncExternalStore } from "react";
+import React13, { useId as useId3, useState as useState11, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check as Check3, Terminal as Terminal2, Package } from "lucide-react";
-import { Fragment as Fragment4, jsx as jsx12, jsxs as jsxs9 } from "react/jsx-runtime";
+import { Fragment as Fragment4, jsx as jsx13, jsxs as jsxs10 } from "react/jsx-runtime";
 var managers = ["npm", "pnpm", "yarn", "bun"];
 var getCommand = (manager, packages = "adaptive-ui", component, mode = "cli", dev = false) => {
   if (mode === "cli" && component) {
@@ -3482,10 +3739,10 @@ function InstallTabs({
   dev = false,
   className = ""
 }) {
-  const id = useId2();
+  const id = useId3();
   const manager = useSyncExternalStore(subscribe, read, () => "npm");
-  const [copied, setCopied] = useState10(false);
-  const [mode, setMode] = useState10(component ? "cli" : "package");
+  const [copied, setCopied] = useState11(false);
+  const [mode, setMode] = useState11(component ? "cli" : "package");
   const currentText = getCommand(manager, packages, component, mode, dev);
   function onKey(event, index) {
     var _a;
@@ -3504,16 +3761,16 @@ function InstallTabs({
     } catch {
     }
   }
-  return /* @__PURE__ */ jsxs9(
+  return /* @__PURE__ */ jsxs10(
     "div",
     {
       className: `w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950/90 shadow-2xl backdrop-blur-md ${className}`,
       children: [
-        /* @__PURE__ */ jsxs9("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-zinc-900/60 px-3 py-2", children: [
-          /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx12("div", { role: "tablist", "aria-label": "Package manager", className: "flex items-center gap-1", children: managers.map((option, index) => {
+        /* @__PURE__ */ jsxs10("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-zinc-900/60 px-3 py-2", children: [
+          /* @__PURE__ */ jsxs10("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx13("div", { role: "tablist", "aria-label": "Package manager", className: "flex items-center gap-1", children: managers.map((option, index) => {
               const isSelected = manager === option;
-              return /* @__PURE__ */ jsxs9(
+              return /* @__PURE__ */ jsxs10(
                 "button",
                 {
                   id: `${id}-${option}`,
@@ -3525,7 +3782,7 @@ function InstallTabs({
                   onKeyDown: (event) => onKey(event, index),
                   className: `relative flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 font-mono text-xs transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-emerald-400 ${isSelected ? "text-white font-semibold" : "text-zinc-400 hover:text-white"}`,
                   children: [
-                    isSelected && /* @__PURE__ */ jsx12(
+                    isSelected && /* @__PURE__ */ jsx13(
                       motion.span,
                       {
                         layoutId: `${id}-pill`,
@@ -3538,54 +3795,54 @@ function InstallTabs({
                         }
                       }
                     ),
-                    /* @__PURE__ */ jsx12("span", { className: "relative z-10", children: option })
+                    /* @__PURE__ */ jsx13("span", { className: "relative z-10", children: option })
                   ]
                 },
                 option
               );
             }) }),
-            component && /* @__PURE__ */ jsxs9("div", { className: "ml-2 hidden items-center rounded-lg border border-white/10 bg-black/40 p-0.5 sm:flex", children: [
-              /* @__PURE__ */ jsxs9(
+            component && /* @__PURE__ */ jsxs10("div", { className: "ml-2 hidden items-center rounded-lg border border-white/10 bg-black/40 p-0.5 sm:flex", children: [
+              /* @__PURE__ */ jsxs10(
                 "button",
                 {
                   type: "button",
                   onClick: () => setMode("cli"),
                   className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "cli" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`,
                   children: [
-                    /* @__PURE__ */ jsx12(Terminal2, { className: "size-3" }),
+                    /* @__PURE__ */ jsx13(Terminal2, { className: "size-3" }),
                     "CLI"
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs9(
+              /* @__PURE__ */ jsxs10(
                 "button",
                 {
                   type: "button",
                   onClick: () => setMode("package"),
                   className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "package" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`,
                   children: [
-                    /* @__PURE__ */ jsx12(Package, { className: "size-3" }),
+                    /* @__PURE__ */ jsx13(Package, { className: "size-3" }),
                     "NPM"
                   ]
                 }
               )
             ] })
           ] }),
-          /* @__PURE__ */ jsx12(
+          /* @__PURE__ */ jsx13(
             "button",
             {
               type: "button",
               onClick: copyCommand,
               className: "flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-xs text-zinc-300 transition hover:bg-white/15 hover:text-white",
               "aria-label": "Copy install command",
-              children: copied ? /* @__PURE__ */ jsxs9(Fragment4, { children: [
-                /* @__PURE__ */ jsx12(Check3, { className: "size-3.5 text-emerald-400" }),
-                /* @__PURE__ */ jsx12("span", { className: "text-emerald-400 font-medium", children: "Copied!" })
-              ] }) : /* @__PURE__ */ jsx12(Fragment4, { children: /* @__PURE__ */ jsx12("span", { className: "text-zinc-400", children: "Copy" }) })
+              children: copied ? /* @__PURE__ */ jsxs10(Fragment4, { children: [
+                /* @__PURE__ */ jsx13(Check3, { className: "size-3.5 text-emerald-400" }),
+                /* @__PURE__ */ jsx13("span", { className: "text-emerald-400 font-medium", children: "Copied!" })
+              ] }) : /* @__PURE__ */ jsx13(Fragment4, { children: /* @__PURE__ */ jsx13("span", { className: "text-zinc-400", children: "Copy" }) })
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs9(
+        /* @__PURE__ */ jsxs10(
           "div",
           {
             id: `${id}-panel`,
@@ -3593,7 +3850,7 @@ function InstallTabs({
             "aria-labelledby": `${id}-${manager}`,
             className: "relative overflow-hidden px-4 py-3.5 font-mono text-xs sm:text-sm bg-black/40",
             children: [
-              /* @__PURE__ */ jsx12(AnimatePresence, { mode: "wait", initial: false, children: /* @__PURE__ */ jsxs9(
+              /* @__PURE__ */ jsx13(AnimatePresence, { mode: "wait", initial: false, children: /* @__PURE__ */ jsxs10(
                 motion.div,
                 {
                   initial: { opacity: 0, x: -28 },
@@ -3602,13 +3859,13 @@ function InstallTabs({
                   transition: { duration: 0.22, ease: "easeOut" },
                   className: "flex items-center gap-2.5 whitespace-nowrap text-zinc-200",
                   children: [
-                    /* @__PURE__ */ jsx12("span", { className: "select-none font-bold text-emerald-400", children: "$" }),
-                    /* @__PURE__ */ jsx12("span", { className: "tracking-wide", children: currentText })
+                    /* @__PURE__ */ jsx13("span", { className: "select-none font-bold text-emerald-400", children: "$" }),
+                    /* @__PURE__ */ jsx13("span", { className: "tracking-wide", children: currentText })
                   ]
                 },
                 `${manager}-${mode}`
               ) }),
-              /* @__PURE__ */ jsx12("span", { role: "status", className: "sr-only", children: copied ? "Copied" : "" })
+              /* @__PURE__ */ jsx13("span", { role: "status", className: "sr-only", children: copied ? "Copied" : "" })
             ]
           }
         )
@@ -3618,17 +3875,17 @@ function InstallTabs({
 }
 
 // src/components/ui/props-table.jsx
-import React13, { useState as useState11 } from "react";
+import React14, { useState as useState12 } from "react";
 import { Search, Copy as Copy2, Check as Check4, SlidersHorizontal } from "lucide-react";
-import { jsx as jsx13, jsxs as jsxs10 } from "react/jsx-runtime";
+import { jsx as jsx14, jsxs as jsxs11 } from "react/jsx-runtime";
 function PropsTable({
   data = [],
   title = "Props Reference",
   description = "Complete reference of all customizable properties and parameters.",
   className = ""
 }) {
-  const [searchQuery, setSearchQuery] = useState11("");
-  const [copiedProp, setCopiedProp] = useState11(null);
+  const [searchQuery, setSearchQuery] = useState12("");
+  const [copiedProp, setCopiedProp] = useState12(null);
   const filteredData = data.filter((item) => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return true;
@@ -3655,18 +3912,18 @@ function PropsTable({
       console.warn("Clipboard copy failed:", e);
     }
   };
-  return /* @__PURE__ */ jsxs10("div", { className: `space-y-4 w-full ${className}`, children: [
-    /* @__PURE__ */ jsxs10("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3", children: [
-      /* @__PURE__ */ jsxs10("div", { children: [
-        /* @__PURE__ */ jsxs10("h3", { className: "text-xl md:text-2xl font-bold font-sans text-white flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx13(SlidersHorizontal, { className: "w-5 h-5 text-lime-400" }),
-          /* @__PURE__ */ jsx13("span", { children: title })
+  return /* @__PURE__ */ jsxs11("div", { className: `space-y-4 w-full ${className}`, children: [
+    /* @__PURE__ */ jsxs11("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3", children: [
+      /* @__PURE__ */ jsxs11("div", { children: [
+        /* @__PURE__ */ jsxs11("h3", { className: "text-xl md:text-2xl font-bold font-sans text-white flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx14(SlidersHorizontal, { className: "w-5 h-5 text-lime-400" }),
+          /* @__PURE__ */ jsx14("span", { children: title })
         ] }),
-        description && /* @__PURE__ */ jsx13("p", { className: "mt-1 text-xs md:text-sm text-gray-400 font-sans", children: description })
+        description && /* @__PURE__ */ jsx14("p", { className: "mt-1 text-xs md:text-sm text-gray-400 font-sans", children: description })
       ] }),
-      /* @__PURE__ */ jsxs10("div", { className: "relative w-full sm:w-64", children: [
-        /* @__PURE__ */ jsx13(Search, { className: "w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" }),
-        /* @__PURE__ */ jsx13(
+      /* @__PURE__ */ jsxs11("div", { className: "relative w-full sm:w-64", children: [
+        /* @__PURE__ */ jsx14(Search, { className: "w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" }),
+        /* @__PURE__ */ jsx14(
           "input",
           {
             type: "text",
@@ -3676,7 +3933,7 @@ function PropsTable({
             className: "w-full bg-zinc-900/80 border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/50 transition font-sans"
           }
         ),
-        searchQuery && /* @__PURE__ */ jsx13(
+        searchQuery && /* @__PURE__ */ jsx14(
           "button",
           {
             onClick: () => setSearchQuery(""),
@@ -3686,40 +3943,40 @@ function PropsTable({
         )
       ] })
     ] }),
-    /* @__PURE__ */ jsx13("div", { className: "rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shadow-xl", children: /* @__PURE__ */ jsx13("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs10("table", { className: "w-full text-left text-xs font-sans", children: [
-      /* @__PURE__ */ jsx13("thead", { className: "bg-zinc-900/70 border-b border-white/10 font-mono text-zinc-400", children: /* @__PURE__ */ jsxs10("tr", { children: [
-        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold w-1/4", children: "Prop" }),
-        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold w-1/5", children: "Type" }),
-        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold w-1/6", children: "Default" }),
-        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold", children: "Description" })
+    /* @__PURE__ */ jsx14("div", { className: "rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shadow-xl", children: /* @__PURE__ */ jsx14("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs11("table", { className: "w-full text-left text-xs font-sans", children: [
+      /* @__PURE__ */ jsx14("thead", { className: "bg-zinc-900/70 border-b border-white/10 font-mono text-zinc-400", children: /* @__PURE__ */ jsxs11("tr", { children: [
+        /* @__PURE__ */ jsx14("th", { className: "py-3 px-4 font-semibold w-1/4", children: "Prop" }),
+        /* @__PURE__ */ jsx14("th", { className: "py-3 px-4 font-semibold w-1/5", children: "Type" }),
+        /* @__PURE__ */ jsx14("th", { className: "py-3 px-4 font-semibold w-1/6", children: "Default" }),
+        /* @__PURE__ */ jsx14("th", { className: "py-3 px-4 font-semibold", children: "Description" })
       ] }) }),
-      /* @__PURE__ */ jsx13("tbody", { className: "divide-y divide-white/5 text-zinc-300", children: filteredData.length > 0 ? filteredData.map((item, idx) => /* @__PURE__ */ jsxs10(
+      /* @__PURE__ */ jsx14("tbody", { className: "divide-y divide-white/5 text-zinc-300", children: filteredData.length > 0 ? filteredData.map((item, idx) => /* @__PURE__ */ jsxs11(
         "tr",
         {
           className: "hover:bg-white/[0.02] transition-colors group",
           children: [
-            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 font-mono", children: /* @__PURE__ */ jsxs10("div", { className: "flex items-center gap-1.5", children: [
-              /* @__PURE__ */ jsxs10(
+            /* @__PURE__ */ jsx14("td", { className: "py-3.5 px-4 font-mono", children: /* @__PURE__ */ jsxs11("div", { className: "flex items-center gap-1.5", children: [
+              /* @__PURE__ */ jsxs11(
                 "button",
                 {
                   onClick: () => copyPropName(item.prop),
                   className: "font-semibold text-lime-400 hover:text-lime-300 transition flex items-center gap-1 cursor-pointer",
                   title: "Click to copy prop name",
                   children: [
-                    /* @__PURE__ */ jsx13("span", { children: item.prop }),
-                    copiedProp === item.prop ? /* @__PURE__ */ jsx13(Check4, { className: "w-3 h-3 text-emerald-400 shrink-0" }) : /* @__PURE__ */ jsx13(Copy2, { className: "w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition shrink-0" })
+                    /* @__PURE__ */ jsx14("span", { children: item.prop }),
+                    copiedProp === item.prop ? /* @__PURE__ */ jsx14(Check4, { className: "w-3 h-3 text-emerald-400 shrink-0" }) : /* @__PURE__ */ jsx14(Copy2, { className: "w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition shrink-0" })
                   ]
                 }
               ),
-              item.required && /* @__PURE__ */ jsx13("span", { className: "text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-sans", children: "required" })
+              item.required && /* @__PURE__ */ jsx14("span", { className: "text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-sans", children: "required" })
             ] }) }),
-            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 font-mono text-[11px]", children: /* @__PURE__ */ jsx13("span", { className: "inline-block px-2 py-0.5 rounded-md bg-zinc-900 text-cyan-300 border border-white/5", children: item.type }) }),
-            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 font-mono text-[11px] text-zinc-400", children: item.default ? /* @__PURE__ */ jsx13("code", { className: "bg-zinc-900 px-1.5 py-0.5 rounded text-amber-300/90 border border-white/5", children: item.default }) : /* @__PURE__ */ jsx13("span", { className: "text-zinc-600", children: "\u2014" }) }),
-            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 text-gray-300 leading-relaxed font-sans", children: item.description })
+            /* @__PURE__ */ jsx14("td", { className: "py-3.5 px-4 font-mono text-[11px]", children: /* @__PURE__ */ jsx14("span", { className: "inline-block px-2 py-0.5 rounded-md bg-zinc-900 text-cyan-300 border border-white/5", children: item.type }) }),
+            /* @__PURE__ */ jsx14("td", { className: "py-3.5 px-4 font-mono text-[11px] text-zinc-400", children: item.default ? /* @__PURE__ */ jsx14("code", { className: "bg-zinc-900 px-1.5 py-0.5 rounded text-amber-300/90 border border-white/5", children: item.default }) : /* @__PURE__ */ jsx14("span", { className: "text-zinc-600", children: "\u2014" }) }),
+            /* @__PURE__ */ jsx14("td", { className: "py-3.5 px-4 text-gray-300 leading-relaxed font-sans", children: item.description })
           ]
         },
         item.prop || idx
-      )) : /* @__PURE__ */ jsx13("tr", { children: /* @__PURE__ */ jsxs10(
+      )) : /* @__PURE__ */ jsx14("tr", { children: /* @__PURE__ */ jsxs11(
         "td",
         {
           colSpan: 4,
@@ -3743,6 +4000,8 @@ export {
   DEFAULT_SCROLL_IMAGES,
   DEFAULT_STACKED_CARDS,
   CurvedGridCanvas as FullpageCurvedGrid,
+  GooeyGridCursor,
+  GooeyGridCursor as GridCursorTrail,
   ImageScroll,
   InfiniteImageScroll,
   InfiniteTunnelHero,
@@ -3750,6 +4009,7 @@ export {
   InteractiveAsciiFace,
   InteractiveSnakeGrid,
   LiquidGlassButton,
+  GooeyGridCursor as LorenzoGridCursor,
   PropsTable,
   SmoothScrollProvider,
   StackedCardsScroll,

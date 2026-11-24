@@ -303,9 +303,23 @@ export function StackedCardsScroll({
       if (index >= 0 && index < totalCards) {
         setActiveIndex(index);
         if (onChange) onChange(index, cards[index]);
+        if (pin && pinTrackRef.current) {
+          const track = pinTrackRef.current;
+          const rect = track.getBoundingClientRect();
+          const scrollTop = window.scrollY || window.pageYOffset;
+          const trackTop = scrollTop + rect.top;
+          const windowHeight = window.innerHeight;
+          const totalDistance = track.offsetHeight - windowHeight;
+          if (totalDistance > 0) {
+            const startOffset = 96;
+            const targetScroll =
+              trackTop - startOffset + (index / (totalCards - 1)) * totalDistance;
+            window.scrollTo({ top: targetScroll, behavior: "smooth" });
+          }
+        }
       }
     },
-    [totalCards, cards, onChange]
+    [totalCards, cards, onChange, pin]
   );
 
   // Wheel scroll trigger on container
@@ -328,7 +342,7 @@ export function StackedCardsScroll({
     [pin, enableWheelScroll, handleNext, handlePrev]
   );
 
-  // Page ScrollTrigger with pin: true behavior
+  // Page ScrollTrigger with pin: true behavior (GSAP ScrollTrigger style)
   useEffect(() => {
     if (!pin) return;
     const track = pinTrackRef.current;
@@ -341,9 +355,10 @@ export function StackedCardsScroll({
         window.requestAnimationFrame(() => {
           const rect = track.getBoundingClientRect();
           const windowHeight = window.innerHeight;
+          const startOffset = 96; // matches sticky top-24
           const totalDistance = rect.height - windowHeight;
           if (totalDistance > 0) {
-            const scrolled = -rect.top;
+            const scrolled = startOffset - rect.top;
             const progress = Math.min(Math.max(scrolled / totalDistance, 0), 1);
             const targetIndex = Math.min(
               Math.floor(progress * totalCards),
@@ -546,36 +561,148 @@ export function StackedCardsScroll({
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Minimalist Half-Ring + ONE SINGLE PUNCHY WORD ON THE RIGHT */}
-        <div className="lg:col-span-6 flex items-center justify-center py-6">
-          <div className="relative flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 p-6 sm:p-8 rounded-3xl border border-purple-500/20 bg-purple-950/20 backdrop-blur-xl w-full max-w-lg shadow-[0_0_40px_rgba(168,85,247,0.1)]">
-            {/* The Half-Ring Arc */}
-            <div className="shrink-0">
-              <HalfRingGauge
-                currentIndex={activeIndex}
-                total={totalCards}
-                accentColor="#a855f7"
-              />
+        {/* RIGHT COLUMN: Means & Methods Vertical Scrollytelling Text List + HUD Gauge */}
+        <div className="lg:col-span-6 flex flex-col justify-center py-4 px-2 sm:px-6">
+          {/* Top Status HUD with Mini Gauge & Stage Readout */}
+          <div className="flex items-center justify-between pb-4 border-b border-purple-500/20 mb-4">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-mono font-bold tracking-widest uppercase text-purple-400">
+                STAGE {currentCard.number} / {String(totalCards).padStart(2, "0")}
+              </span>
+              <span className="text-zinc-600">•</span>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-purple-300/80 font-semibold truncate max-w-[150px] sm:max-w-[200px]">
+                {currentCard.tag}
+              </span>
             </div>
 
-            {/* ONE WORD on the right side of the half circle */}
-            <div className="flex flex-col items-center sm:items-start text-center sm:text-left justify-center min-w-[180px]">
-              <span className="text-[11px] font-mono tracking-widest uppercase text-purple-400/80 font-semibold">
-                STAGE {currentCard.number}
-              </span>
-              <h2
-                key={currentCard.oneWord}
-                className="font-sans text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white mt-1 animate-[fadeIn_0.35s_ease-out]"
-                style={{
-                  textShadow: "0 0 30px rgba(168, 85, 247, 0.7), 0 0 60px rgba(168, 85, 247, 0.3)",
-                }}
+            {/* Micro Nav Buttons */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Previous topic"
+                className="size-7 rounded-lg border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
               >
-                {currentCard.oneWord}
-              </h2>
-              <span className="text-xs font-mono text-purple-300/70 mt-1">
-                {currentCard.subtitle}
-              </span>
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Next topic"
+                className="size-7 rounded-lg border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              >
+                <ChevronRight size={14} />
+              </button>
             </div>
+          </div>
+
+          {/* Means & Methods Vertical Text Scroller */}
+          <div
+            className="relative h-[340px] sm:h-[380px] overflow-hidden select-none"
+            style={{
+              maskImage:
+                "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+            }}
+          >
+            <div
+              className="flex flex-col gap-4 sm:gap-5"
+              style={{
+                transform: `translateY(${-(activeIndex * 58) + 150}px)`,
+                transition: "transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1)",
+              }}
+            >
+              {cards.map((cardItem, idx) => {
+                const isActive = idx === activeIndex;
+                const distance = Math.abs(idx - activeIndex);
+                const opacity = isActive
+                  ? 1
+                  : Math.max(0.18, 0.65 - distance * 0.18);
+                const scale = isActive ? 1 : Math.max(0.88, 1 - distance * 0.035);
+
+                return (
+                  <button
+                    key={cardItem.id || idx}
+                    type="button"
+                    onClick={() => handleSelect(idx)}
+                    className="group text-left flex items-start sm:items-center gap-3.5 sm:gap-4 py-1.5 px-2 rounded-xl transition-all duration-300 cursor-pointer focus:outline-none"
+                    style={{
+                      opacity,
+                      transform: `scale(${scale})`,
+                      transformOrigin: "left center",
+                    }}
+                  >
+                    {/* Glowing Bullet Dot (Means & Methods highlight dot) */}
+                    <div className="shrink-0 mt-2 sm:mt-0 flex items-center justify-center size-4">
+                      {isActive ? (
+                        <span
+                          className="size-2.5 rounded-full animate-pulse transition-all duration-300 shadow-[0_0_14px_var(--brand-accent,#a855f7)]"
+                          style={{
+                            backgroundColor: "var(--brand-accent, #a855f7)",
+                          }}
+                        />
+                      ) : (
+                        <span className="size-1.5 rounded-full bg-zinc-600 group-hover:bg-purple-400 group-hover:scale-125 transition-all" />
+                      )}
+                    </div>
+
+                    {/* Card Topic Text & Details */}
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`font-sans tracking-tight transition-all duration-300 ${
+                            isActive
+                              ? "text-2xl sm:text-3xl md:text-4xl font-extrabold text-white"
+                              : "text-lg sm:text-xl font-medium text-zinc-400 group-hover:text-purple-200"
+                          }`}
+                          style={
+                            isActive
+                              ? {
+                                  textShadow:
+                                    "0 0 25px rgba(168, 85, 247, 0.45)",
+                                }
+                              : undefined
+                          }
+                        >
+                          {cardItem.title}
+                        </span>
+
+                        {/* Punchy Stage Badge */}
+                        {isActive && (
+                          <span
+                            className="font-mono text-[10px] tracking-widest uppercase font-bold px-2 py-0.5 rounded-full border bg-purple-950/80 border-purple-400/50 text-purple-200 animate-[fadeIn_0.3s_ease-out]"
+                            style={{
+                              boxShadow: "0 0 12px rgba(168, 85, 247, 0.35)",
+                            }}
+                          >
+                            {cardItem.oneWord}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Active Subtitle Readout */}
+                      {isActive && (
+                        <span className="font-mono text-xs sm:text-sm text-purple-300/80 mt-1 animate-[fadeIn_0.35s_ease-out]">
+                          {cardItem.subtitle} • {cardItem.tag}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bottom Arc HUD Progress */}
+          <div className="pt-4 border-t border-purple-500/20 mt-4 flex items-center justify-between text-xs font-mono text-purple-300/70">
+            <span className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-purple-400 animate-ping" />
+              <span>Means & Methods Active Scrollytelling</span>
+            </span>
+            <span className="font-bold text-white">
+              {Math.round(((activeIndex + 1) / totalCards) * 100)}% Complete
+            </span>
           </div>
         </div>
       </div>
@@ -590,7 +717,7 @@ export function StackedCardsScroll({
         style={{ minHeight: pinHeight }}
         className="relative w-full"
       >
-        <div className="sticky top-20 w-full z-20">{deckNode}</div>
+        <div className="sticky top-24 w-full z-20">{deckNode}</div>
       </div>
     );
   }

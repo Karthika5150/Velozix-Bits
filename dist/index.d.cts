@@ -294,6 +294,42 @@ interface StackedCardsScrollProps {
 declare const StackedCardsScroll: React.FC<StackedCardsScrollProps>;
 declare const DEFAULT_STACKED_CARDS: StackedCardItem[];
 
+interface GooeyGridCursorProps {
+  /** Fill color of the grid blocks. "auto" uses CSS var(--brand-accent), or pass hex/rgb. Default: "auto" */
+  color?: string;
+  /** Number of columns across the viewport. Default: 30 */
+  gridSize?: number;
+  /** Optional explicit pixel width and height for each grid cell. Default: calculated from gridSize */
+  cellSize?: number;
+  /** Corner radius of the grid square (e.g. "18%", "8px", 8). Default: "18%" */
+  borderRadius?: string | number;
+  /** Time in milliseconds each square stays visible before fading out. Default: 260 */
+  trailDuration?: number;
+  /** Speed multiplier for duration / fade. Default: 1.0 */
+  speed?: number;
+  /** Gaussian blur strength for the SVG gooey merge filter. Default: 4.5 */
+  blurAmount?: number;
+  /** CSS mix-blend-mode. Default: "normal" ("difference" for inverted high-contrast effect) */
+  blendMode?: "normal" | "difference" | "screen" | "multiply" | string;
+  /** Whether to render the smooth lerp-following cursor pointer. Default: true */
+  showFollower?: boolean;
+  /** Smoothing interpolation factor for follower cursor (0.05 to 0.3). Default: 0.12 */
+  smoothing?: number;
+  /** Whether to draw underlying subtle grid lines. Default: true */
+  showGridLines?: boolean;
+  /** Stroke color for the underlying grid lines. Default: "rgba(255, 255, 255, 0.03)" */
+  gridLineColor?: string;
+  /** CSS z-index for the cursor container. Default: 30 */
+  zIndex?: number;
+  /** Additional CSS class name */
+  className?: string;
+}
+
+type LorenzoGridCursorProps = GooeyGridCursorProps;
+declare const GooeyGridCursor: React.FC<GooeyGridCursorProps>;
+declare const LorenzoGridCursor: React.FC<GooeyGridCursorProps>;
+declare const GridCursorTrail: React.FC<GooeyGridCursorProps>;
+
 interface CurvedGridCanvasProps {
   /** Size in pixels of each square cell in the grid. Default: 50 */
   cellSize?: number;
@@ -341,5 +377,5 @@ declare const ACCENT_PRESETS: Array<{
 
 declare const PropsTable: React.FC<PropsTableProps>;
 
-export { ACCENT_PRESETS, BlobMorphHero, CodeTypewriter, CurvedGridCanvas, DEFAULT_PRESETS, DEFAULT_SCROLL_IMAGES, DEFAULT_STACKED_CARDS, FullpageCurvedGrid, ImageScroll, InfiniteImageScroll, InfiniteTunnelHero, InstallTabs, InteractiveAsciiFace, InteractiveSnakeGrid, LiquidGlassButton, PropsTable, SmoothScrollProvider, StackedCardsScroll, ThemeCustomizer, applyAccent, SmoothScrollProvider as default, liquidGlassButton, useAutoCycleAccent };
-export type { BlobMorphHeroProps, CodeTypewriterProps, CurvedGridCanvasProps, ImageScrollProps, InfiniteTunnelHeroProps, InstallTabsProps, InteractiveAsciiFaceProps, InteractiveSnakeGridProps, LiquidGlassButtonProps, PresetItem, PropItem, PropsTableProps, ScrollImageItem, SmoothScrollProviderProps, StackedCardItem, StackedCardSpec, StackedCardsScrollProps, ThemeCustomizerProps };
+export { ACCENT_PRESETS, BlobMorphHero, CodeTypewriter, CurvedGridCanvas, DEFAULT_PRESETS, DEFAULT_SCROLL_IMAGES, DEFAULT_STACKED_CARDS, FullpageCurvedGrid, GooeyGridCursor, GridCursorTrail, ImageScroll, InfiniteImageScroll, InfiniteTunnelHero, InstallTabs, InteractiveAsciiFace, InteractiveSnakeGrid, LiquidGlassButton, LorenzoGridCursor, PropsTable, SmoothScrollProvider, StackedCardsScroll, ThemeCustomizer, applyAccent, SmoothScrollProvider as default, liquidGlassButton, useAutoCycleAccent };
+export type { BlobMorphHeroProps, CodeTypewriterProps, CurvedGridCanvasProps, GooeyGridCursorProps, ImageScrollProps, InfiniteTunnelHeroProps, InstallTabsProps, InteractiveAsciiFaceProps, InteractiveSnakeGridProps, LiquidGlassButtonProps, LorenzoGridCursorProps, PresetItem, PropItem, PropsTableProps, ScrollImageItem, SmoothScrollProviderProps, StackedCardItem, StackedCardSpec, StackedCardsScrollProps, ThemeCustomizerProps };
