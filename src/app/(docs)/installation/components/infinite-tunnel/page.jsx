@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Check, Code2, Copy, Eye, Gauge, Orbit } from "lucide-react";
 import { InfiniteTunnelHero } from "@/components/ui/infinite-tunnel-hero";
 import { PropsTable } from "@/components/ui/props-table";
-import { InstallTabs } from "@/components/ui/install-tabs";
 
 const tunnelProps = [
   { prop: "color", type: "string", default: '"#ff52ef"', description: "Hex color used for the neon grid, horizon line, and glow." },
@@ -111,22 +110,9 @@ export default function InfiniteTunnelPage() {
           <div className="space-y-2 rounded-2xl border border-white/10 bg-zinc-900/40 p-5"><div className="flex size-8 items-center justify-center rounded-lg border border-amber-400/20 bg-amber-400/10 text-amber-300"><Gauge className="size-4" /></div><h2 className="text-sm font-semibold text-white">Live Tuning</h2><p className="text-xs leading-relaxed text-gray-400">Adjust ring count, travel speed, color, and pointer response directly in the preview.</p></div>
         </div>
 
-        {/* Installation */}
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <h2 className="font-sans text-xl font-bold text-white md:text-2xl">
-              Installation
-            </h2>
-            <p className="text-sm text-gray-400">
-              Install the component using the Adaptive UI CLI or your preferred package manager.
-            </p>
-          </div>
-          <div className="max-w-2xl">
-            <InstallTabs packages="adaptive-ui" component="infinite-tunnel" />
-          </div>
+        <div className="pt-6">
+          <PropsTable title="InfiniteTunnelHero Props" description="Customize the tunnel depth, color, movement, and interaction." data={tunnelProps} />
         </div>
-
-        <PropsTable title="InfiniteTunnelHero Props" description="Customize the tunnel depth, color, movement, and interaction." data={tunnelProps} />
       </section>
     </article>
   );

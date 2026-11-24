@@ -1,8 +1,134 @@
 "use client";
 
 import React, { useState } from "react";
-import styles from "./image-scroll.module.css";
+import rawStyles from "./image-scroll.module.css";
 import { ArrowUpRight, Image as ImageIcon } from "lucide-react";
+
+const fallbackStyles = {
+  container: "adaptive-ui-scroll-container",
+  verticalWrapper: "adaptive-ui-scroll-vertical-wrapper",
+  verticalTrack: "adaptive-ui-scroll-vertical-track",
+  verticalTrackReverse: "adaptive-ui-scroll-vertical-track-reverse",
+  horizontalWrapper: "adaptive-ui-scroll-horizontal-wrapper",
+  horizontalTrack: "adaptive-ui-scroll-horizontal-track",
+  horizontalTrackReverse: "adaptive-ui-scroll-horizontal-track-reverse",
+  pauseHover: "adaptive-ui-scroll-pause-hover",
+  tiltPerspective: "adaptive-ui-scroll-tilt-perspective",
+  tiltInner: "adaptive-ui-scroll-tilt-inner",
+  fadeMaskVertical: "adaptive-ui-scroll-fade-vertical",
+  fadeMaskHorizontal: "adaptive-ui-scroll-fade-horizontal",
+};
+
+// Use rawStyles if CSS modules hashed classes exist, otherwise fall back to guaranteed global classes
+const styles = rawStyles && Object.keys(rawStyles).length > 0 ? rawStyles : fallbackStyles;
+
+const EMBEDDED_SCROLL_STYLES = `
+.adaptive-ui-scroll-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+.adaptive-ui-scroll-vertical-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--scroll-gap, 1.25rem);
+  height: var(--container-height, 560px);
+  overflow: hidden;
+}
+.adaptive-ui-scroll-vertical-track {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scroll-gap, 1.25rem);
+  will-change: transform;
+  animation-name: adaptiveUiScrollUp;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-vertical-track-reverse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scroll-gap, 1.25rem);
+  will-change: transform;
+  animation-name: adaptiveUiScrollDown;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-horizontal-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scroll-gap, 1.25rem);
+  width: 100%;
+  overflow: hidden;
+}
+.adaptive-ui-scroll-horizontal-track {
+  display: flex;
+  flex-direction: row;
+  gap: var(--scroll-gap, 1.25rem);
+  width: max-content;
+  will-change: transform;
+  animation-name: adaptiveUiScrollLeft;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-horizontal-track-reverse {
+  display: flex;
+  flex-direction: row;
+  gap: var(--scroll-gap, 1.25rem);
+  width: max-content;
+  will-change: transform;
+  animation-name: adaptiveUiScrollRight;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-vertical-track,
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-vertical-track-reverse,
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-horizontal-track,
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-horizontal-track-reverse {
+  animation-play-state: paused;
+}
+@keyframes adaptiveUiScrollUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+@keyframes adaptiveUiScrollDown {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+@keyframes adaptiveUiScrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes adaptiveUiScrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.adaptive-ui-scroll-fade-vertical {
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 8%, black 16%, black 84%, rgba(0, 0, 0, 0.8) 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 8%, black 16%, black 84%, rgba(0, 0, 0, 0.8) 92%, transparent 100%);
+}
+.adaptive-ui-scroll-fade-horizontal {
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.8) 6%, black 14%, black 86%, rgba(0, 0, 0, 0.8) 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.8) 6%, black 14%, black 86%, rgba(0, 0, 0, 0.8) 94%, transparent 100%);
+}
+.adaptive-ui-scroll-tilt-perspective {
+  perspective: 1000px;
+}
+.adaptive-ui-scroll-tilt-inner {
+  transform: rotateX(8deg) rotateZ(-4deg) skewX(2deg);
+  transform-origin: center center;
+  transition: transform 0.4s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .adaptive-ui-scroll-vertical-track,
+  .adaptive-ui-scroll-vertical-track-reverse,
+  .adaptive-ui-scroll-horizontal-track,
+  .adaptive-ui-scroll-horizontal-track-reverse {
+    animation-play-state: paused !important;
+  }
+}
+`;
 
 export const DEFAULT_SCROLL_IMAGES = [
   {
@@ -271,6 +397,7 @@ export function ImageScroll({
         ${className}
       `}
     >
+      <style dangerouslySetInnerHTML={{ __html: EMBEDDED_SCROLL_STYLES }} />
       <div className={tilt ? styles.tiltInner : ""}>
         {isVertical ? (
           /* ================= VERTICAL COLUMNS ================= */

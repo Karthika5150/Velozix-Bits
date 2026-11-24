@@ -21,7 +21,6 @@ import {
   DEFAULT_SCROLL_IMAGES,
 } from "@/components/ui/image-scroll";
 import { PropsTable } from "@/components/ui/props-table";
-import { InstallTabs } from "@/components/ui/install-tabs";
 
 const scrollProps = [
   {
@@ -352,55 +351,32 @@ export default function ImageScrollPage() {
             </div>
 
             {/* Live Interactive Control Bar */}
-            <div className="border-t border-white/10 bg-zinc-900/95 p-4 font-mono text-xs text-white shadow-2xl backdrop-blur-md">
+            <div className="border-t border-white/10 bg-zinc-950/90 p-3.5 font-mono text-xs text-white shadow-2xl backdrop-blur-md">
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-2 text-zinc-400">
-                  <Sliders className="size-4 text-emerald-400" />
-                  <span>Interactive Playground Controls</span>
+                {/* Left: Columns or Rows count */}
+                <div className="flex items-center gap-2">
+                  <span className="text-zinc-400">
+                    {direction === "vertical" ? "Columns:" : "Rows:"}
+                  </span>
+                  {[1, 2, 3].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => (direction === "vertical" ? setColumns(num) : setRows(num))}
+                      className={`rounded-lg px-2.5 py-1 text-xs transition cursor-pointer border ${
+                        (direction === "vertical" ? columns : rows) === num
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold"
+                          : "bg-white/5 text-zinc-400 hover:text-white border-white/5"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-                  {/* Columns or Rows Selector depending on Direction */}
-                  {direction === "vertical" ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-zinc-400">Columns:</span>
-                      {[1, 2, 3].map((num) => (
-                        <button
-                          key={num}
-                          type="button"
-                          onClick={() => setColumns(num)}
-                          className={`rounded px-2.5 py-1 transition ${
-                            columns === num
-                              ? "bg-emerald-500 text-black font-bold"
-                              : "bg-white/10 text-zinc-300 hover:bg-white/20"
-                          }`}
-                        >
-                          {num}
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <span className="text-zinc-400">Rows:</span>
-                      {[1, 2, 3].map((num) => (
-                        <button
-                          key={num}
-                          type="button"
-                          onClick={() => setRows(num)}
-                          className={`rounded px-2.5 py-1 transition ${
-                            rows === num
-                              ? "bg-emerald-500 text-black font-bold"
-                              : "bg-white/10 text-zinc-300 hover:bg-white/20"
-                          }`}
-                        >
-                          {num}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Speed Slider: Higher value = Faster animation */}
-                  <label className="flex items-center gap-2 text-zinc-300">
+                {/* Right: Speed slider & 3D Tilt toggle */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <label className="flex items-center gap-2 text-zinc-300 cursor-pointer">
                     <span className="text-zinc-400">Speed:</span>
                     <input
                       type="range"
@@ -411,52 +387,32 @@ export default function ImageScrollPage() {
                       onChange={(e) => setSpeed(Number(e.target.value))}
                       className="w-20 cursor-pointer accent-emerald-400"
                     />
-                    <span className="w-10 text-right">{speed.toFixed(1)}×</span>
+                    <span className="w-8 text-right text-emerald-400 font-bold">{speed.toFixed(1)}×</span>
                   </label>
 
-                  {/* Reverse Toggle */}
-                  <label className="flex cursor-pointer items-center gap-2 text-zinc-300">
-                    <input
-                      type="checkbox"
-                      checked={reverse}
-                      onChange={(e) => setReverse(e.target.checked)}
-                      className="size-4 rounded accent-emerald-400 cursor-pointer"
-                    />
-                    <span>Reverse</span>
-                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTilt(!tilt)}
+                    className={`px-2.5 py-1 rounded-lg text-xs transition cursor-pointer border ${
+                      tilt
+                        ? "bg-white/15 text-white border-white/30 font-bold"
+                        : "bg-white/5 text-zinc-400 hover:text-white border-white/5"
+                    }`}
+                  >
+                    3D Tilt: {tilt ? "ON" : "OFF"}
+                  </button>
 
-                  {/* Pause on Hover */}
-                  <label className="flex cursor-pointer items-center gap-2 text-zinc-300">
-                    <input
-                      type="checkbox"
-                      checked={pauseOnHover}
-                      onChange={(e) => setPauseOnHover(e.target.checked)}
-                      className="size-4 rounded accent-emerald-400 cursor-pointer"
-                    />
-                    <span>Pause Hover</span>
-                  </label>
-
-                  {/* Blur Edges */}
-                  <label className="flex cursor-pointer items-center gap-2 text-zinc-300">
-                    <input
-                      type="checkbox"
-                      checked={blurEdges}
-                      onChange={(e) => setBlurEdges(e.target.checked)}
-                      className="size-4 rounded accent-emerald-400 cursor-pointer"
-                    />
-                    <span>Fade Edges</span>
-                  </label>
-
-                  {/* 3D Tilt */}
-                  <label className="flex cursor-pointer items-center gap-2 text-zinc-300">
-                    <input
-                      type="checkbox"
-                      checked={tilt}
-                      onChange={(e) => setTilt(e.target.checked)}
-                      className="size-4 rounded accent-emerald-400 cursor-pointer"
-                    />
-                    <span>3D Tilt</span>
-                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setReverse(!reverse)}
+                    className={`px-2.5 py-1 rounded-lg text-xs transition cursor-pointer border ${
+                      reverse
+                        ? "bg-white/15 text-white border-white/30 font-bold"
+                        : "bg-white/5 text-zinc-400 hover:text-white border-white/5"
+                    }`}
+                  >
+                    Reverse: {reverse ? "ON" : "OFF"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -527,27 +483,14 @@ export default function ImageScrollPage() {
           </div>
         </div>
 
-        {/* Installation */}
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <h2 className="font-sans text-xl font-bold text-white md:text-2xl">
-              Installation
-            </h2>
-            <p className="text-sm text-gray-400">
-              Install the component using the Adaptive UI CLI or your preferred package manager.
-            </p>
-          </div>
-          <div className="max-w-2xl">
-            <InstallTabs packages="adaptive-ui" component="image-scroll" />
-          </div>
-        </div>
-
         {/* Props Reference Table */}
-        <PropsTable
-          title="ImageScroll Props"
-          description="Complete reference of customizable properties, modes, and controls."
-          data={scrollProps}
-        />
+        <div className="pt-6">
+          <PropsTable
+            title="ImageScroll Props"
+            description="Complete reference of customizable properties, modes, and controls."
+            data={scrollProps}
+          />
+        </div>
       </section>
     </article>
   );

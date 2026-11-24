@@ -1,8 +1,8 @@
 {
-  "name": "adaptive-ui-react",
-  "version": "0.1.4",
+  "name": "velozix-bits",
+  "version": "0.1.5",
   "type": "module",
-  "description": "Production-ready reusable React & Next.js animated UI components",
+  "description": "High-velocity 60FPS animated React & Next.js UI bits and components",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,7 +14,9 @@
       "require": "./dist/index.cjs"
     },
     "./style.css": "./dist/style.css",
-    "./dist/style.css": "./dist/style.css"
+    "./dist/style.css": "./dist/style.css",
+    "./index.css": "./dist/index.css",
+    "./dist/index.css": "./dist/index.css"
   },
   "files": [
     "dist",

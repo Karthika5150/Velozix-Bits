@@ -1,7 +1,78 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import styles from "./interactive-ascii-face.module.css";
+import rawStyles from "./interactive-ascii-face.module.css";
+
+const fallbackStyles = {
+  stage: "adaptive-ascii-stage",
+  field: "adaptive-ascii-field",
+  scanlines: "adaptive-ascii-scanlines",
+  vignette: "adaptive-ascii-vignette",
+  frame: "adaptive-ascii-frame",
+  status: "adaptive-ascii-status",
+};
+
+const styles = rawStyles && Object.keys(rawStyles).length > 0 ? rawStyles : fallbackStyles;
+
+const EMBEDDED_ASCII_STYLES = `
+.adaptive-ascii-stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: clamp(28rem, 82svh, 58rem);
+  overflow: hidden;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  border: 1px solid #163620;
+  border-radius: 1rem;
+  background: radial-gradient(ellipse at center, #06190d 0%, #010603 85%);
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9), 0 20px 45px rgba(0, 0, 0, 0.7);
+  cursor: crosshair;
+  user-select: none;
+  touch-action: none;
+}
+.adaptive-ascii-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.adaptive-ascii-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.32) 50%);
+  background-size: 100% 4px;
+  z-index: 10;
+  opacity: 0.75;
+}
+.adaptive-ascii-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.8) 100%);
+  border-radius: 1rem;
+  z-index: 11;
+}
+.adaptive-ascii-frame {
+  position: relative;
+  width: min(100%, 34rem, 65svh);
+  aspect-ratio: 500 / 610;
+  pointer-events: none;
+}
+.adaptive-ascii-status {
+  display: grid;
+  height: 100%;
+  place-content: center;
+  padding: 1rem;
+  color: #5cfc87;
+  text-shadow: 0 0 8px rgba(92, 252, 135, 0.5);
+  font: 0.9rem/1.5 ui-monospace, monospace;
+  text-align: center;
+}
+`;
 
 const REFERENCE = "/images/ascii-portrait.png";
 const GLYPHS = [".:;|`", "il/+=:", "xovucz", "7TZH28", "NWM#@%"];
@@ -60,6 +131,40 @@ function sampleImage(image, cropReference) {
   return { tones: detailed, foreground };
 }
 
+function parseColor(c, fallback = [92, 252, 135]) {
+  if (!c || typeof c !== "string") return fallback;
+  const clean = c.replace("#", "").trim();
+  if (clean.length === 3) {
+    return [
+      parseInt(clean[0] + clean[0], 16),
+      parseInt(clean[1] + clean[1], 16),
+      parseInt(clean[2] + clean[2], 16),
+    ];
+  }
+  if (clean.length === 6) {
+    return [
+      parseInt(clean.slice(0, 2), 16),
+      parseInt(clean.slice(2, 4), 16),
+      parseInt(clean.slice(4, 6), 16),
+    ];
+  }
+  return fallback;
+}
+
+function interpolateGradient(ratio, stops) {
+  if (!stops || stops.length === 0) return null;
+  if (stops.length === 1) return `rgb(${stops[0][0]}, ${stops[0][1]}, ${stops[0][2]})`;
+  const segment = 1 / (stops.length - 1);
+  const index = Math.min(stops.length - 2, Math.floor(ratio / segment));
+  const localT = (ratio - index * segment) / segment;
+  const c0 = stops[index];
+  const c1 = stops[index + 1];
+  const r = Math.round(c0[0] + (c1[0] - c0[0]) * localT);
+  const g = Math.round(c0[1] + (c1[1] - c0[1]) * localT);
+  const b = Math.round(c0[2] + (c1[2] - c0[2]) * localT);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 function animateRain(canvas, portrait, image, pointer, settings) {
   const context = canvas.getContext("2d");
   if (!context) return;
@@ -78,10 +183,20 @@ function animateRain(canvas, portrait, image, pointer, settings) {
     const height = renderHeight;
     const portraitWidth = portrait.offsetWidth;
     const portraitHeight = portrait.offsetHeight;
-    const { color, imageClarity, mouseSpeed } = settings.current;
+    const {
+      color,
+      dropType = "characters",
+      gradient,
+      characters,
+      dropSize = 7,
+      rainOnly = false,
+      imageClarity,
+      mouseSpeed,
+    } = settings.current;
+
     const interaction = pointer.current;
-    const response = Math.min(1.8, Math.max(0.3, mouseSpeed || 1));
-    const follow = 1 - Math.exp(-delta * 0.011 * response);
+    const response = Math.min(1.2, Math.max(0.2, (mouseSpeed || 0.8) * 0.6));
+    const follow = 1 - Math.exp(-delta * 0.007 * response);
     offsetX += ((interaction?.offset.x ?? 0) - offsetX) * follow;
     offsetY += ((interaction?.offset.y ?? 0) - offsetY) * follow;
     const left = (width - portraitWidth) / 2 + offsetX;
@@ -89,49 +204,138 @@ function animateRain(canvas, portrait, image, pointer, settings) {
 
     context.globalAlpha = 1;
     context.clearRect(0, 0, width, height);
-    const mask = image?.tones;
-    context.fillStyle = color;
-    context.font = "6px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+    const mask = rainOnly ? null : image?.tones;
+
+    // Sizing: dropSize controls cell dimensions and font size
+    const sizeVal = Math.max(4, Math.min(24, Number(dropSize) || 7));
+    const cellW = Math.max(3, Math.round(sizeVal * 0.72));
+    const cellH = sizeVal;
+    const fontSize = Math.max(4, Math.round(sizeVal * 0.88));
+
+    context.font = `${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
     context.textAlign = "center";
     context.textBaseline = "middle";
 
-    for (let x = CELL_WIDTH / 2, column = 0; x < width; x += CELL_WIDTH, column++) {
-      const speed = 42 + (column * 17 % 28);
-      const trail = 160 + (column * 41 % 66);
-      const cycle = trail + 72 + (column * 13 % 45);
-      const travel = rainTime * speed / 1000 + column * 137;
-      const head = travel % cycle;
-      const traveledRows = Math.floor(travel / CELL_HEIGHT);
-      const maskX = Math.floor((x - left) / portraitWidth * MASK_WIDTH);
+    const customChars =
+      typeof characters === "string" && characters.length > 0 ? characters : null;
 
-      for (let y = CELL_HEIGHT / 2, row = 0; y < height; y += CELL_HEIGHT, row++) {
-        const maskY = Math.floor((y - top) / portraitHeight * MASK_HEIGHT);
-        const tone = mask && maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT
-          ? mask[maskY * MASK_WIDTH + maskX]
-          : 0;
+    const parsedGradient =
+      Array.isArray(gradient) && gradient.length > 0
+        ? gradient.map((c) => parseColor(c))
+        : null;
+
+    const mouseX = interaction?.position?.x;
+    const mouseY = interaction?.position?.y;
+    const repulsionRadius = 45 * Math.min(1.4, Math.max(0.3, mouseSpeed || 0.8));
+
+    for (let x = cellW / 2, column = 0; x < width; x += cellW, column++) {
+      const speed = 42 + ((column * 17) % 28);
+      const trail = 160 + ((column * 41) % 66);
+      const cycle = trail + 72 + ((column * 13) % 45);
+      const travel = (rainTime * speed) / 1000 + column * 137;
+      const head = travel % cycle;
+      const traveledRows = Math.floor(travel / cellH);
+      const maskX = Math.floor(((x - left) / portraitWidth) * MASK_WIDTH);
+
+      for (let y = cellH / 2, row = 0; y < height; y += cellH, row++) {
+        const maskY = Math.floor(((y - top) / portraitHeight) * MASK_HEIGHT);
+        const tone =
+          mask && maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT
+            ? mask[maskY * MASK_WIDTH + maskX]
+            : 0;
+
         const distance = (head - (y % cycle) + cycle) % cycle;
         const strength = Math.max(0, 1 - distance / trail) ** 1.25;
         const glyphRow = row - traveledRows;
         const seed = Math.imul(column + 1, 374761393) ^ Math.imul(glyphRow, 668265263);
-        const imageIndex = maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT
-          ? maskY * MASK_WIDTH + maskX
-          : -1;
-        const belongsToUpload = imageIndex >= 0 && image?.foreground?.[imageIndex] === 1;
-        const belongsToPortrait = imageIndex >= 0 && (belongsToUpload || (!image?.foreground && tone > 0.035));
-        // Every non-transparent upload pixel participates, so no part of the
-        // submitted image disappears from the static Matrix portrait.
+
+        const imageIndex =
+          maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT
+            ? maskY * MASK_WIDTH + maskX
+            : -1;
+
+        const belongsToUpload =
+          !rainOnly && imageIndex >= 0 && image?.foreground?.[imageIndex] === 1;
+        const belongsToPortrait =
+          !rainOnly &&
+          imageIndex >= 0 &&
+          (belongsToUpload || (!image?.foreground && tone > 0.035));
+
         const imageTone = belongsToUpload
           ? Math.min(1, 0.36 + tone * Math.max(0.5, imageClarity))
           : Math.min(1, tone * Math.max(0.5, imageClarity));
-        if (!belongsToPortrait && strength < 0.09) continue;
+
+        if (!belongsToPortrait && strength < 0.08) continue;
         const visualTone = belongsToPortrait ? imageTone : strength * 0.78;
-        const group = Math.round(visualTone * (GLYPHS.length - 1));
-        const glyphs = GLYPHS[group];
-        const glyph = ((seed ^ (seed >>> 13) ^ Math.imul(traveledRows, 1274126177)) >>> 0) % glyphs.length;
-        context.globalAlpha = belongsToPortrait
-          ? Math.min(1, 0.28 + imageTone * 0.72)
-          : Math.min(0.7, 0.06 + strength * 0.62);
-        context.fillText(glyphs[glyph], x, y);
+
+        // Choose character/glyph
+        let glyphChar = "";
+        if (customChars) {
+          if (belongsToPortrait) {
+            const charIdx = Math.min(
+              customChars.length - 1,
+              Math.floor(visualTone * customChars.length)
+            );
+            glyphChar = customChars[charIdx];
+          } else {
+            const glyphSeed =
+              ((seed ^ (seed >>> 13) ^ Math.imul(traveledRows, 1274126177)) >>> 0) %
+              customChars.length;
+            glyphChar = customChars[glyphSeed];
+          }
+        } else {
+          const group = Math.round(visualTone * (GLYPHS.length - 1));
+          const glyphs = GLYPHS[group];
+          const glyph =
+            ((seed ^ (seed >>> 13) ^ Math.imul(traveledRows, 1274126177)) >>> 0) %
+            glyphs.length;
+          glyphChar = glyphs[glyph];
+        }
+
+        // Color & Gradient
+        const dropRatio = Math.max(0, Math.min(1, distance / trail));
+        if (belongsToPortrait) {
+          context.fillStyle = color;
+          context.globalAlpha = Math.min(1, 0.28 + imageTone * 0.72);
+        } else {
+          if (parsedGradient && parsedGradient.length >= 2) {
+            context.fillStyle = interpolateGradient(dropRatio, parsedGradient);
+          } else {
+            context.fillStyle = color;
+          }
+          context.globalAlpha = Math.min(0.9, 0.08 + strength * 0.82);
+        }
+
+        // Cursor particle repulsion/dispersion (calm, gentle move)
+        let drawX = x;
+        let drawY = y;
+        if (mouseX !== undefined && mouseY !== undefined) {
+          const dx = x - mouseX;
+          const dy = y - mouseY;
+          const dist = Math.hypot(dx, dy);
+          if (dist < repulsionRadius && dist > 0) {
+            const push = (1 - dist / repulsionRadius) * 6 * Math.min(1.4, Math.max(0.3, mouseSpeed || 0.8));
+            drawX += (dx / dist) * push;
+            drawY += (dy / dist) * push;
+          }
+        }
+
+        if (dropType === "lines") {
+          const lineH = belongsToPortrait
+            ? Math.max(3, cellH * (0.4 + visualTone * 0.9))
+            : Math.max(4, cellH * (0.6 + strength * 1.5));
+          const lineThickness = Math.max(1, Math.min(3, Math.round(cellW * 0.35)));
+
+          context.beginPath();
+          context.strokeStyle = context.fillStyle;
+          context.lineWidth = lineThickness;
+          context.lineCap = "round";
+          context.moveTo(drawX, drawY - lineH / 2);
+          context.lineTo(drawX, drawY + lineH / 2);
+          context.stroke();
+        } else {
+          context.fillText(glyphChar, drawX, drawY);
+        }
       }
     }
   }
@@ -174,17 +378,32 @@ export function InteractiveAsciiFace({
   src,
   alt = "Human portrait formed from green ASCII characters",
   followPointer = true,
-  maxOffset = 22,
+  maxOffset = 6,
   color = "#60ed83",
+  dropType = "characters",
+  gradient,
+  characters,
+  dropSize = 7,
+  rainOnly = false,
   lineSpeed = 1,
-  mouseSpeed = 1,
+  mouseSpeed = 0.8,
   imageClarity = 1.35,
   className = "",
 }) {
   const fieldRef = useRef(null);
   const portraitRef = useRef(null);
   const pointer = useRef(null);
-  const settings = useRef({ color, imageClarity, lineSpeed, mouseSpeed });
+  const settings = useRef({
+    color,
+    dropType,
+    gradient,
+    characters,
+    dropSize,
+    rainOnly,
+    imageClarity,
+    lineSpeed,
+    mouseSpeed,
+  });
   const renderer = useRef(undefined);
   const source = src ?? REFERENCE;
   const [result, setResult] = useState();
@@ -192,6 +411,7 @@ export function InteractiveAsciiFace({
   const mask = current?.mask;
 
   useEffect(() => {
+    if (rainOnly) return;
     const objectUrl = typeof source === "string" ? undefined : URL.createObjectURL(source);
     const image = new window.Image();
     image.crossOrigin = "anonymous";
@@ -210,7 +430,7 @@ export function InteractiveAsciiFace({
       image.onerror = null;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [source]);
+  }, [source, rainOnly]);
 
   useEffect(() => {
     if (fieldRef.current && portraitRef.current) {
@@ -221,38 +441,71 @@ export function InteractiveAsciiFace({
         renderer.current = undefined;
       };
     }
-  }, [mask]);
+  }, [mask, rainOnly]);
 
   useEffect(() => {
-    settings.current = { color, imageClarity, lineSpeed, mouseSpeed };
+    settings.current = {
+      color,
+      dropType,
+      gradient,
+      characters,
+      dropSize,
+      rainOnly,
+      imageClarity,
+      lineSpeed,
+      mouseSpeed,
+    };
     renderer.current?.paint();
-  }, [color, imageClarity, lineSpeed, mouseSpeed]);
+  }, [
+    color,
+    dropType,
+    gradient,
+    characters,
+    dropSize,
+    rainOnly,
+    imageClarity,
+    lineSpeed,
+    mouseSpeed,
+  ]);
 
   function movePortrait(event) {
     if (!followPointer || event.pointerType === "touch") return;
     const bounds = fieldRef.current?.getBoundingClientRect();
     if (!bounds?.width || !bounds.height) return;
-    const offset = Number.isFinite(maxOffset) ? Math.max(0, maxOffset) : 22;
+    const offset = Number.isFinite(maxOffset) ? Math.max(0, maxOffset) : 6;
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    pointer.current = { position: { x, y }, offset: { x: (x / bounds.width * 2 - 1) * offset, y: (y / bounds.height * 2 - 1) * offset } };
+    pointer.current = {
+      position: { x, y },
+      offset: {
+        x: ((x / bounds.width) * 2 - 1) * offset,
+        y: ((y / bounds.height) * 2 - 1) * offset,
+      },
+    };
   }
 
   return (
     <div
       className={[styles.stage, className].filter(Boolean).join(" ")}
       onPointerMove={movePortrait}
-      onPointerLeave={() => { pointer.current = null; }}
+      onPointerLeave={() => {
+        pointer.current = null;
+      }}
     >
-      <canvas ref={fieldRef} className={styles.field} role={mask ? "img" : undefined}
-        aria-label={mask ? alt : undefined} aria-hidden={!mask} />
-      <div
-        ref={portraitRef}
-        className={styles.frame}
-      >
-        {!mask && (
+      <style dangerouslySetInnerHTML={{ __html: EMBEDDED_ASCII_STYLES }} />
+      <canvas
+        ref={fieldRef}
+        className={styles.field}
+        role={mask && !rainOnly ? "img" : undefined}
+        aria-label={mask && !rainOnly ? alt : undefined}
+        aria-hidden={!mask || rainOnly}
+      />
+      <div ref={portraitRef} className={styles.frame}>
+        {!mask && !rainOnly && (
           <p className={styles.status} role="status">
-            {current ? "Couldn’t read this image. Try a PNG, JPEG, or WebP." : "Converting image to ASCII…"}
+            {current
+              ? "Couldn’t read this image. Try a PNG, JPEG, or WebP."
+              : "Converting image to ASCII…"}
           </p>
         )}
       </div>

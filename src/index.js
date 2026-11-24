@@ -22,5 +22,25 @@ export {
   liquidGlassButton,
 } from "./components/ui/liquidGlassButton";
 
+export {
+  StackedCardsScroll,
+  DEFAULT_STACKED_CARDS,
+} from "./components/ui/stacked-cards-scroll";
+
+export {
+  CurvedGridCanvas,
+  CurvedGridCanvas as FullpageCurvedGrid,
+} from "./components/ui/curved-grid-canvas";
+
+export {
+  ThemeCustomizer,
+  useAutoCycleAccent,
+  applyAccent,
+  ACCENT_PRESETS,
+} from "./components/layout/theme-customizer";
+
+export { InteractiveSnakeGrid } from "./components/ui/interactive-snake-grid";
+export { CodeTypewriter } from "./components/ui/code-typewriter";
+
 export { InstallTabs } from "./components/ui/install-tabs";
 export { PropsTable } from "./components/ui/props-table";

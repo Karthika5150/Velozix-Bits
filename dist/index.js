@@ -9,6 +9,128 @@ var image_scroll_default = {};
 // src/components/ui/image-scroll.jsx
 import { ArrowUpRight, Image as ImageIcon } from "lucide-react";
 import { jsx, jsxs } from "react/jsx-runtime";
+var fallbackStyles = {
+  container: "adaptive-ui-scroll-container",
+  verticalWrapper: "adaptive-ui-scroll-vertical-wrapper",
+  verticalTrack: "adaptive-ui-scroll-vertical-track",
+  verticalTrackReverse: "adaptive-ui-scroll-vertical-track-reverse",
+  horizontalWrapper: "adaptive-ui-scroll-horizontal-wrapper",
+  horizontalTrack: "adaptive-ui-scroll-horizontal-track",
+  horizontalTrackReverse: "adaptive-ui-scroll-horizontal-track-reverse",
+  pauseHover: "adaptive-ui-scroll-pause-hover",
+  tiltPerspective: "adaptive-ui-scroll-tilt-perspective",
+  tiltInner: "adaptive-ui-scroll-tilt-inner",
+  fadeMaskVertical: "adaptive-ui-scroll-fade-vertical",
+  fadeMaskHorizontal: "adaptive-ui-scroll-fade-horizontal"
+};
+var styles = image_scroll_default && Object.keys(image_scroll_default).length > 0 ? image_scroll_default : fallbackStyles;
+var EMBEDDED_SCROLL_STYLES = `
+.adaptive-ui-scroll-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+.adaptive-ui-scroll-vertical-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: var(--scroll-gap, 1.25rem);
+  height: var(--container-height, 560px);
+  overflow: hidden;
+}
+.adaptive-ui-scroll-vertical-track {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scroll-gap, 1.25rem);
+  will-change: transform;
+  animation-name: adaptiveUiScrollUp;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-vertical-track-reverse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scroll-gap, 1.25rem);
+  will-change: transform;
+  animation-name: adaptiveUiScrollDown;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-horizontal-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--scroll-gap, 1.25rem);
+  width: 100%;
+  overflow: hidden;
+}
+.adaptive-ui-scroll-horizontal-track {
+  display: flex;
+  flex-direction: row;
+  gap: var(--scroll-gap, 1.25rem);
+  width: max-content;
+  will-change: transform;
+  animation-name: adaptiveUiScrollLeft;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-horizontal-track-reverse {
+  display: flex;
+  flex-direction: row;
+  gap: var(--scroll-gap, 1.25rem);
+  width: max-content;
+  will-change: transform;
+  animation-name: adaptiveUiScrollRight;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-vertical-track,
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-vertical-track-reverse,
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-horizontal-track,
+.adaptive-ui-scroll-pause-hover:hover .adaptive-ui-scroll-horizontal-track-reverse {
+  animation-play-state: paused;
+}
+@keyframes adaptiveUiScrollUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+@keyframes adaptiveUiScrollDown {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+@keyframes adaptiveUiScrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes adaptiveUiScrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.adaptive-ui-scroll-fade-vertical {
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 8%, black 16%, black 84%, rgba(0, 0, 0, 0.8) 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.8) 8%, black 16%, black 84%, rgba(0, 0, 0, 0.8) 92%, transparent 100%);
+}
+.adaptive-ui-scroll-fade-horizontal {
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.8) 6%, black 14%, black 86%, rgba(0, 0, 0, 0.8) 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.8) 6%, black 14%, black 86%, rgba(0, 0, 0, 0.8) 94%, transparent 100%);
+}
+.adaptive-ui-scroll-tilt-perspective {
+  perspective: 1000px;
+}
+.adaptive-ui-scroll-tilt-inner {
+  transform: rotateX(8deg) rotateZ(-4deg) skewX(2deg);
+  transform-origin: center center;
+  transition: transform 0.4s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .adaptive-ui-scroll-vertical-track,
+  .adaptive-ui-scroll-vertical-track-reverse,
+  .adaptive-ui-scroll-horizontal-track,
+  .adaptive-ui-scroll-horizontal-track-reverse {
+    animation-play-state: paused !important;
+  }
+}
+`;
 var DEFAULT_SCROLL_IMAGES = [
   {
     id: 1,
@@ -197,71 +319,74 @@ function ImageScroll({
     "--container-height": height,
     ...style
   };
-  return /* @__PURE__ */ jsx(
+  return /* @__PURE__ */ jsxs(
     "div",
     {
       style: containerStyles,
       className: `
-        ${image_scroll_default.container}
-        ${tilt ? image_scroll_default.tiltPerspective : ""}
-        ${pauseOnHover ? image_scroll_default.pauseHover : ""}
-        ${isVertical && blurEdges ? image_scroll_default.fadeMaskVertical : ""}
-        ${!isVertical && blurEdges ? image_scroll_default.fadeMaskHorizontal : ""}
+        ${styles.container}
+        ${tilt ? styles.tiltPerspective : ""}
+        ${pauseOnHover ? styles.pauseHover : ""}
+        ${isVertical && blurEdges ? styles.fadeMaskVertical : ""}
+        ${!isVertical && blurEdges ? styles.fadeMaskHorizontal : ""}
         ${className}
       `,
-      children: /* @__PURE__ */ jsx("div", { className: tilt ? image_scroll_default.tiltInner : "", children: isVertical ? (
-        /* ================= VERTICAL COLUMNS ================= */
-        /* @__PURE__ */ jsx("div", { className: image_scroll_default.verticalWrapper, children: trackItemGroups.map((group, colIdx) => {
-          const isColReverse = staggerDirection ? colIdx % 2 === 1 ? !reverse : reverse : reverse;
-          const colSpeed = staggerDirection ? baseDuration * (1 + colIdx % 3 * 0.15) : baseDuration;
-          const trackItems = prepareTrackItems(group);
-          return /* @__PURE__ */ jsx(
-            "div",
-            {
-              className: isColReverse ? image_scroll_default.verticalTrackReverse : image_scroll_default.verticalTrack,
-              style: {
-                animationDuration: `${colSpeed}s`
+      children: [
+        /* @__PURE__ */ jsx("style", { dangerouslySetInnerHTML: { __html: EMBEDDED_SCROLL_STYLES } }),
+        /* @__PURE__ */ jsx("div", { className: tilt ? styles.tiltInner : "", children: isVertical ? (
+          /* ================= VERTICAL COLUMNS ================= */
+          /* @__PURE__ */ jsx("div", { className: styles.verticalWrapper, children: trackItemGroups.map((group, colIdx) => {
+            const isColReverse = staggerDirection ? colIdx % 2 === 1 ? !reverse : reverse : reverse;
+            const colSpeed = staggerDirection ? baseDuration * (1 + colIdx % 3 * 0.15) : baseDuration;
+            const trackItems = prepareTrackItems(group);
+            return /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: isColReverse ? styles.verticalTrackReverse : styles.verticalTrack,
+                style: {
+                  animationDuration: `${colSpeed}s`
+                },
+                children: trackItems.map((item, itemIdx) => /* @__PURE__ */ jsx(React.Fragment, { children: renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ jsx(
+                  DefaultImageCard,
+                  {
+                    item,
+                    cardWidth: defaultWidth,
+                    cardHeight: defaultHeight,
+                    onCardClick
+                  }
+                ) }, `v-item-${colIdx}-${itemIdx}`))
               },
-              children: trackItems.map((item, itemIdx) => /* @__PURE__ */ jsx(React.Fragment, { children: renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ jsx(
-                DefaultImageCard,
-                {
-                  item,
-                  cardWidth: defaultWidth,
-                  cardHeight: defaultHeight,
-                  onCardClick
-                }
-              ) }, `v-item-${colIdx}-${itemIdx}`))
-            },
-            `col-${colIdx}`
-          );
-        }) })
-      ) : (
-        /* ================= HORIZONTAL ROWS ================= */
-        /* @__PURE__ */ jsx("div", { className: image_scroll_default.horizontalWrapper, children: trackItemGroups.map((group, rowIdx) => {
-          const isRowReverse = staggerDirection ? rowIdx % 2 === 1 ? !reverse : reverse : reverse;
-          const rowSpeed = staggerDirection ? baseDuration * (1 + rowIdx % 3 * 0.15) : baseDuration;
-          const trackItems = prepareTrackItems(group);
-          return /* @__PURE__ */ jsx(
-            "div",
-            {
-              className: isRowReverse ? image_scroll_default.horizontalTrackReverse : image_scroll_default.horizontalTrack,
-              style: {
-                animationDuration: `${rowSpeed}s`
+              `col-${colIdx}`
+            );
+          }) })
+        ) : (
+          /* ================= HORIZONTAL ROWS ================= */
+          /* @__PURE__ */ jsx("div", { className: styles.horizontalWrapper, children: trackItemGroups.map((group, rowIdx) => {
+            const isRowReverse = staggerDirection ? rowIdx % 2 === 1 ? !reverse : reverse : reverse;
+            const rowSpeed = staggerDirection ? baseDuration * (1 + rowIdx % 3 * 0.15) : baseDuration;
+            const trackItems = prepareTrackItems(group);
+            return /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: isRowReverse ? styles.horizontalTrackReverse : styles.horizontalTrack,
+                style: {
+                  animationDuration: `${rowSpeed}s`
+                },
+                children: trackItems.map((item, itemIdx) => /* @__PURE__ */ jsx(React.Fragment, { children: renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ jsx(
+                  DefaultImageCard,
+                  {
+                    item,
+                    cardWidth: defaultWidth,
+                    cardHeight: defaultHeight,
+                    onCardClick
+                  }
+                ) }, `h-item-${rowIdx}-${itemIdx}`))
               },
-              children: trackItems.map((item, itemIdx) => /* @__PURE__ */ jsx(React.Fragment, { children: renderItem ? renderItem(item, itemIdx) : /* @__PURE__ */ jsx(
-                DefaultImageCard,
-                {
-                  item,
-                  cardWidth: defaultWidth,
-                  cardHeight: defaultHeight,
-                  onCardClick
-                }
-              ) }, `h-item-${rowIdx}-${itemIdx}`))
-            },
-            `row-${rowIdx}`
-          );
-        }) })
-      ) })
+              `row-${rowIdx}`
+            );
+          }) })
+        ) })
+      ]
     }
   );
 }
@@ -275,12 +400,78 @@ var interactive_ascii_face_default = {};
 
 // src/components/ui/interactive-ascii-face.jsx
 import { jsx as jsx2, jsxs as jsxs2 } from "react/jsx-runtime";
+var fallbackStyles2 = {
+  stage: "adaptive-ascii-stage",
+  field: "adaptive-ascii-field",
+  scanlines: "adaptive-ascii-scanlines",
+  vignette: "adaptive-ascii-vignette",
+  frame: "adaptive-ascii-frame",
+  status: "adaptive-ascii-status"
+};
+var styles2 = interactive_ascii_face_default && Object.keys(interactive_ascii_face_default).length > 0 ? interactive_ascii_face_default : fallbackStyles2;
+var EMBEDDED_ASCII_STYLES = `
+.adaptive-ascii-stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: clamp(28rem, 82svh, 58rem);
+  overflow: hidden;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  border: 1px solid #163620;
+  border-radius: 1rem;
+  background: radial-gradient(ellipse at center, #06190d 0%, #010603 85%);
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9), 0 20px 45px rgba(0, 0, 0, 0.7);
+  cursor: crosshair;
+  user-select: none;
+  touch-action: none;
+}
+.adaptive-ascii-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.adaptive-ascii-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.32) 50%);
+  background-size: 100% 4px;
+  z-index: 10;
+  opacity: 0.75;
+}
+.adaptive-ascii-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.8) 100%);
+  border-radius: 1rem;
+  z-index: 11;
+}
+.adaptive-ascii-frame {
+  position: relative;
+  width: min(100%, 34rem, 65svh);
+  aspect-ratio: 500 / 610;
+  pointer-events: none;
+}
+.adaptive-ascii-status {
+  display: grid;
+  height: 100%;
+  place-content: center;
+  padding: 1rem;
+  color: #5cfc87;
+  text-shadow: 0 0 8px rgba(92, 252, 135, 0.5);
+  font: 0.9rem/1.5 ui-monospace, monospace;
+  text-align: center;
+}
+`;
 var REFERENCE = "/images/ascii-portrait.png";
 var GLYPHS = [".:;|`", "il/+=:", "xovucz", "7TZH28", "NWM#@%"];
 var MASK_WIDTH = 360;
 var MASK_HEIGHT = 432;
-var CELL_WIDTH = 5;
-var CELL_HEIGHT = 7;
 function sampleImage(image, cropReference) {
   const canvas = document.createElement("canvas");
   canvas.width = MASK_WIDTH;
@@ -314,6 +505,38 @@ function sampleImage(image, cropReference) {
   const foreground = cropReference ? void 0 : Uint8Array.from(data, (_, index) => data[index * 4 + 3] > 12 ? 1 : 0);
   return { tones: detailed, foreground };
 }
+function parseColor(c, fallback = [92, 252, 135]) {
+  if (!c || typeof c !== "string") return fallback;
+  const clean = c.replace("#", "").trim();
+  if (clean.length === 3) {
+    return [
+      parseInt(clean[0] + clean[0], 16),
+      parseInt(clean[1] + clean[1], 16),
+      parseInt(clean[2] + clean[2], 16)
+    ];
+  }
+  if (clean.length === 6) {
+    return [
+      parseInt(clean.slice(0, 2), 16),
+      parseInt(clean.slice(2, 4), 16),
+      parseInt(clean.slice(4, 6), 16)
+    ];
+  }
+  return fallback;
+}
+function interpolateGradient(ratio, stops) {
+  if (!stops || stops.length === 0) return null;
+  if (stops.length === 1) return `rgb(${stops[0][0]}, ${stops[0][1]}, ${stops[0][2]})`;
+  const segment = 1 / (stops.length - 1);
+  const index = Math.min(stops.length - 2, Math.floor(ratio / segment));
+  const localT = (ratio - index * segment) / segment;
+  const c0 = stops[index];
+  const c1 = stops[index + 1];
+  const r = Math.round(c0[0] + (c1[0] - c0[0]) * localT);
+  const g = Math.round(c0[1] + (c1[1] - c0[1]) * localT);
+  const b = Math.round(c0[2] + (c1[2] - c0[2]) * localT);
+  return `rgb(${r}, ${g}, ${b})`;
+}
 function animateRain(canvas, portrait, image, pointer, settings) {
   const context = canvas.getContext("2d");
   if (!context) return;
@@ -325,36 +548,53 @@ function animateRain(canvas, portrait, image, pointer, settings) {
   let offsetX = 0;
   let offsetY = 0;
   function paint(delta = 1e3 / 60) {
-    var _a;
+    var _a, _b, _c;
     if (!context) return;
     const width = renderWidth;
     const height = renderHeight;
     const portraitWidth = portrait.offsetWidth;
     const portraitHeight = portrait.offsetHeight;
-    const { color, imageClarity, mouseSpeed } = settings.current;
+    const {
+      color,
+      dropType = "characters",
+      gradient,
+      characters,
+      dropSize = 7,
+      rainOnly = false,
+      imageClarity,
+      mouseSpeed
+    } = settings.current;
     const interaction = pointer.current;
-    const response = Math.min(1.8, Math.max(0.3, mouseSpeed || 1));
-    const follow = 1 - Math.exp(-delta * 0.011 * response);
+    const response = Math.min(1.2, Math.max(0.2, (mouseSpeed || 0.8) * 0.6));
+    const follow = 1 - Math.exp(-delta * 7e-3 * response);
     offsetX += (((interaction == null ? void 0 : interaction.offset.x) ?? 0) - offsetX) * follow;
     offsetY += (((interaction == null ? void 0 : interaction.offset.y) ?? 0) - offsetY) * follow;
     const left = (width - portraitWidth) / 2 + offsetX;
     const top = (height - portraitHeight) / 2 + offsetY;
     context.globalAlpha = 1;
     context.clearRect(0, 0, width, height);
-    const mask = image == null ? void 0 : image.tones;
-    context.fillStyle = color;
-    context.font = "6px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+    const mask = rainOnly ? null : image == null ? void 0 : image.tones;
+    const sizeVal = Math.max(4, Math.min(24, Number(dropSize) || 7));
+    const cellW = Math.max(3, Math.round(sizeVal * 0.72));
+    const cellH = sizeVal;
+    const fontSize = Math.max(4, Math.round(sizeVal * 0.88));
+    context.font = `${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    for (let x = CELL_WIDTH / 2, column = 0; x < width; x += CELL_WIDTH, column++) {
+    const customChars = typeof characters === "string" && characters.length > 0 ? characters : null;
+    const parsedGradient = Array.isArray(gradient) && gradient.length > 0 ? gradient.map((c) => parseColor(c)) : null;
+    const mouseX = (_a = interaction == null ? void 0 : interaction.position) == null ? void 0 : _a.x;
+    const mouseY = (_b = interaction == null ? void 0 : interaction.position) == null ? void 0 : _b.y;
+    const repulsionRadius = 45 * Math.min(1.4, Math.max(0.3, mouseSpeed || 0.8));
+    for (let x = cellW / 2, column = 0; x < width; x += cellW, column++) {
       const speed = 42 + column * 17 % 28;
       const trail = 160 + column * 41 % 66;
       const cycle = trail + 72 + column * 13 % 45;
       const travel = rainTime * speed / 1e3 + column * 137;
       const head = travel % cycle;
-      const traveledRows = Math.floor(travel / CELL_HEIGHT);
+      const traveledRows = Math.floor(travel / cellH);
       const maskX = Math.floor((x - left) / portraitWidth * MASK_WIDTH);
-      for (let y = CELL_HEIGHT / 2, row = 0; y < height; y += CELL_HEIGHT, row++) {
+      for (let y = cellH / 2, row = 0; y < height; y += cellH, row++) {
         const maskY = Math.floor((y - top) / portraitHeight * MASK_HEIGHT);
         const tone = mask && maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT ? mask[maskY * MASK_WIDTH + maskX] : 0;
         const distance = (head - y % cycle + cycle) % cycle;
@@ -362,16 +602,66 @@ function animateRain(canvas, portrait, image, pointer, settings) {
         const glyphRow = row - traveledRows;
         const seed = Math.imul(column + 1, 374761393) ^ Math.imul(glyphRow, 668265263);
         const imageIndex = maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT ? maskY * MASK_WIDTH + maskX : -1;
-        const belongsToUpload = imageIndex >= 0 && ((_a = image == null ? void 0 : image.foreground) == null ? void 0 : _a[imageIndex]) === 1;
-        const belongsToPortrait = imageIndex >= 0 && (belongsToUpload || !(image == null ? void 0 : image.foreground) && tone > 0.035);
+        const belongsToUpload = !rainOnly && imageIndex >= 0 && ((_c = image == null ? void 0 : image.foreground) == null ? void 0 : _c[imageIndex]) === 1;
+        const belongsToPortrait = !rainOnly && imageIndex >= 0 && (belongsToUpload || !(image == null ? void 0 : image.foreground) && tone > 0.035);
         const imageTone = belongsToUpload ? Math.min(1, 0.36 + tone * Math.max(0.5, imageClarity)) : Math.min(1, tone * Math.max(0.5, imageClarity));
-        if (!belongsToPortrait && strength < 0.09) continue;
+        if (!belongsToPortrait && strength < 0.08) continue;
         const visualTone = belongsToPortrait ? imageTone : strength * 0.78;
-        const group = Math.round(visualTone * (GLYPHS.length - 1));
-        const glyphs = GLYPHS[group];
-        const glyph = ((seed ^ seed >>> 13 ^ Math.imul(traveledRows, 1274126177)) >>> 0) % glyphs.length;
-        context.globalAlpha = belongsToPortrait ? Math.min(1, 0.28 + imageTone * 0.72) : Math.min(0.7, 0.06 + strength * 0.62);
-        context.fillText(glyphs[glyph], x, y);
+        let glyphChar = "";
+        if (customChars) {
+          if (belongsToPortrait) {
+            const charIdx = Math.min(
+              customChars.length - 1,
+              Math.floor(visualTone * customChars.length)
+            );
+            glyphChar = customChars[charIdx];
+          } else {
+            const glyphSeed = ((seed ^ seed >>> 13 ^ Math.imul(traveledRows, 1274126177)) >>> 0) % customChars.length;
+            glyphChar = customChars[glyphSeed];
+          }
+        } else {
+          const group = Math.round(visualTone * (GLYPHS.length - 1));
+          const glyphs = GLYPHS[group];
+          const glyph = ((seed ^ seed >>> 13 ^ Math.imul(traveledRows, 1274126177)) >>> 0) % glyphs.length;
+          glyphChar = glyphs[glyph];
+        }
+        const dropRatio = Math.max(0, Math.min(1, distance / trail));
+        if (belongsToPortrait) {
+          context.fillStyle = color;
+          context.globalAlpha = Math.min(1, 0.28 + imageTone * 0.72);
+        } else {
+          if (parsedGradient && parsedGradient.length >= 2) {
+            context.fillStyle = interpolateGradient(dropRatio, parsedGradient);
+          } else {
+            context.fillStyle = color;
+          }
+          context.globalAlpha = Math.min(0.9, 0.08 + strength * 0.82);
+        }
+        let drawX = x;
+        let drawY = y;
+        if (mouseX !== void 0 && mouseY !== void 0) {
+          const dx = x - mouseX;
+          const dy = y - mouseY;
+          const dist = Math.hypot(dx, dy);
+          if (dist < repulsionRadius && dist > 0) {
+            const push = (1 - dist / repulsionRadius) * 6 * Math.min(1.4, Math.max(0.3, mouseSpeed || 0.8));
+            drawX += dx / dist * push;
+            drawY += dy / dist * push;
+          }
+        }
+        if (dropType === "lines") {
+          const lineH = belongsToPortrait ? Math.max(3, cellH * (0.4 + visualTone * 0.9)) : Math.max(4, cellH * (0.6 + strength * 1.5));
+          const lineThickness = Math.max(1, Math.min(3, Math.round(cellW * 0.35)));
+          context.beginPath();
+          context.strokeStyle = context.fillStyle;
+          context.lineWidth = lineThickness;
+          context.lineCap = "round";
+          context.moveTo(drawX, drawY - lineH / 2);
+          context.lineTo(drawX, drawY + lineH / 2);
+          context.stroke();
+        } else {
+          context.fillText(glyphChar, drawX, drawY);
+        }
       }
     }
   }
@@ -409,23 +699,39 @@ function InteractiveAsciiFace({
   src,
   alt = "Human portrait formed from green ASCII characters",
   followPointer = true,
-  maxOffset = 22,
+  maxOffset = 6,
   color = "#60ed83",
+  dropType = "characters",
+  gradient,
+  characters,
+  dropSize = 7,
+  rainOnly = false,
   lineSpeed = 1,
-  mouseSpeed = 1,
+  mouseSpeed = 0.8,
   imageClarity = 1.35,
   className = ""
 }) {
   const fieldRef = useRef(null);
   const portraitRef = useRef(null);
   const pointer = useRef(null);
-  const settings = useRef({ color, imageClarity, lineSpeed, mouseSpeed });
+  const settings = useRef({
+    color,
+    dropType,
+    gradient,
+    characters,
+    dropSize,
+    rainOnly,
+    imageClarity,
+    lineSpeed,
+    mouseSpeed
+  });
   const renderer = useRef(void 0);
   const source = src ?? REFERENCE;
   const [result, setResult] = useState2();
   const current = (result == null ? void 0 : result.source) === source ? result : void 0;
   const mask = current == null ? void 0 : current.mask;
   useEffect(() => {
+    if (rainOnly) return;
     const objectUrl = typeof source === "string" ? void 0 : URL.createObjectURL(source);
     const image = new window.Image();
     image.crossOrigin = "anonymous";
@@ -443,7 +749,7 @@ function InteractiveAsciiFace({
       image.onerror = null;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [source]);
+  }, [source, rainOnly]);
   useEffect(() => {
     if (fieldRef.current && portraitRef.current) {
       const animation = animateRain(fieldRef.current, portraitRef.current, mask, pointer, settings);
@@ -453,49 +759,69 @@ function InteractiveAsciiFace({
         renderer.current = void 0;
       };
     }
-  }, [mask]);
+  }, [mask, rainOnly]);
   useEffect(() => {
     var _a;
-    settings.current = { color, imageClarity, lineSpeed, mouseSpeed };
+    settings.current = {
+      color,
+      dropType,
+      gradient,
+      characters,
+      dropSize,
+      rainOnly,
+      imageClarity,
+      lineSpeed,
+      mouseSpeed
+    };
     (_a = renderer.current) == null ? void 0 : _a.paint();
-  }, [color, imageClarity, lineSpeed, mouseSpeed]);
+  }, [
+    color,
+    dropType,
+    gradient,
+    characters,
+    dropSize,
+    rainOnly,
+    imageClarity,
+    lineSpeed,
+    mouseSpeed
+  ]);
   function movePortrait(event) {
     var _a;
     if (!followPointer || event.pointerType === "touch") return;
     const bounds = (_a = fieldRef.current) == null ? void 0 : _a.getBoundingClientRect();
     if (!(bounds == null ? void 0 : bounds.width) || !bounds.height) return;
-    const offset = Number.isFinite(maxOffset) ? Math.max(0, maxOffset) : 22;
+    const offset = Number.isFinite(maxOffset) ? Math.max(0, maxOffset) : 6;
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    pointer.current = { position: { x, y }, offset: { x: (x / bounds.width * 2 - 1) * offset, y: (y / bounds.height * 2 - 1) * offset } };
+    pointer.current = {
+      position: { x, y },
+      offset: {
+        x: (x / bounds.width * 2 - 1) * offset,
+        y: (y / bounds.height * 2 - 1) * offset
+      }
+    };
   }
   return /* @__PURE__ */ jsxs2(
     "div",
     {
-      className: [interactive_ascii_face_default.stage, className].filter(Boolean).join(" "),
+      className: [styles2.stage, className].filter(Boolean).join(" "),
       onPointerMove: movePortrait,
       onPointerLeave: () => {
         pointer.current = null;
       },
       children: [
+        /* @__PURE__ */ jsx2("style", { dangerouslySetInnerHTML: { __html: EMBEDDED_ASCII_STYLES } }),
         /* @__PURE__ */ jsx2(
           "canvas",
           {
             ref: fieldRef,
-            className: interactive_ascii_face_default.field,
-            role: mask ? "img" : void 0,
-            "aria-label": mask ? alt : void 0,
-            "aria-hidden": !mask
+            className: styles2.field,
+            role: mask && !rainOnly ? "img" : void 0,
+            "aria-label": mask && !rainOnly ? alt : void 0,
+            "aria-hidden": !mask || rainOnly
           }
         ),
-        /* @__PURE__ */ jsx2(
-          "div",
-          {
-            ref: portraitRef,
-            className: interactive_ascii_face_default.frame,
-            children: !mask && /* @__PURE__ */ jsx2("p", { className: interactive_ascii_face_default.status, role: "status", children: current ? "Couldn\u2019t read this image. Try a PNG, JPEG, or WebP." : "Converting image to ASCII\u2026" })
-          }
-        )
+        /* @__PURE__ */ jsx2("div", { ref: portraitRef, className: styles2.frame, children: !mask && !rainOnly && /* @__PURE__ */ jsx2("p", { className: styles2.status, role: "status", children: current ? "Couldn\u2019t read this image. Try a PNG, JPEG, or WebP." : "Converting image to ASCII\u2026" }) })
       ]
     }
   );
@@ -561,7 +887,7 @@ var EDGES = [
   []
 ];
 function heightAt(x, y, t) {
-  return Math.sin(x * 1.1 + t * 0.55) + Math.sin(y * 1.4 - t * 0.45) + Math.sin((x + y) * 0.8 + t * 0.35) + Math.sin(Math.hypot(x - 2.5, y - 1.8) * 1.3 - t * 0.5);
+  return Math.sin(x * 1.1 + t * 0.28) + Math.sin(y * 1.4 - t * 0.22) + Math.sin((x + y) * 0.8 + t * 0.18) + Math.sin(Math.hypot(x - 2.5, y - 1.8) * 1.3 - t * 0.25);
 }
 function drawTopography(ctx, W2, H2, t, color) {
   const cell = 16;
@@ -676,17 +1002,37 @@ function ensureSize(canvas, w, h) {
     canvas.height = h;
   }
 }
+function getCoverBounds(sw, sh, dw, dh) {
+  if (!sw || !sh || !dw || !dh) return { sx: 0, sy: 0, sWidth: sw || 1, sHeight: sh || 1 };
+  const sRatio = sw / sh;
+  const dRatio = dw / dh;
+  let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
+  if (sRatio > dRatio) {
+    sWidth = sh * dRatio;
+    sx = (sw - sWidth) / 2;
+  } else {
+    sHeight = sw / dRatio;
+    sy = (sh - sHeight) / 2;
+  }
+  return { sx, sy, sWidth, sHeight };
+}
 function BlobMorphHero({
   preset = "lando-f1",
   baseImage = "",
   equippedImage = "",
   blobMode = "roam",
-  speed = 1,
+  speed = 0.5,
   autoPlay = true,
+  interactive = true,
+  cornerRadius = 25,
+  borderRadius,
+  aspectRatio = "auto",
+  imageScale = 0.85,
+  widthScale = 0.85,
+  heightScale = 0.85,
   showTopography = true,
   showAmbientBlobs = true,
   showHud = true,
-  showNextRace = false,
   accentColor,
   topoColor,
   bgColor,
@@ -714,6 +1060,7 @@ function BlobMorphHero({
   const baseSrc = baseImage || active.baseImage;
   const equippedSrc = equippedImage || active.equippedImage;
   const headline = active.title.split("//")[0].trim();
+  const radius = borderRadius ?? cornerRadius ?? 25;
   const [autoHead, setAutoHead] = useState3(null);
   const hb = {
     ...DEFAULT_HEAD_BOX,
@@ -730,31 +1077,69 @@ function BlobMorphHero({
   const eqImgRef = useRef2(null);
   const wipeRef = useRef2(null);
   const scanRef = useRef2(null);
+  const mouseRef = useRef2({
+    x: 0.5,
+    y: 0.5,
+    targetX: 0.5,
+    targetY: 0.5,
+    active: false,
+    intensity: 0
+  });
   const uid = useId().replace(/:/g, "");
   const shellId = "bmh-shell-" + uid;
   const wipeId = "bmh-wipe-" + uid;
   const [size, setSize] = useState3({ w: 0, h: 0 });
   const [aspect, setAspect] = useState3(0.8);
   const box = useMemo(() => {
-    let h = size.h * 0.9;
-    let w = h * aspect;
-    if (w > size.w * 0.9) {
-      w = size.w * 0.9;
-      h = w / aspect;
+    if (!size.w || !size.h) return { x: 0, y: 0, w: 0, h: 0 };
+    const wFraction = typeof widthScale === "number" ? widthScale : typeof imageScale === "number" ? imageScale : 0.85;
+    const hFraction = typeof heightScale === "number" ? heightScale : typeof imageScale === "number" ? imageScale : 0.85;
+    let w = Math.round(size.w * Math.min(1, Math.max(0.1, wFraction)));
+    let h = Math.round(size.h * Math.min(1, Math.max(0.1, hFraction)));
+    if (aspectRatio === "square" || aspectRatio === 1) {
+      const s = Math.min(w, h);
+      w = s;
+      h = s;
+    } else if (typeof aspectRatio === "number" && aspectRatio > 0) {
+      h = Math.round(w / aspectRatio);
+      if (h > size.h * 0.95) {
+        h = Math.round(size.h * 0.95);
+        w = Math.round(h * aspectRatio);
+      }
     }
     return {
       x: Math.round((size.w - w) / 2),
       y: Math.round((size.h - h) / 2),
-      w: Math.round(w),
-      h: Math.round(h)
+      w,
+      h
     };
-  }, [size, aspect]);
+  }, [size, aspectRatio, imageScale, widthScale, heightScale]);
+  const handlePointerMove = (e) => {
+    if (!rootRef.current || !interactive) return;
+    const rect = rootRef.current.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      mouseRef.current.targetX = Math.max(0, Math.min(1, x));
+      mouseRef.current.targetY = Math.max(0, Math.min(1, y));
+      mouseRef.current.active = true;
+    }
+  };
+  const handlePointerEnter = (e) => {
+    if (!interactive) return;
+    mouseRef.current.active = true;
+    handlePointerMove(e);
+  };
+  const handlePointerLeave = () => {
+    mouseRef.current.active = false;
+  };
   const propsRef = useRef2({});
   propsRef.current = {
     speed,
     flipEquipped,
     debugAlign,
     autoPlay,
+    interactive,
     blobMode,
     showTopography,
     showAmbientBlobs,
@@ -778,19 +1163,25 @@ function BlobMorphHero({
     return () => ro.disconnect();
   }, []);
   useEffect2(() => {
+    const src = baseSrc || equippedSrc;
+    if (!src) return;
     const im = new Image();
     im.onload = () => {
       if (im.naturalWidth && im.naturalHeight) {
         setAspect(im.naturalWidth / im.naturalHeight);
       }
     };
-    im.src = baseSrc;
-  }, [baseSrc]);
+    im.src = src;
+  }, [baseSrc, equippedSrc]);
   useEffect2(() => {
+    if (!equippedSrc) return;
     const im = new Image();
     im.decoding = "async";
     setAutoHead(null);
     im.onload = () => {
+      if (!baseSrc && im.naturalWidth && im.naturalHeight) {
+        setAspect(im.naturalWidth / im.naturalHeight);
+      }
       try {
         const sw = Math.min(256, im.naturalWidth);
         const sh = Math.max(1, Math.round(sw * im.naturalHeight / im.naturalWidth));
@@ -862,21 +1253,53 @@ function BlobMorphHero({
       }
       const minD = Math.min(mw, mh);
       const live = BLOBS.map((b) => {
-        const rad = b.r * minD * 1.5 * (1 + 0.18 * Math.sin(t * 0.9 + b.px));
+        const rad = b.r * minD * 1.4 * (1 + 0.12 * Math.sin(t * 0.5 + b.px));
         return {
-          x: (0.5 + b.ax * Math.sin(t * b.fx + b.px)) * mw,
-          y: (0.5 + b.ay * Math.sin(t * b.fy + b.py)) * mh,
+          x: (0.5 + b.ax * Math.sin(t * (b.fx * 0.7) + b.px)) * mw,
+          y: (0.5 + b.ay * Math.sin(t * (b.fy * 0.7) + b.py)) * mh,
           r2: rad * rad
         };
       });
-      if (p.blobMode === "flood") {
-        const surge = 0.5 + 0.5 * Math.sin(t * 0.7);
-        const rad = minD * (0.16 + 0.24 * surge);
+      const m = mouseRef.current;
+      if (p.interactive) {
+        m.x += (m.targetX - m.x) * 0.14;
+        m.y += (m.targetY - m.y) * 0.14;
+        if (m.active) {
+          m.intensity += (1 - m.intensity) * 0.08;
+        } else {
+          m.intensity += (0 - m.intensity) * 0.05;
+        }
+      } else {
+        m.intensity = 0;
+      }
+      if (m.intensity > 5e-3) {
+        const mouseRad = minD * (0.16 + 0.02 * Math.sin(t * 1.2)) * m.intensity;
         live.push({
-          x: (bx.x + bx.w / 2) / W2 * mw,
-          y: (bx.y + bx.h / 2) / H2 * mh,
-          r2: rad * rad
+          x: m.x * mw,
+          y: m.y * mh,
+          r2: mouseRad * mouseRad
         });
+      }
+      if (p.blobMode === "flood") {
+        const surge = 0.5 + 0.5 * Math.sin(t * 0.45);
+        const rad = minD * (0.26 + 0.28 * surge);
+        live.push(
+          {
+            x: (bx.x + bx.w * 0.5) / W2 * mw,
+            y: (bx.y + bx.h * 0.5) / H2 * mh,
+            r2: rad * rad
+          },
+          {
+            x: (bx.x + bx.w * 0.38) / W2 * mw,
+            y: (bx.y + bx.h * 0.46) / H2 * mh,
+            r2: rad * rad * 0.65
+          },
+          {
+            x: (bx.x + bx.w * 0.62) / W2 * mw,
+            y: (bx.y + bx.h * 0.54) / H2 * mh,
+            r2: rad * rad * 0.65
+          }
+        );
       }
       const sx0 = bx.x / W2 * mw;
       const sy0 = bx.y / H2 * mh;
@@ -893,12 +1316,12 @@ function BlobMorphHero({
         ny2 = new Float32Array(mh);
       }
       for (let x = 0; x < mw; x++) {
-        nx1[x] = Math.sin(x * 0.025 + t * 0.9);
-        nx2[x] = Math.sin(x * 0.045 - t * 1.4);
+        nx1[x] = Math.sin(x * 0.025 + t * 0.4);
+        nx2[x] = Math.sin(x * 0.045 - t * 0.55);
       }
       for (let y = 0; y < mh; y++) {
-        ny1[y] = Math.cos(y * 0.03 - t * 1.1);
-        ny2[y] = Math.sin(y * 0.05 + t * 0.8);
+        ny1[y] = Math.cos(y * 0.03 - t * 0.45);
+        ny2[y] = Math.sin(y * 0.05 + t * 0.35);
       }
       const d = imgData.data;
       const n = live.length;
@@ -951,14 +1374,20 @@ function BlobMorphHero({
         rctx.globalCompositeOperation = "source-over";
         rctx.clearRect(0, 0, bx.w, bx.h);
         if (eq && eq.complete && eq.naturalWidth) {
+          const { sx, sy, sWidth, sHeight } = getCoverBounds(
+            eq.naturalWidth,
+            eq.naturalHeight,
+            bx.w,
+            bx.h
+          );
           if (p.flipEquipped) {
             rctx.save();
             rctx.translate(bx.w, 0);
             rctx.scale(-1, 1);
-            rctx.drawImage(eq, 0, 0, bx.w, bx.h);
+            rctx.drawImage(eq, sx, sy, sWidth, sHeight, 0, 0, bx.w, bx.h);
             rctx.restore();
           } else {
-            rctx.drawImage(eq, 0, 0, bx.w, bx.h);
+            rctx.drawImage(eq, sx, sy, sWidth, sHeight, 0, 0, bx.w, bx.h);
           }
           if (!p.debugAlign) {
             rctx.globalCompositeOperation = "destination-in";
@@ -1016,6 +1445,9 @@ function BlobMorphHero({
     "div",
     {
       ref: rootRef,
+      onPointerMove: handlePointerMove,
+      onPointerEnter: handlePointerEnter,
+      onPointerLeave: handlePointerLeave,
       className: `relative h-full w-full overflow-hidden ${className}`,
       style: { background: bg },
       children: [
@@ -1043,8 +1475,14 @@ function BlobMorphHero({
         /* @__PURE__ */ jsxs3(
           "div",
           {
-            className: "absolute",
-            style: { left: box.x, top: box.y, width: box.w, height: box.h },
+            className: "absolute overflow-hidden",
+            style: {
+              left: box.x,
+              top: box.y,
+              width: box.w,
+              height: box.h,
+              borderRadius: `${radius}px`
+            },
             children: [
               /* @__PURE__ */ jsx3(
                 "img",
@@ -1052,16 +1490,22 @@ function BlobMorphHero({
                   src: baseSrc,
                   alt: "",
                   draggable: false,
-                  className: "absolute inset-0 h-full w-full select-none",
-                  style: flipBase ? { transform: "scaleX(-1)" } : void 0
+                  className: "absolute inset-0  h-full w-full select-none object-cover pointer-events-none",
+                  style: {
+                    borderRadius: `${radius}px`,
+                    transform: flipBase ? "scaleX(-1)" : void 0
+                  }
                 }
               ),
               /* @__PURE__ */ jsx3(
                 "canvas",
                 {
                   ref: revRef,
-                  className: "absolute inset-0 h-full w-full",
-                  style: debugAlign ? { opacity: 0.5 } : void 0
+                  className: "absolute inset-0 h-full w-full pointer-events-none",
+                  style: {
+                    borderRadius: `${radius}px`,
+                    opacity: debugAlign ? 0.5 : void 0
+                  }
                 }
               ),
               showHud && /* @__PURE__ */ jsxs3(Fragment, { children: [
@@ -1125,17 +1569,6 @@ function BlobMorphHero({
                   }
                 )
               ] })
-            ]
-          }
-        ),
-        showNextRace && /* @__PURE__ */ jsxs3(
-          "div",
-          {
-            className: "pointer-events-none absolute left-6 top-6 text-xs",
-            style: { color: "#111111" },
-            children: [
-              /* @__PURE__ */ jsx3("div", { className: "opacity-60", children: "Next race" }),
-              /* @__PURE__ */ jsx3("div", { className: "text-sm font-semibold", children: "Las Vegas GP" })
             ]
           }
         )
@@ -1660,11 +2093,1352 @@ function LiquidGlassButton({
 }
 var liquidGlassButton = LiquidGlassButton;
 
+// src/components/ui/stacked-cards-scroll.jsx
+import React7, { useState as useState5, useEffect as useEffect5, useRef as useRef5, useCallback } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Layers,
+  Activity,
+  Compass,
+  ArrowUpRight as ArrowUpRight2,
+  Eye,
+  Sliders,
+  Pin
+} from "lucide-react";
+import { jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
+var DEFAULT_STACKED_CARDS = [
+  {
+    id: 1,
+    number: "01",
+    oneWord: "LIQUID",
+    tag: "FLUID DYNAMICS",
+    title: "Liquid Morph",
+    subtitle: "Organic Fluid Simulation",
+    description: "Multi-layer fluid mesh with real-time marching squares topography.",
+    accent: "#c084fc",
+    // Light Purple / Violet
+    cardBg: "linear-gradient(145deg, rgba(88, 28, 135, 0.9) 0%, rgba(20, 8, 38, 0.96) 100%)",
+    borderGlow: "rgba(192, 132, 252, 0.5)"
+  },
+  {
+    id: 2,
+    number: "02",
+    oneWord: "PHOSPHOR",
+    tag: "PARTICLE OPTICS",
+    title: "Phosphor CRT",
+    subtitle: "Terminal ASCII Dispersion",
+    description: "High-contrast character matrix with spring physics return.",
+    accent: "#a855f7",
+    // Vibrant Violet
+    cardBg: "linear-gradient(145deg, rgba(107, 33, 168, 0.9) 0%, rgba(23, 7, 43, 0.96) 100%)",
+    borderGlow: "rgba(168, 85, 247, 0.5)"
+  },
+  {
+    id: 3,
+    number: "03",
+    oneWord: "TUNNEL",
+    tag: "GEOMETRIC SPACE",
+    title: "Infinite Tunnel",
+    subtitle: "Recursive Wireframe Warp",
+    description: "Hypnotic depth-field rings warping with mouse acceleration.",
+    accent: "#9333ea",
+    // Deep Purple
+    cardBg: "linear-gradient(145deg, rgba(88, 28, 135, 0.9) 0%, rgba(18, 5, 36, 0.96) 100%)",
+    borderGlow: "rgba(147, 51, 234, 0.5)"
+  },
+  {
+    id: 4,
+    number: "04",
+    oneWord: "PARALLAX",
+    tag: "PERSPECTIVE ENGINE",
+    title: "3D Parallax",
+    subtitle: "Spatial Matrix Tilt",
+    description: "Natural inertial cursor-coupled tilt calculations.",
+    accent: "#c084fc",
+    cardBg: "linear-gradient(145deg, rgba(109, 40, 217, 0.9) 0%, rgba(26, 10, 56, 0.96) 100%)",
+    borderGlow: "rgba(192, 132, 252, 0.5)"
+  },
+  {
+    id: 5,
+    number: "05",
+    oneWord: "VELOCITY",
+    tag: "SPRING MECHANICS",
+    title: "Elastic Velocity",
+    subtitle: "Harmonic Damping Equations",
+    description: "Physical simulation engine modeling mass and stiffness.",
+    accent: "#d8b4fe",
+    // Lavender Purple
+    cardBg: "linear-gradient(145deg, rgba(76, 29, 149, 0.9) 0%, rgba(18, 7, 40, 0.96) 100%)",
+    borderGlow: "rgba(216, 180, 254, 0.5)"
+  },
+  {
+    id: 6,
+    number: "06",
+    oneWord: "SHADERS",
+    tag: "SHADING PIPELINE",
+    title: "WebGL Shader",
+    subtitle: "Low-Level GPU Fragment",
+    description: "Raw GLSL shader passes compiling directly to GPU contexts.",
+    accent: "#a855f7",
+    cardBg: "linear-gradient(145deg, rgba(91, 33, 182, 0.9) 0%, rgba(22, 8, 48, 0.96) 100%)",
+    borderGlow: "rgba(168, 85, 247, 0.5)"
+  },
+  {
+    id: 7,
+    number: "07",
+    oneWord: "TOPOLOGY",
+    tag: "ELEVATION FIELD",
+    title: "Marching Squares",
+    subtitle: "Isoline Contour Topography",
+    description: "Dynamic topological vector contour lines over scalar fields.",
+    accent: "#e9d5ff",
+    cardBg: "linear-gradient(145deg, rgba(107, 33, 168, 0.9) 0%, rgba(24, 7, 46, 0.96) 100%)",
+    borderGlow: "rgba(233, 213, 255, 0.5)"
+  },
+  {
+    id: 8,
+    number: "08",
+    oneWord: "OPTICS",
+    tag: "HUD TELEMETRY",
+    title: "Optical Gauges",
+    subtitle: "Semi-Circle Arc Radar HUD",
+    description: "Vector arc telemetry instruments with dasharray tracking.",
+    accent: "#c084fc",
+    cardBg: "linear-gradient(145deg, rgba(88, 28, 135, 0.9) 0%, rgba(20, 8, 38, 0.96) 100%)",
+    borderGlow: "rgba(192, 132, 252, 0.5)"
+  },
+  {
+    id: 9,
+    number: "09",
+    oneWord: "SPECTRUM",
+    tag: "FREQUENCY SPECTRUM",
+    title: "Sound Reactive",
+    subtitle: "Fast Fourier Transform",
+    description: "Audio frequency FFT frequency spectrum visualizers.",
+    accent: "#d8b4fe",
+    cardBg: "linear-gradient(145deg, rgba(109, 40, 217, 0.9) 0%, rgba(26, 10, 56, 0.96) 100%)",
+    borderGlow: "rgba(216, 180, 254, 0.5)"
+  },
+  {
+    id: 10,
+    number: "10",
+    oneWord: "ADAPTIVE",
+    tag: "MODULAR CORE",
+    title: "Adaptive Core",
+    subtitle: "Zero Runtime Framework",
+    description: "Tree-shakeable architecture with universal Next.js compatibility.",
+    accent: "#a855f7",
+    cardBg: "linear-gradient(145deg, rgba(76, 29, 149, 0.9) 0%, rgba(18, 7, 40, 0.96) 100%)",
+    borderGlow: "rgba(168, 85, 247, 0.5)"
+  }
+];
+function HalfRingGauge({
+  currentIndex,
+  total = 10,
+  accentColor = "#a855f7"
+}) {
+  const radius = 80;
+  const cx = 100;
+  const cy = 100;
+  const arcLength = Math.PI * radius;
+  const progress = total > 1 ? currentIndex / (total - 1) : 0;
+  const strokeOffset = arcLength * (1 - progress);
+  const angle = Math.PI * (1 - progress);
+  const dotX = cx + radius * Math.cos(angle);
+  const dotY = cy - radius * Math.sin(angle);
+  return /* @__PURE__ */ jsxs5("div", { className: "relative flex items-center justify-center select-none", children: [
+    /* @__PURE__ */ jsxs5(
+      "svg",
+      {
+        viewBox: "0 0 200 120",
+        className: "w-48 sm:w-56 h-28 sm:h-32 overflow-visible drop-shadow-[0_0_20px_rgba(168,85,247,0.4)]",
+        children: [
+          /* @__PURE__ */ jsxs5("defs", { children: [
+            /* @__PURE__ */ jsxs5("linearGradient", { id: "purpleRingGrad", x1: "0%", y1: "0%", x2: "100%", y2: "0%", children: [
+              /* @__PURE__ */ jsx7("stop", { offset: "0%", stopColor: "#7e22ce" }),
+              /* @__PURE__ */ jsx7("stop", { offset: "50%", stopColor: "#a855f7" }),
+              /* @__PURE__ */ jsx7("stop", { offset: "100%", stopColor: "#e9d5ff" })
+            ] }),
+            /* @__PURE__ */ jsxs5("filter", { id: "purpleGlow", x: "-20%", y: "-20%", width: "140%", height: "140%", children: [
+              /* @__PURE__ */ jsx7("feGaussianBlur", { stdDeviation: "5", result: "blur" }),
+              /* @__PURE__ */ jsxs5("feMerge", { children: [
+                /* @__PURE__ */ jsx7("feMergeNode", { in: "blur" }),
+                /* @__PURE__ */ jsx7("feMergeNode", { in: "SourceGraphic" })
+              ] })
+            ] })
+          ] }),
+          Array.from({ length: 19 }).map((_, i) => {
+            const tAngle = Math.PI * (1 - i / 18);
+            const r1 = radius + 8;
+            const r2 = radius + (i % 2 === 0 ? 15 : 12);
+            const x1 = cx + r1 * Math.cos(tAngle);
+            const y1 = cy - r1 * Math.sin(tAngle);
+            const x2 = cx + r2 * Math.cos(tAngle);
+            const y2 = cy - r2 * Math.sin(tAngle);
+            const isPassed = i / 18 <= progress;
+            return /* @__PURE__ */ jsx7(
+              "line",
+              {
+                x1,
+                y1,
+                x2,
+                y2,
+                stroke: isPassed ? "#c084fc" : "#27272a",
+                strokeWidth: i % 2 === 0 ? 1.5 : 1,
+                strokeOpacity: isPassed ? 1 : 0.4,
+                className: "transition-colors duration-300"
+              },
+              i
+            );
+          }),
+          /* @__PURE__ */ jsx7(
+            "path",
+            {
+              d: "M 20 100 A 80 80 0 0 1 180 100",
+              fill: "none",
+              stroke: "#1e1830",
+              strokeWidth: "7",
+              strokeLinecap: "round"
+            }
+          ),
+          /* @__PURE__ */ jsx7(
+            "path",
+            {
+              d: "M 20 100 A 80 80 0 0 1 180 100",
+              fill: "none",
+              stroke: "url(#purpleRingGrad)",
+              strokeWidth: "7",
+              strokeLinecap: "round",
+              strokeDasharray: arcLength,
+              strokeDashoffset: strokeOffset,
+              filter: "url(#purpleGlow)",
+              className: "transition-all duration-500 ease-out"
+            }
+          ),
+          /* @__PURE__ */ jsx7(
+            "circle",
+            {
+              cx: dotX,
+              cy: dotY,
+              r: "6",
+              fill: "#ffffff",
+              className: "transition-all duration-500 ease-out drop-shadow-[0_0_10px_#c084fc]"
+            }
+          ),
+          /* @__PURE__ */ jsx7(
+            "circle",
+            {
+              cx: dotX,
+              cy: dotY,
+              r: "10",
+              fill: "#a855f7",
+              fillOpacity: "0.5",
+              className: "transition-all duration-500 ease-out animate-pulse"
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx7("div", { className: "absolute bottom-2 flex flex-col items-center", children: /* @__PURE__ */ jsxs5("span", { className: "font-mono text-xl sm:text-2xl font-black tracking-tight text-white", children: [
+      String(currentIndex + 1).padStart(2, "0"),
+      /* @__PURE__ */ jsx7("span", { className: "text-xs font-normal text-purple-300/60 ml-1", children: "/10" })
+    ] }) })
+  ] });
+}
+function StackedCardsScroll({
+  cards = DEFAULT_STACKED_CARDS,
+  initialIndex = 0,
+  enableWheelScroll = true,
+  pin = false,
+  pinHeight = "280vh",
+  autoPlay = false,
+  autoPlayInterval = 4e3,
+  className = "",
+  onChange
+}) {
+  const [activeIndex, setActiveIndex] = useState5(initialIndex);
+  const [isHovered, setIsHovered] = useState5(false);
+  const containerRef = useRef5(null);
+  const pinTrackRef = useRef5(null);
+  const lastScrollTime = useRef5(0);
+  const totalCards = cards.length;
+  const currentCard = cards[activeIndex] || cards[0];
+  const handleNext = useCallback(() => {
+    setActiveIndex((prev) => {
+      const next = prev < totalCards - 1 ? prev + 1 : 0;
+      if (onChange) onChange(next, cards[next]);
+      return next;
+    });
+  }, [totalCards, cards, onChange]);
+  const handlePrev = useCallback(() => {
+    setActiveIndex((prev) => {
+      const next = prev > 0 ? prev - 1 : totalCards - 1;
+      if (onChange) onChange(next, cards[next]);
+      return next;
+    });
+  }, [totalCards, cards, onChange]);
+  const handleSelect = useCallback(
+    (index) => {
+      if (index >= 0 && index < totalCards) {
+        setActiveIndex(index);
+        if (onChange) onChange(index, cards[index]);
+      }
+    },
+    [totalCards, cards, onChange]
+  );
+  const handleWheel = useCallback(
+    (e) => {
+      if (pin) return;
+      if (!enableWheelScroll) return;
+      const now = Date.now();
+      if (now - lastScrollTime.current < 260) return;
+      if (e.deltaY > 20) {
+        lastScrollTime.current = now;
+        handleNext();
+      } else if (e.deltaY < -20) {
+        lastScrollTime.current = now;
+        handlePrev();
+      }
+    },
+    [pin, enableWheelScroll, handleNext, handlePrev]
+  );
+  useEffect5(() => {
+    if (!pin) return;
+    const track = pinTrackRef.current;
+    if (!track) return;
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const rect = track.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          const totalDistance = rect.height - windowHeight;
+          if (totalDistance > 0) {
+            const scrolled = -rect.top;
+            const progress = Math.min(Math.max(scrolled / totalDistance, 0), 1);
+            const targetIndex = Math.min(
+              Math.floor(progress * totalCards),
+              totalCards - 1
+            );
+            setActiveIndex((prev) => {
+              if (prev !== targetIndex) {
+                if (onChange) onChange(targetIndex, cards[targetIndex]);
+                return targetIndex;
+              }
+              return prev;
+            });
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [pin, totalCards, cards, onChange]);
+  useEffect5(() => {
+    if (pin || !autoPlay || isHovered) return;
+    const timer = setInterval(() => {
+      handleNext();
+    }, autoPlayInterval);
+    return () => clearInterval(timer);
+  }, [pin, autoPlay, isHovered, autoPlayInterval, handleNext]);
+  const deckNode = /* @__PURE__ */ jsxs5(
+    "div",
+    {
+      ref: containerRef,
+      onWheel: handleWheel,
+      onMouseEnter: () => setIsHovered(true),
+      onMouseLeave: () => setIsHovered(false),
+      tabIndex: 0,
+      style: {
+        backgroundAttachment: "fixed"
+      },
+      className: `relative w-full rounded-3xl border border-purple-500/20 bg-[#070512]/95 backdrop-blur-2xl p-6 sm:p-8 md:p-10 select-none overflow-hidden outline-none shadow-[0_0_50px_rgba(168,85,247,0.15)] ${className}`,
+      children: [
+        /* @__PURE__ */ jsx7("div", { className: "pointer-events-none absolute -top-24 -left-24 size-96 rounded-full blur-3xl opacity-30 bg-purple-600 transition-all duration-700" }),
+        /* @__PURE__ */ jsx7("div", { className: "pointer-events-none absolute -bottom-24 -right-24 size-96 rounded-full blur-3xl opacity-25 bg-violet-500 transition-all duration-700" }),
+        /* @__PURE__ */ jsxs5("div", { className: "relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-purple-500/15 pb-4 mb-8", children: [
+          /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ jsx7("div", { className: "size-8 rounded-lg border border-purple-500/30 bg-purple-500/15 flex items-center justify-center text-purple-400", children: /* @__PURE__ */ jsx7(Layers, { size: 16 }) }),
+            /* @__PURE__ */ jsxs5("div", { children: [
+              /* @__PURE__ */ jsxs5("h3", { className: "font-sans font-bold text-base text-white flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx7("span", { children: "3D Stacked Cards Deck" }),
+                pin && /* @__PURE__ */ jsxs5("span", { className: "inline-flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30", children: [
+                  /* @__PURE__ */ jsx7(Pin, { size: 10 }),
+                  /* @__PURE__ */ jsx7("span", { children: "Pinned" })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsx7("p", { className: "font-mono text-xs text-purple-300/70", children: "Top Stack Layered Fan \u2022 Odd/Even Alternating Rotation" })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ jsx7("span", { className: "hidden sm:inline-flex text-[11px] font-mono text-purple-300/60 bg-purple-950/40 px-2.5 py-1 rounded-full border border-purple-500/20", children: pin ? "Scroll down to flip" : "Scroll wheel or click" }),
+            /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-1.5 bg-black/50 border border-purple-500/20 rounded-lg p-1", children: [
+              /* @__PURE__ */ jsx7(
+                "button",
+                {
+                  type: "button",
+                  onClick: handlePrev,
+                  className: "p-1.5 rounded text-purple-300 hover:text-white hover:bg-purple-500/20 transition-colors cursor-pointer",
+                  "aria-label": "Previous card",
+                  children: /* @__PURE__ */ jsx7(ChevronLeft, { size: 16 })
+                }
+              ),
+              /* @__PURE__ */ jsxs5("span", { className: "font-mono text-xs px-2 text-white font-semibold", children: [
+                String(activeIndex + 1).padStart(2, "0"),
+                "/",
+                totalCards
+              ] }),
+              /* @__PURE__ */ jsx7(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleNext,
+                  className: "p-1.5 rounded text-purple-300 hover:text-white hover:bg-purple-500/20 transition-colors cursor-pointer",
+                  "aria-label": "Next card",
+                  children: /* @__PURE__ */ jsx7(ChevronRight, { size: 16 })
+                }
+              )
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs5("div", { className: "relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center min-h-[460px]", children: [
+          /* @__PURE__ */ jsx7("div", { className: "lg:col-span-6 flex items-center justify-center py-10 px-2", children: /* @__PURE__ */ jsx7("div", { className: "relative w-full max-w-[340px] sm:max-w-[370px] h-[380px] flex items-center justify-center perspective-[1000px]", children: cards.map((card, index) => {
+            const offset = index - activeIndex;
+            const isActive = index === activeIndex;
+            let rotateDeg = 0;
+            let translateY = 0;
+            let scale = 1;
+            let zIndex = 30 - Math.abs(offset);
+            let opacity = 1;
+            let pointerEvents = "auto";
+            if (isActive) {
+              rotateDeg = 0;
+              translateY = 0;
+              scale = 1;
+              zIndex = 40;
+              opacity = 1;
+            } else if (offset > 0) {
+              const sign = index % 2 === 0 ? 1 : -1;
+              rotateDeg = sign * (3.2 + offset * 1.1);
+              translateY = -offset * 13;
+              scale = Math.max(0.74, 1 - offset * 0.035);
+              opacity = Math.max(0.35, 1 - offset * 0.075);
+            } else {
+              const sign = index % 2 === 0 ? -1 : 1;
+              rotateDeg = sign * 14;
+              translateY = 70 + Math.abs(offset) * 15;
+              scale = 1.05;
+              opacity = 0;
+              pointerEvents = "none";
+            }
+            return /* @__PURE__ */ jsxs5(
+              "div",
+              {
+                onClick: () => handleSelect(index),
+                style: {
+                  transform: `translateY(${translateY}px) scale(${scale}) rotate(${rotateDeg}deg)`,
+                  zIndex,
+                  opacity,
+                  pointerEvents,
+                  background: card.cardBg,
+                  borderColor: isActive ? "#c084fc" : "rgba(168, 85, 247, 0.3)",
+                  transition: "transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.5s ease, z-index 0.5s ease, border-color 0.4s ease",
+                  boxShadow: isActive ? "0 25px 50px -15px rgba(168, 85, 247, 0.5), 0 0 30px -5px rgba(168, 85, 247, 0.4)" : "0 10px 25px -10px rgba(0,0,0,0.7)"
+                },
+                className: "absolute top-0 w-full h-full rounded-2xl p-6 cursor-pointer border flex flex-col justify-between overflow-hidden backdrop-blur-md",
+                children: [
+                  /* @__PURE__ */ jsx7("div", { className: "absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-300/40 to-transparent pointer-events-none" }),
+                  /* @__PURE__ */ jsxs5("div", { className: "relative z-10 flex items-center justify-between", children: [
+                    /* @__PURE__ */ jsxs5("span", { className: "text-xs font-mono font-bold px-2.5 py-1 rounded-md border text-purple-300 bg-purple-950/60 border-purple-400/40", children: [
+                      "CARD ",
+                      card.number
+                    ] }),
+                    /* @__PURE__ */ jsx7("span", { className: "text-[10px] font-mono tracking-widest uppercase text-purple-200/90 font-semibold", children: card.tag })
+                  ] }),
+                  /* @__PURE__ */ jsxs5("div", { className: "relative z-10 my-auto flex flex-col items-center justify-center py-4", children: [
+                    /* @__PURE__ */ jsx7("div", { className: "size-16 rounded-2xl flex items-center justify-center border border-purple-400/40 bg-purple-950/50 shadow-[0_0_25px_rgba(168,85,247,0.3)] transition-transform duration-500 hover:scale-110", children: /* @__PURE__ */ jsx7(Sparkles, { size: 28, className: "text-purple-300" }) }),
+                    /* @__PURE__ */ jsx7("h4", { className: "mt-4 font-sans font-bold text-lg text-white text-center tracking-tight", children: card.title }),
+                    /* @__PURE__ */ jsx7("p", { className: "mt-1 text-xs font-mono text-purple-300/80 text-center", children: card.subtitle })
+                  ] }),
+                  /* @__PURE__ */ jsxs5("div", { className: "relative z-10 border-t border-purple-500/20 pt-3 flex items-center justify-between text-[11px] font-mono text-purple-300/70", children: [
+                    /* @__PURE__ */ jsxs5("span", { className: "flex items-center gap-1.5", children: [
+                      /* @__PURE__ */ jsx7("span", { className: "size-2 rounded-full bg-purple-400 animate-ping" }),
+                      /* @__PURE__ */ jsx7("span", { className: "font-medium text-white", children: "Active Vector" })
+                    ] }),
+                    /* @__PURE__ */ jsxs5("span", { children: [
+                      "Deck ",
+                      index + 1,
+                      " of ",
+                      totalCards
+                    ] })
+                  ] })
+                ]
+              },
+              card.id
+            );
+          }) }) }),
+          /* @__PURE__ */ jsx7("div", { className: "lg:col-span-6 flex items-center justify-center py-6", children: /* @__PURE__ */ jsxs5("div", { className: "relative flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 p-6 sm:p-8 rounded-3xl border border-purple-500/20 bg-purple-950/20 backdrop-blur-xl w-full max-w-lg shadow-[0_0_40px_rgba(168,85,247,0.1)]", children: [
+            /* @__PURE__ */ jsx7("div", { className: "shrink-0", children: /* @__PURE__ */ jsx7(
+              HalfRingGauge,
+              {
+                currentIndex: activeIndex,
+                total: totalCards,
+                accentColor: "#a855f7"
+              }
+            ) }),
+            /* @__PURE__ */ jsxs5("div", { className: "flex flex-col items-center sm:items-start text-center sm:text-left justify-center min-w-[180px]", children: [
+              /* @__PURE__ */ jsxs5("span", { className: "text-[11px] font-mono tracking-widest uppercase text-purple-400/80 font-semibold", children: [
+                "STAGE ",
+                currentCard.number
+              ] }),
+              /* @__PURE__ */ jsx7(
+                "h2",
+                {
+                  className: "font-sans text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white mt-1 animate-[fadeIn_0.35s_ease-out]",
+                  style: {
+                    textShadow: "0 0 30px rgba(168, 85, 247, 0.7), 0 0 60px rgba(168, 85, 247, 0.3)"
+                  },
+                  children: currentCard.oneWord
+                },
+                currentCard.oneWord
+              ),
+              /* @__PURE__ */ jsx7("span", { className: "text-xs font-mono text-purple-300/70 mt-1", children: currentCard.subtitle })
+            ] })
+          ] }) })
+        ] })
+      ]
+    }
+  );
+  if (pin) {
+    return /* @__PURE__ */ jsx7(
+      "div",
+      {
+        ref: pinTrackRef,
+        style: { minHeight: pinHeight },
+        className: "relative w-full",
+        children: /* @__PURE__ */ jsx7("div", { className: "sticky top-20 w-full z-20", children: deckNode })
+      }
+    );
+  }
+  return deckNode;
+}
+
+// src/components/ui/curved-grid-canvas.jsx
+import React8, { useEffect as useEffect6, useRef as useRef6, useState as useState6 } from "react";
+import { jsx as jsx8 } from "react/jsx-runtime";
+function CurvedGridCanvas({
+  cellSize = 50,
+  accentColor: propAccentColor,
+  fadeSpeed = 0.65,
+  // energy decay per second
+  className = ""
+}) {
+  const canvasRef = useRef6(null);
+  const activeSquaresRef = useRef6(/* @__PURE__ */ new Map());
+  const trailRef = useRef6([]);
+  const mouseRef = useRef6({
+    x: -9999,
+    y: -9999,
+    isDown: false,
+    lastCol: -1,
+    lastRow: -1
+  });
+  useEffect6(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animId;
+    let lastTime = performance.now();
+    const getAccentTheme = () => {
+      if (propAccentColor) {
+        return {
+          hex: propAccentColor,
+          rgb: "168, 85, 247"
+        };
+      }
+      if (typeof window === "undefined") {
+        return { hex: "#a855f7", rgb: "168, 85, 247" };
+      }
+      const style = getComputedStyle(document.documentElement);
+      const hex = style.getPropertyValue("--brand-accent").trim() || "#a855f7";
+      const rgb = style.getPropertyValue("--brand-accent-rgb").trim() || "168, 85, 247";
+      return { hex, rgb };
+    };
+    const handleResize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    const handlePointerMove = (e) => {
+      const mx = e.clientX;
+      const my = e.clientY;
+      mouseRef.current.x = mx;
+      mouseRef.current.y = my;
+      const col = Math.floor(mx / cellSize);
+      const row = Math.floor(my / cellSize);
+      if (col < 0 || row < 0) return;
+      const isNewSquare = col !== mouseRef.current.lastCol || row !== mouseRef.current.lastRow;
+      const key = `${col},${row}`;
+      const cx = col * cellSize + cellSize / 2;
+      const cy = row * cellSize + cellSize / 2;
+      const pullFactor = mouseRef.current.isDown ? 0.35 : 0.18;
+      const effCx = cx + (mx - cx) * pullFactor;
+      const effCy = cy + (my - cy) * pullFactor;
+      const now = performance.now();
+      activeSquaresRef.current.set(key, {
+        col,
+        row,
+        cx,
+        cy,
+        effCx,
+        effCy,
+        energy: 1,
+        isDown: mouseRef.current.isDown,
+        updatedAt: now
+      });
+      if (isNewSquare) {
+        mouseRef.current.lastCol = col;
+        mouseRef.current.lastRow = row;
+        trailRef.current.push({
+          col,
+          row,
+          cx,
+          cy,
+          effCx,
+          effCy,
+          key,
+          energy: 1,
+          isDown: mouseRef.current.isDown,
+          createdAt: now
+        });
+        if (trailRef.current.length > 40) {
+          trailRef.current.shift();
+        }
+      } else {
+        const lastNode = trailRef.current[trailRef.current.length - 1];
+        if (lastNode && lastNode.key === key) {
+          lastNode.effCx = effCx;
+          lastNode.effCy = effCy;
+          lastNode.energy = 1;
+        }
+      }
+    };
+    const handlePointerDown = (e) => {
+      mouseRef.current.isDown = true;
+      handlePointerMove(e);
+    };
+    const handlePointerUp = () => {
+      mouseRef.current.isDown = false;
+    };
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    window.addEventListener("pointerup", handlePointerUp, { passive: true });
+    const render = (time) => {
+      const dt = Math.min((time - lastTime) / 1e3, 0.1);
+      lastTime = time;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const cols = Math.ceil(w / cellSize);
+      const rows = Math.ceil(h / cellSize);
+      const { hex: accentColor, rgb: accentRgb } = getAccentTheme();
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.025)";
+      ctx.beginPath();
+      for (let c = 0; c <= cols; c++) {
+        const x = c * cellSize;
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+      }
+      for (let r = 0; r <= rows; r++) {
+        const y = r * cellSize;
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+      for (let c = 0; c <= cols; c += 2) {
+        for (let r = 0; r <= rows; r += 2) {
+          ctx.fillRect(c * cellSize - 1, r * cellSize - 1, 2, 2);
+        }
+      }
+      for (const [key, sq] of activeSquaresRef.current.entries()) {
+        sq.energy -= dt * fadeSpeed;
+        if (sq.energy <= 0) {
+          activeSquaresRef.current.delete(key);
+        }
+      }
+      for (let i = trailRef.current.length - 1; i >= 0; i--) {
+        const node = trailRef.current[i];
+        node.energy -= dt * fadeSpeed;
+        if (node.energy <= 0) {
+          trailRef.current.splice(i, 1);
+        }
+      }
+      for (const sq of activeSquaresRef.current.values()) {
+        const x0 = sq.col * cellSize;
+        const y0 = sq.row * cellSize;
+        const pad = 2;
+        const size = cellSize - pad * 2;
+        const alpha = Math.min(Math.max(sq.energy, 0), 1);
+        const radius = sq.isDown ? 12 : 6;
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x0 + pad, y0 + pad, size, size, radius);
+        } else {
+          ctx.rect(x0 + pad, y0 + pad, size, size);
+        }
+        ctx.strokeStyle = `rgba(${accentRgb}, ${alpha * 0.85})`;
+        ctx.lineWidth = sq.isDown ? 2 : 1.5;
+        ctx.fillStyle = `rgba(${accentRgb}, ${alpha * 0.14})`;
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = sq.isDown ? 16 : 10;
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+      const trail = trailRef.current;
+      if (trail.length >= 2) {
+        for (let i = 1; i < trail.length; i++) {
+          const p1 = trail[i - 1];
+          const p2 = trail[i];
+          const curveEnergy = Math.min(p1.energy, p2.energy);
+          if (curveEnergy <= 0.05) continue;
+          const mx = (p1.effCx + p2.effCx) / 2;
+          const my = (p1.effCy + p2.effCy) / 2;
+          const dx = p2.effCx - p1.effCx;
+          const dy = p2.effCy - p1.effCy;
+          const dist = Math.hypot(dx, dy);
+          const sign = i % 2 === 0 ? 1 : -1;
+          const bowFactor = (p2.isDown ? 22 : 15) * sign;
+          const nx = -dy / (dist || 1) * bowFactor;
+          const ny = dx / (dist || 1) * bowFactor;
+          const ctrlX = mx + nx;
+          const ctrlY = my + ny;
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(p1.effCx, p1.effCy);
+          ctx.quadraticCurveTo(ctrlX, ctrlY, p2.effCx, p2.effCy);
+          ctx.strokeStyle = `rgba(${accentRgb}, ${curveEnergy * 0.95})`;
+          ctx.lineWidth = (p2.isDown ? 3.5 : 2.5) * curveEnergy;
+          ctx.lineCap = "round";
+          ctx.shadowColor = accentColor;
+          ctx.shadowBlur = 18;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+      for (const sq of activeSquaresRef.current.values()) {
+        const alpha = Math.min(Math.max(sq.energy, 0), 1);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(sq.effCx, sq.effCy, 6 * alpha, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${accentRgb}, ${alpha * 0.4})`;
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = 14;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(sq.effCx, sq.effCy, 3 * alpha, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.restore();
+      }
+      animId = requestAnimationFrame(render);
+    };
+    animId = requestAnimationFrame(render);
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [cellSize, propAccentColor, fadeSpeed]);
+  return /* @__PURE__ */ jsx8(
+    "canvas",
+    {
+      ref: canvasRef,
+      className: `fixed inset-0 pointer-events-none z-0 w-full h-full ${className}`,
+      style: {
+        display: "block"
+      }
+    }
+  );
+}
+
+// src/components/layout/theme-customizer.jsx
+import React9, { useState as useState7, useEffect as useEffect7, useCallback as useCallback2 } from "react";
+import { Palette, Check } from "lucide-react";
+import { jsx as jsx9, jsxs as jsxs6 } from "react/jsx-runtime";
+var ACCENT_PRESETS = [
+  {
+    id: "violet",
+    name: "Violet",
+    color: "#a855f7",
+    glow: "rgba(168, 85, 247, 0.45)",
+    muted: "rgba(168, 85, 247, 0.15)",
+    rgb: "168, 85, 247"
+  },
+  {
+    id: "emerald",
+    name: "Emerald",
+    color: "#10b981",
+    glow: "rgba(16, 185, 129, 0.45)",
+    muted: "rgba(16, 185, 129, 0.15)",
+    rgb: "16, 185, 129"
+  },
+  {
+    id: "cyan",
+    name: "Cyan",
+    color: "#06b6d4",
+    glow: "rgba(6, 182, 212, 0.45)",
+    muted: "rgba(6, 182, 212, 0.15)",
+    rgb: "6, 182, 212"
+  },
+  {
+    id: "amber",
+    name: "Amber",
+    color: "#f59e0b",
+    glow: "rgba(245, 158, 11, 0.45)",
+    muted: "rgba(245, 158, 11, 0.15)",
+    rgb: "245, 158, 11"
+  },
+  {
+    id: "rose",
+    name: "Rose",
+    color: "#f43f5e",
+    glow: "rgba(244, 63, 94, 0.45)",
+    muted: "rgba(244, 63, 94, 0.15)",
+    rgb: "244, 63, 94"
+  },
+  {
+    id: "indigo",
+    name: "Indigo",
+    color: "#6366f1",
+    glow: "rgba(99, 102, 241, 0.45)",
+    muted: "rgba(99, 102, 241, 0.15)",
+    rgb: "99, 102, 241"
+  }
+];
+function applyAccent(accentId, persist = true) {
+  if (typeof document === "undefined") return;
+  const preset = ACCENT_PRESETS.find((p) => p.id === accentId) || ACCENT_PRESETS[0];
+  document.documentElement.setAttribute("data-accent", preset.id);
+  document.documentElement.style.setProperty("--brand-accent", preset.color);
+  document.documentElement.style.setProperty("--brand-accent-glow", preset.glow);
+  document.documentElement.style.setProperty("--brand-accent-muted", preset.muted);
+  document.documentElement.style.setProperty("--brand-accent-rgb", preset.rgb);
+  if (persist) {
+    try {
+      localStorage.setItem("velozix-accent", preset.id);
+      localStorage.setItem("velozix-manual-accent", "true");
+    } catch {
+    }
+  }
+}
+function useAutoCycleAccent(enabled = true, intervalMs = 3600) {
+  useEffect7(() => {
+    if (!enabled) return;
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % ACCENT_PRESETS.length;
+      const nextPreset = ACCENT_PRESETS[currentIndex];
+      applyAccent(nextPreset.id, false);
+    }, intervalMs);
+    return () => clearInterval(interval);
+  }, [enabled, intervalMs]);
+}
+function ThemeCustomizer({ className = "", compact = false }) {
+  const [selectedAccent, setSelectedAccent] = useState7("violet");
+  useEffect7(() => {
+    const saved = localStorage.getItem("velozix-accent");
+    if (saved && ACCENT_PRESETS.some((p) => p.id === saved)) {
+      applyAccent(saved, false);
+      setSelectedAccent(saved);
+    } else {
+      applyAccent("violet", false);
+    }
+  }, []);
+  const handleSelect = (id) => {
+    setSelectedAccent(id);
+    applyAccent(id, true);
+  };
+  return /* @__PURE__ */ jsxs6("div", { className: `flex flex-col gap-2 ${className}`, children: [
+    /* @__PURE__ */ jsx9("div", { className: "flex items-center gap-1.5 p-1.5 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md", children: ACCENT_PRESETS.map((preset) => {
+      const isSelected = selectedAccent === preset.id;
+      return /* @__PURE__ */ jsx9(
+        "button",
+        {
+          type: "button",
+          onClick: () => handleSelect(preset.id),
+          style: { backgroundColor: preset.color },
+          title: `Switch accent to ${preset.name}`,
+          className: `size-5 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center ${isSelected ? "ring-2 ring-white scale-110 shadow-[0_0_12px_var(--brand-accent)]" : "opacity-60 hover:opacity-100 hover:scale-105"}`,
+          children: isSelected && /* @__PURE__ */ jsx9(Check, { size: 11, className: "text-white drop-shadow stroke-[3]" })
+        },
+        preset.id
+      );
+    }) }),
+    !compact && /* @__PURE__ */ jsxs6("span", { className: "text-[10px] font-mono text-zinc-400 capitalize", children: [
+      "Active: ",
+      selectedAccent
+    ] })
+  ] });
+}
+
+// src/components/ui/interactive-snake-grid.jsx
+import React10, { useState as useState8, useEffect as useEffect8, useRef as useRef7, useCallback as useCallback3 } from "react";
+import { Sparkles as Sparkles2, Gamepad2, RotateCcw } from "lucide-react";
+import { jsx as jsx10, jsxs as jsxs7 } from "react/jsx-runtime";
+var GRID_COLS = 20;
+var GRID_ROWS = 20;
+var MAX_TRAIL_LENGTH = 16;
+function InteractiveSnakeGrid({
+  accentColor = "var(--brand-accent, #a855f7)",
+  className = "",
+  showControls = true
+}) {
+  const [trail, setTrail] = useState8([]);
+  const [food, setFood] = useState8({ x: 14, y: 8 });
+  const [score, setScore] = useState8(0);
+  const [isHovered, setIsHovered] = useState8(false);
+  const decayTimerRef = useRef7(null);
+  const autoSnakeRef = useRef7({
+    x: 5,
+    y: 10,
+    dx: 1,
+    dy: 0,
+    body: [
+      { x: 5, y: 10 },
+      { x: 4, y: 10 },
+      { x: 3, y: 10 }
+    ]
+  });
+  const spawnFood = useCallback3(() => {
+    setFood({
+      x: Math.floor(Math.random() * (GRID_COLS - 4)) + 2,
+      y: Math.floor(Math.random() * (GRID_ROWS - 4)) + 2
+    });
+  }, []);
+  const handleCellHover = useCallback3(
+    (col, row) => {
+      setIsHovered(true);
+      setTrail((prev) => {
+        if (prev.length > 0 && prev[0].x === col && prev[0].y === row) {
+          return prev;
+        }
+        const newTrail = [{ x: col, y: row, id: `${col}-${row}-${Date.now()}` }, ...prev];
+        if (newTrail.length > MAX_TRAIL_LENGTH) {
+          newTrail.pop();
+        }
+        return newTrail;
+      });
+      if (col === food.x && row === food.y) {
+        setScore((s) => s + 10);
+        spawnFood();
+      }
+    },
+    [food, spawnFood]
+  );
+  useEffect8(() => {
+    decayTimerRef.current = setInterval(() => {
+      setTrail((prev) => {
+        if (prev.length === 0) return prev;
+        return prev.slice(0, prev.length - 1);
+      });
+    }, 75);
+    return () => clearInterval(decayTimerRef.current);
+  }, []);
+  useEffect8(() => {
+    if (isHovered) return;
+    const interval = setInterval(() => {
+      const snake = autoSnakeRef.current;
+      if (Math.random() < 0.35) {
+        if (snake.x < food.x) {
+          snake.dx = 1;
+          snake.dy = 0;
+        } else if (snake.x > food.x) {
+          snake.dx = -1;
+          snake.dy = 0;
+        } else if (snake.y < food.y) {
+          snake.dx = 0;
+          snake.dy = 1;
+        } else {
+          snake.dx = 0;
+          snake.dy = -1;
+        }
+      }
+      let nx = snake.x + snake.dx;
+      let ny = snake.y + snake.dy;
+      if (nx < 0) nx = GRID_COLS - 1;
+      if (nx >= GRID_COLS) nx = 0;
+      if (ny < 0) ny = GRID_ROWS - 1;
+      if (ny >= GRID_ROWS) ny = 0;
+      snake.x = nx;
+      snake.y = ny;
+      const newHead = { x: nx, y: ny, id: `auto-${nx}-${ny}-${Date.now()}` };
+      setTrail((prev) => [newHead, ...prev.slice(0, 7)]);
+      if (nx === food.x && ny === food.y) {
+        setScore((s) => s + 10);
+        spawnFood();
+      }
+    }, 180);
+    return () => clearInterval(interval);
+  }, [isHovered, food, spawnFood]);
+  const trailMap = React10.useMemo(() => {
+    const map = /* @__PURE__ */ new Map();
+    trail.forEach((pos, idx) => {
+      const key = `${pos.x}-${pos.y}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          index: idx,
+          ratio: 1 - idx / Math.max(trail.length, 1),
+          isHead: idx === 0
+        });
+      }
+    });
+    return map;
+  }, [trail]);
+  return /* @__PURE__ */ jsxs7(
+    "div",
+    {
+      onMouseEnter: () => setIsHovered(true),
+      onMouseLeave: () => setIsHovered(false),
+      className: `relative flex flex-col items-center justify-center p-4 sm:p-6 rounded-2xl border border-white/10 bg-[#060913]/90 backdrop-blur-xl shadow-2xl select-none ${className}`,
+      children: [
+        /* @__PURE__ */ jsx10(
+          "div",
+          {
+            className: "pointer-events-none absolute inset-0 rounded-2xl blur-3xl opacity-20 transition-all duration-500",
+            style: {
+              background: `radial-gradient(circle at 50% 50%, ${accentColor}, transparent 70%)`
+            }
+          }
+        ),
+        showControls && /* @__PURE__ */ jsxs7("div", { className: "relative z-10 w-full flex items-center justify-between pb-3 mb-3 border-b border-white/8 text-xs font-mono", children: [
+          /* @__PURE__ */ jsxs7("div", { className: "flex items-center gap-2 text-white", children: [
+            /* @__PURE__ */ jsx10(Gamepad2, { size: 15, style: { color: accentColor } }),
+            /* @__PURE__ */ jsx10("span", { className: "font-semibold tracking-wide", children: "20\xD720 Interactive Snake Grid" })
+          ] }),
+          /* @__PURE__ */ jsxs7("div", { className: "flex items-center gap-4", children: [
+            /* @__PURE__ */ jsxs7("span", { className: "text-zinc-400", children: [
+              "Score:",
+              " ",
+              /* @__PURE__ */ jsx10("strong", { className: "text-white font-mono", style: { color: accentColor }, children: score })
+            ] }),
+            /* @__PURE__ */ jsx10("span", { className: "text-[10px] text-zinc-500 uppercase px-2 py-0.5 rounded bg-white/5 border border-white/5", children: isHovered ? "Mouse Active" : "Auto Wandering" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx10(
+          "div",
+          {
+            style: {
+              display: "grid",
+              gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`,
+              aspectRatio: "1 / 1"
+            },
+            className: "relative z-10 w-full max-w-[380px] sm:max-w-[440px] md:max-w-[480px] gap-[3px] p-2 rounded-xl bg-black/60 border border-white/8 shadow-inner",
+            children: Array.from({ length: GRID_ROWS }).map(
+              (_, r) => Array.from({ length: GRID_COLS }).map((_2, c) => {
+                const key = `${c}-${r}`;
+                const trailInfo = trailMap.get(key);
+                const isFood = c === food.x && r === food.y;
+                let cellBg = "bg-white/[0.03]";
+                let cellBorder = "border-white/5";
+                let scale = 1;
+                let opacity = 1;
+                let shadow = "none";
+                if (trailInfo) {
+                  if (trailInfo.isHead) {
+                    cellBg = accentColor;
+                    cellBorder = accentColor;
+                    scale = 1.15;
+                    shadow = `0 0 14px ${accentColor}`;
+                  } else {
+                    scale = Math.max(0.65, 0.7 + trailInfo.ratio * 0.35);
+                    opacity = Math.max(0.2, trailInfo.ratio);
+                    shadow = `0 0 8px ${accentColor}`;
+                  }
+                } else if (isFood) {
+                  scale = 1.05;
+                }
+                return /* @__PURE__ */ jsx10(
+                  "div",
+                  {
+                    onMouseEnter: () => handleCellHover(c, r),
+                    style: {
+                      backgroundColor: trailInfo ? trailInfo.isHead ? accentColor : `${accentColor}${Math.floor(trailInfo.ratio * 255).toString(16).padStart(2, "0")}` : isFood ? "#ffffff" : void 0,
+                      transform: `scale(${scale})`,
+                      boxShadow: shadow,
+                      borderColor: (trailInfo == null ? void 0 : trailInfo.isHead) ? accentColor : void 0,
+                      transition: "transform 0.12s ease-out, background-color 0.15s ease"
+                    },
+                    className: `w-full h-full rounded-[4px] border ${trailInfo ? "border-transparent" : cellBorder} ${!trailInfo && !isFood ? cellBg : ""} ${isFood ? "animate-pulse shadow-[0_0_12px_#ffffff]" : ""} cursor-crosshair`
+                  },
+                  key
+                );
+              })
+            )
+          }
+        ),
+        showControls && /* @__PURE__ */ jsxs7("div", { className: "relative z-10 mt-3 text-[11px] font-mono text-zinc-400 flex items-center justify-between w-full", children: [
+          /* @__PURE__ */ jsx10("span", { children: "Move mouse across squares to control the worm trail" }),
+          /* @__PURE__ */ jsxs7(
+            "button",
+            {
+              type: "button",
+              onClick: () => {
+                setTrail([]);
+                setScore(0);
+                spawnFood();
+              },
+              className: "flex items-center gap-1 text-zinc-400 hover:text-white transition-colors cursor-pointer",
+              children: [
+                /* @__PURE__ */ jsx10(RotateCcw, { size: 11 }),
+                /* @__PURE__ */ jsx10("span", { children: "Reset" })
+              ]
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+
+// src/components/ui/code-typewriter.jsx
+import React11, { useState as useState9, useEffect as useEffect9 } from "react";
+import { Check as Check2, Copy, Terminal, Play, Pause, RotateCcw as RotateCcw2 } from "lucide-react";
+import { Fragment as Fragment3, jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
+var CODE_SNIPPETS = [
+  {
+    fileName: "page.jsx",
+    language: "jsx",
+    lines: [
+      `import { StackedCardsScroll } from "adaptive-ui-react";`,
+      ``,
+      `export default function Showcase() {`,
+      `  return (`,
+      `    <main className="w-full min-h-screen py-16">`,
+      `      {/* Pinned 60FPS 3D Stack with SVG Half-Ring Gauge */}`,
+      `      <StackedCardsScroll`,
+      `        pin={true}`,
+      `        pinHeight="280vh"`,
+      `        enableWheelScroll={true}`,
+      `      />`,
+      `    </main>`,
+      `  );`,
+      `}`
+    ]
+  },
+  {
+    fileName: "blob-hero.jsx",
+    language: "jsx",
+    lines: [
+      `import { BlobMorphHero } from "adaptive-ui-react";`,
+      ``,
+      `export default function HeroSection() {`,
+      `  return (`,
+      `    <BlobMorphHero`,
+      `      imageScale={0.85}`,
+      `      accentColor="#10b981"`,
+      `      topoSpeed={0.8}`,
+      `      blobCount={5}`,
+      `      wireframeOverlay={true}`,
+      `    />`,
+      `  );`,
+      `}`
+    ]
+  },
+  {
+    fileName: "ascii-face.jsx",
+    language: "jsx",
+    lines: [
+      `import { InteractiveAsciiFace } from "adaptive-ui-react";`,
+      ``,
+      `export default function TerminalCanvas() {`,
+      `  return (`,
+      `    <InteractiveAsciiFace`,
+      `      color="#5cfc87"`,
+      `      mouseSpeed={1.2}`,
+      `      imageClarity={1.5}`,
+      `      scanlines={true}`,
+      `      glow={true}`,
+      `    />`,
+      `  );`,
+      `}`
+    ]
+  }
+];
+function CodeTypewriter({ className = "" }) {
+  const [activeTab, setActiveTab] = useState9(0);
+  const [displayedLineCount, setDisplayedLineCount] = useState9(0);
+  const [displayedCharCount, setDisplayedCharCount] = useState9(0);
+  const [isTypingPaused, setIsTypingPaused] = useState9(false);
+  const [copied, setCopied] = useState9(false);
+  const snippet = CODE_SNIPPETS[activeTab];
+  const fullText = snippet.lines.join("\n");
+  useEffect9(() => {
+    setDisplayedLineCount(0);
+    setDisplayedCharCount(0);
+  }, [activeTab]);
+  useEffect9(() => {
+    if (isTypingPaused) return;
+    const currentLine = snippet.lines[displayedLineCount] || "";
+    if (displayedCharCount < currentLine.length) {
+      const charSpeed = Math.floor(Math.random() * 15) + 12;
+      const timer = setTimeout(() => {
+        setDisplayedCharCount((prev) => prev + 1);
+      }, charSpeed);
+      return () => clearTimeout(timer);
+    } else if (displayedLineCount < snippet.lines.length - 1) {
+      const lineSpeed = 50;
+      const timer = setTimeout(() => {
+        setDisplayedLineCount((prev) => prev + 1);
+        setDisplayedCharCount(0);
+      }, lineSpeed);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => {
+        setActiveTab((prev) => (prev + 1) % CODE_SNIPPETS.length);
+      }, 4e3);
+      return () => clearTimeout(timer);
+    }
+  }, [displayedCharCount, displayedLineCount, snippet, isTypingPaused]);
+  const handleCopy = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(fullText);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2e3);
+    } catch {
+    }
+  };
+  const handleRestart = () => {
+    setDisplayedLineCount(0);
+    setDisplayedCharCount(0);
+  };
+  return /* @__PURE__ */ jsxs8(
+    "div",
+    {
+      className: `relative rounded-2xl border border-white/10 bg-[#070b14]/95 shadow-2xl backdrop-blur-xl overflow-hidden font-mono text-xs select-none ${className}`,
+      children: [
+        /* @__PURE__ */ jsxs8("div", { className: "flex items-center justify-between px-4 py-3 border-b border-white/8 bg-black/40", children: [
+          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx11("div", { className: "size-3 rounded-full bg-rose-500/80 border border-rose-600/40" }),
+            /* @__PURE__ */ jsx11("div", { className: "size-3 rounded-full bg-amber-500/80 border border-amber-600/40" }),
+            /* @__PURE__ */ jsx11("div", { className: "size-3 rounded-full bg-emerald-500/80 border border-emerald-600/40" })
+          ] }),
+          /* @__PURE__ */ jsx11("div", { className: "flex items-center gap-1", children: CODE_SNIPPETS.map((item, idx) => /* @__PURE__ */ jsx11(
+            "button",
+            {
+              type: "button",
+              onClick: () => setActiveTab(idx),
+              className: `px-3 py-1 rounded-md text-[11px] font-mono transition-colors cursor-pointer ${activeTab === idx ? "bg-white/10 text-emerald-400 font-medium" : "text-zinc-500 hover:text-zinc-300"}`,
+              children: item.fileName
+            },
+            item.fileName
+          )) }),
+          /* @__PURE__ */ jsxs8("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx11(
+              "button",
+              {
+                type: "button",
+                onClick: () => setIsTypingPaused((p) => !p),
+                className: "p-1 rounded text-zinc-400 hover:text-white transition-colors cursor-pointer",
+                title: isTypingPaused ? "Resume typing" : "Pause typing",
+                children: isTypingPaused ? /* @__PURE__ */ jsx11(Play, { size: 12 }) : /* @__PURE__ */ jsx11(Pause, { size: 12 })
+              }
+            ),
+            /* @__PURE__ */ jsx11(
+              "button",
+              {
+                type: "button",
+                onClick: handleRestart,
+                className: "p-1 rounded text-zinc-400 hover:text-white transition-colors cursor-pointer",
+                title: "Restart typing",
+                children: /* @__PURE__ */ jsx11(RotateCcw2, { size: 12 })
+              }
+            ),
+            /* @__PURE__ */ jsx11(
+              "button",
+              {
+                type: "button",
+                onClick: handleCopy,
+                className: "p-1 rounded text-zinc-400 hover:text-white transition-colors cursor-pointer",
+                title: "Copy snippet",
+                children: copied ? /* @__PURE__ */ jsx11(Check2, { size: 12, className: "text-emerald-400" }) : /* @__PURE__ */ jsx11(Copy, { size: 12 })
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx11("div", { className: "p-4 sm:p-6 overflow-x-auto min-h-[300px]", children: snippet.lines.map((line, lIdx) => {
+          if (lIdx > displayedLineCount) return null;
+          const isCurrentTypingLine = lIdx === displayedLineCount;
+          const textToRender = isCurrentTypingLine ? line.slice(0, displayedCharCount) : line;
+          return /* @__PURE__ */ jsxs8("div", { className: "flex leading-6", children: [
+            /* @__PURE__ */ jsx11("span", { className: "w-8 shrink-0 text-right pr-4 text-zinc-600 select-none", children: lIdx + 1 }),
+            /* @__PURE__ */ jsxs8("span", { className: "text-zinc-300 whitespace-pre", children: [
+              colorizeLine(textToRender),
+              isCurrentTypingLine && /* @__PURE__ */ jsx11("span", { className: "inline-block w-2 h-4 bg-emerald-400 ml-0.5 align-middle animate-pulse" })
+            ] })
+          ] }, lIdx);
+        }) }),
+        /* @__PURE__ */ jsxs8("div", { className: "px-4 py-2 border-t border-white/5 bg-black/60 flex items-center justify-between text-[10px] text-zinc-500", children: [
+          /* @__PURE__ */ jsxs8("span", { className: "flex items-center gap-1.5", children: [
+            /* @__PURE__ */ jsx11("span", { className: "size-1.5 rounded-full bg-emerald-400 animate-pulse" }),
+            /* @__PURE__ */ jsx11("span", { children: "TypeScript / React 19 JSX" })
+          ] }),
+          /* @__PURE__ */ jsx11("span", { children: "UTF-8 \u2022 60 FPS Engine" })
+        ] })
+      ]
+    }
+  );
+}
+function colorizeLine(text) {
+  if (text.startsWith("//") || text.startsWith("/*") || text.includes("{/*")) {
+    return /* @__PURE__ */ jsx11("span", { className: "text-zinc-500 italic", children: text });
+  }
+  if (text.startsWith("import ") || text.startsWith("export ") || text.startsWith("return")) {
+    const parts = text.split(" ");
+    return /* @__PURE__ */ jsxs8(Fragment3, { children: [
+      /* @__PURE__ */ jsxs8("span", { className: "text-fuchsia-400 font-semibold", children: [
+        parts[0],
+        " "
+      ] }),
+      /* @__PURE__ */ jsx11("span", { children: parts.slice(1).join(" ") })
+    ] });
+  }
+  if (text.includes("pin={true}") || text.includes("enableWheelScroll={true}")) {
+    return /* @__PURE__ */ jsx11("span", { className: "text-amber-300", children: text });
+  }
+  if (text.includes("<") && text.includes(">")) {
+    return /* @__PURE__ */ jsx11("span", { className: "text-cyan-300", children: text });
+  }
+  return text;
+}
+
 // src/components/ui/install-tabs.jsx
-import React7, { useId as useId2, useState as useState5, useSyncExternalStore } from "react";
+import React12, { useId as useId2, useState as useState10, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Terminal, Package } from "lucide-react";
-import { Fragment as Fragment3, jsx as jsx7, jsxs as jsxs5 } from "react/jsx-runtime";
+import { Check as Check3, Terminal as Terminal2, Package } from "lucide-react";
+import { Fragment as Fragment4, jsx as jsx12, jsxs as jsxs9 } from "react/jsx-runtime";
 var managers = ["npm", "pnpm", "yarn", "bun"];
 var getCommand = (manager, packages = "adaptive-ui", component, mode = "cli", dev = false) => {
   if (mode === "cli" && component) {
@@ -1710,8 +3484,8 @@ function InstallTabs({
 }) {
   const id = useId2();
   const manager = useSyncExternalStore(subscribe, read, () => "npm");
-  const [copied, setCopied] = useState5(false);
-  const [mode, setMode] = useState5(component ? "cli" : "package");
+  const [copied, setCopied] = useState10(false);
+  const [mode, setMode] = useState10(component ? "cli" : "package");
   const currentText = getCommand(manager, packages, component, mode, dev);
   function onKey(event, index) {
     var _a;
@@ -1730,16 +3504,16 @@ function InstallTabs({
     } catch {
     }
   }
-  return /* @__PURE__ */ jsxs5(
+  return /* @__PURE__ */ jsxs9(
     "div",
     {
       className: `w-full overflow-hidden rounded-xl border border-white/10 bg-zinc-950/90 shadow-2xl backdrop-blur-md ${className}`,
       children: [
-        /* @__PURE__ */ jsxs5("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-zinc-900/60 px-3 py-2", children: [
-          /* @__PURE__ */ jsxs5("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx7("div", { role: "tablist", "aria-label": "Package manager", className: "flex items-center gap-1", children: managers.map((option, index) => {
+        /* @__PURE__ */ jsxs9("div", { className: "flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-zinc-900/60 px-3 py-2", children: [
+          /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx12("div", { role: "tablist", "aria-label": "Package manager", className: "flex items-center gap-1", children: managers.map((option, index) => {
               const isSelected = manager === option;
-              return /* @__PURE__ */ jsxs5(
+              return /* @__PURE__ */ jsxs9(
                 "button",
                 {
                   id: `${id}-${option}`,
@@ -1751,7 +3525,7 @@ function InstallTabs({
                   onKeyDown: (event) => onKey(event, index),
                   className: `relative flex cursor-pointer items-center gap-1 rounded-lg px-2.5 py-1 font-mono text-xs transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-emerald-400 ${isSelected ? "text-white font-semibold" : "text-zinc-400 hover:text-white"}`,
                   children: [
-                    isSelected && /* @__PURE__ */ jsx7(
+                    isSelected && /* @__PURE__ */ jsx12(
                       motion.span,
                       {
                         layoutId: `${id}-pill`,
@@ -1764,54 +3538,54 @@ function InstallTabs({
                         }
                       }
                     ),
-                    /* @__PURE__ */ jsx7("span", { className: "relative z-10", children: option })
+                    /* @__PURE__ */ jsx12("span", { className: "relative z-10", children: option })
                   ]
                 },
                 option
               );
             }) }),
-            component && /* @__PURE__ */ jsxs5("div", { className: "ml-2 hidden items-center rounded-lg border border-white/10 bg-black/40 p-0.5 sm:flex", children: [
-              /* @__PURE__ */ jsxs5(
+            component && /* @__PURE__ */ jsxs9("div", { className: "ml-2 hidden items-center rounded-lg border border-white/10 bg-black/40 p-0.5 sm:flex", children: [
+              /* @__PURE__ */ jsxs9(
                 "button",
                 {
                   type: "button",
                   onClick: () => setMode("cli"),
                   className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "cli" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`,
                   children: [
-                    /* @__PURE__ */ jsx7(Terminal, { className: "size-3" }),
+                    /* @__PURE__ */ jsx12(Terminal2, { className: "size-3" }),
                     "CLI"
                   ]
                 }
               ),
-              /* @__PURE__ */ jsxs5(
+              /* @__PURE__ */ jsxs9(
                 "button",
                 {
                   type: "button",
                   onClick: () => setMode("package"),
                   className: `flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-mono transition ${mode === "package" ? "bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30" : "text-zinc-400 hover:text-white"}`,
                   children: [
-                    /* @__PURE__ */ jsx7(Package, { className: "size-3" }),
+                    /* @__PURE__ */ jsx12(Package, { className: "size-3" }),
                     "NPM"
                   ]
                 }
               )
             ] })
           ] }),
-          /* @__PURE__ */ jsx7(
+          /* @__PURE__ */ jsx12(
             "button",
             {
               type: "button",
               onClick: copyCommand,
               className: "flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-xs text-zinc-300 transition hover:bg-white/15 hover:text-white",
               "aria-label": "Copy install command",
-              children: copied ? /* @__PURE__ */ jsxs5(Fragment3, { children: [
-                /* @__PURE__ */ jsx7(Check, { className: "size-3.5 text-emerald-400" }),
-                /* @__PURE__ */ jsx7("span", { className: "text-emerald-400 font-medium", children: "Copied!" })
-              ] }) : /* @__PURE__ */ jsx7(Fragment3, { children: /* @__PURE__ */ jsx7("span", { className: "text-zinc-400", children: "Copy" }) })
+              children: copied ? /* @__PURE__ */ jsxs9(Fragment4, { children: [
+                /* @__PURE__ */ jsx12(Check3, { className: "size-3.5 text-emerald-400" }),
+                /* @__PURE__ */ jsx12("span", { className: "text-emerald-400 font-medium", children: "Copied!" })
+              ] }) : /* @__PURE__ */ jsx12(Fragment4, { children: /* @__PURE__ */ jsx12("span", { className: "text-zinc-400", children: "Copy" }) })
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs5(
+        /* @__PURE__ */ jsxs9(
           "div",
           {
             id: `${id}-panel`,
@@ -1819,7 +3593,7 @@ function InstallTabs({
             "aria-labelledby": `${id}-${manager}`,
             className: "relative overflow-hidden px-4 py-3.5 font-mono text-xs sm:text-sm bg-black/40",
             children: [
-              /* @__PURE__ */ jsx7(AnimatePresence, { mode: "wait", initial: false, children: /* @__PURE__ */ jsxs5(
+              /* @__PURE__ */ jsx12(AnimatePresence, { mode: "wait", initial: false, children: /* @__PURE__ */ jsxs9(
                 motion.div,
                 {
                   initial: { opacity: 0, x: -28 },
@@ -1828,13 +3602,13 @@ function InstallTabs({
                   transition: { duration: 0.22, ease: "easeOut" },
                   className: "flex items-center gap-2.5 whitespace-nowrap text-zinc-200",
                   children: [
-                    /* @__PURE__ */ jsx7("span", { className: "select-none font-bold text-emerald-400", children: "$" }),
-                    /* @__PURE__ */ jsx7("span", { className: "tracking-wide", children: currentText })
+                    /* @__PURE__ */ jsx12("span", { className: "select-none font-bold text-emerald-400", children: "$" }),
+                    /* @__PURE__ */ jsx12("span", { className: "tracking-wide", children: currentText })
                   ]
                 },
                 `${manager}-${mode}`
               ) }),
-              /* @__PURE__ */ jsx7("span", { role: "status", className: "sr-only", children: copied ? "Copied" : "" })
+              /* @__PURE__ */ jsx12("span", { role: "status", className: "sr-only", children: copied ? "Copied" : "" })
             ]
           }
         )
@@ -1844,17 +3618,17 @@ function InstallTabs({
 }
 
 // src/components/ui/props-table.jsx
-import React8, { useState as useState6 } from "react";
-import { Search, Copy, Check as Check2, SlidersHorizontal } from "lucide-react";
-import { jsx as jsx8, jsxs as jsxs6 } from "react/jsx-runtime";
+import React13, { useState as useState11 } from "react";
+import { Search, Copy as Copy2, Check as Check4, SlidersHorizontal } from "lucide-react";
+import { jsx as jsx13, jsxs as jsxs10 } from "react/jsx-runtime";
 function PropsTable({
   data = [],
   title = "Props Reference",
   description = "Complete reference of all customizable properties and parameters.",
   className = ""
 }) {
-  const [searchQuery, setSearchQuery] = useState6("");
-  const [copiedProp, setCopiedProp] = useState6(null);
+  const [searchQuery, setSearchQuery] = useState11("");
+  const [copiedProp, setCopiedProp] = useState11(null);
   const filteredData = data.filter((item) => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return true;
@@ -1881,18 +3655,18 @@ function PropsTable({
       console.warn("Clipboard copy failed:", e);
     }
   };
-  return /* @__PURE__ */ jsxs6("div", { className: `space-y-4 w-full ${className}`, children: [
-    /* @__PURE__ */ jsxs6("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3", children: [
-      /* @__PURE__ */ jsxs6("div", { children: [
-        /* @__PURE__ */ jsxs6("h3", { className: "text-xl md:text-2xl font-bold font-sans text-white flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx8(SlidersHorizontal, { className: "w-5 h-5 text-lime-400" }),
-          /* @__PURE__ */ jsx8("span", { children: title })
+  return /* @__PURE__ */ jsxs10("div", { className: `space-y-4 w-full ${className}`, children: [
+    /* @__PURE__ */ jsxs10("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3", children: [
+      /* @__PURE__ */ jsxs10("div", { children: [
+        /* @__PURE__ */ jsxs10("h3", { className: "text-xl md:text-2xl font-bold font-sans text-white flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx13(SlidersHorizontal, { className: "w-5 h-5 text-lime-400" }),
+          /* @__PURE__ */ jsx13("span", { children: title })
         ] }),
-        description && /* @__PURE__ */ jsx8("p", { className: "mt-1 text-xs md:text-sm text-gray-400 font-sans", children: description })
+        description && /* @__PURE__ */ jsx13("p", { className: "mt-1 text-xs md:text-sm text-gray-400 font-sans", children: description })
       ] }),
-      /* @__PURE__ */ jsxs6("div", { className: "relative w-full sm:w-64", children: [
-        /* @__PURE__ */ jsx8(Search, { className: "w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" }),
-        /* @__PURE__ */ jsx8(
+      /* @__PURE__ */ jsxs10("div", { className: "relative w-full sm:w-64", children: [
+        /* @__PURE__ */ jsx13(Search, { className: "w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" }),
+        /* @__PURE__ */ jsx13(
           "input",
           {
             type: "text",
@@ -1902,7 +3676,7 @@ function PropsTable({
             className: "w-full bg-zinc-900/80 border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/50 transition font-sans"
           }
         ),
-        searchQuery && /* @__PURE__ */ jsx8(
+        searchQuery && /* @__PURE__ */ jsx13(
           "button",
           {
             onClick: () => setSearchQuery(""),
@@ -1912,40 +3686,40 @@ function PropsTable({
         )
       ] })
     ] }),
-    /* @__PURE__ */ jsx8("div", { className: "rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shadow-xl", children: /* @__PURE__ */ jsx8("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs6("table", { className: "w-full text-left text-xs font-sans", children: [
-      /* @__PURE__ */ jsx8("thead", { className: "bg-zinc-900/70 border-b border-white/10 font-mono text-zinc-400", children: /* @__PURE__ */ jsxs6("tr", { children: [
-        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold w-1/4", children: "Prop" }),
-        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold w-1/5", children: "Type" }),
-        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold w-1/6", children: "Default" }),
-        /* @__PURE__ */ jsx8("th", { className: "py-3 px-4 font-semibold", children: "Description" })
+    /* @__PURE__ */ jsx13("div", { className: "rounded-2xl border border-white/10 overflow-hidden bg-zinc-950 shadow-xl", children: /* @__PURE__ */ jsx13("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs10("table", { className: "w-full text-left text-xs font-sans", children: [
+      /* @__PURE__ */ jsx13("thead", { className: "bg-zinc-900/70 border-b border-white/10 font-mono text-zinc-400", children: /* @__PURE__ */ jsxs10("tr", { children: [
+        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold w-1/4", children: "Prop" }),
+        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold w-1/5", children: "Type" }),
+        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold w-1/6", children: "Default" }),
+        /* @__PURE__ */ jsx13("th", { className: "py-3 px-4 font-semibold", children: "Description" })
       ] }) }),
-      /* @__PURE__ */ jsx8("tbody", { className: "divide-y divide-white/5 text-zinc-300", children: filteredData.length > 0 ? filteredData.map((item, idx) => /* @__PURE__ */ jsxs6(
+      /* @__PURE__ */ jsx13("tbody", { className: "divide-y divide-white/5 text-zinc-300", children: filteredData.length > 0 ? filteredData.map((item, idx) => /* @__PURE__ */ jsxs10(
         "tr",
         {
           className: "hover:bg-white/[0.02] transition-colors group",
           children: [
-            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 font-mono", children: /* @__PURE__ */ jsxs6("div", { className: "flex items-center gap-1.5", children: [
-              /* @__PURE__ */ jsxs6(
+            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 font-mono", children: /* @__PURE__ */ jsxs10("div", { className: "flex items-center gap-1.5", children: [
+              /* @__PURE__ */ jsxs10(
                 "button",
                 {
                   onClick: () => copyPropName(item.prop),
                   className: "font-semibold text-lime-400 hover:text-lime-300 transition flex items-center gap-1 cursor-pointer",
                   title: "Click to copy prop name",
                   children: [
-                    /* @__PURE__ */ jsx8("span", { children: item.prop }),
-                    copiedProp === item.prop ? /* @__PURE__ */ jsx8(Check2, { className: "w-3 h-3 text-emerald-400 shrink-0" }) : /* @__PURE__ */ jsx8(Copy, { className: "w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition shrink-0" })
+                    /* @__PURE__ */ jsx13("span", { children: item.prop }),
+                    copiedProp === item.prop ? /* @__PURE__ */ jsx13(Check4, { className: "w-3 h-3 text-emerald-400 shrink-0" }) : /* @__PURE__ */ jsx13(Copy2, { className: "w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 transition shrink-0" })
                   ]
                 }
               ),
-              item.required && /* @__PURE__ */ jsx8("span", { className: "text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-sans", children: "required" })
+              item.required && /* @__PURE__ */ jsx13("span", { className: "text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-sans", children: "required" })
             ] }) }),
-            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 font-mono text-[11px]", children: /* @__PURE__ */ jsx8("span", { className: "inline-block px-2 py-0.5 rounded-md bg-zinc-900 text-cyan-300 border border-white/5", children: item.type }) }),
-            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 font-mono text-[11px] text-zinc-400", children: item.default ? /* @__PURE__ */ jsx8("code", { className: "bg-zinc-900 px-1.5 py-0.5 rounded text-amber-300/90 border border-white/5", children: item.default }) : /* @__PURE__ */ jsx8("span", { className: "text-zinc-600", children: "\u2014" }) }),
-            /* @__PURE__ */ jsx8("td", { className: "py-3.5 px-4 text-gray-300 leading-relaxed font-sans", children: item.description })
+            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 font-mono text-[11px]", children: /* @__PURE__ */ jsx13("span", { className: "inline-block px-2 py-0.5 rounded-md bg-zinc-900 text-cyan-300 border border-white/5", children: item.type }) }),
+            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 font-mono text-[11px] text-zinc-400", children: item.default ? /* @__PURE__ */ jsx13("code", { className: "bg-zinc-900 px-1.5 py-0.5 rounded text-amber-300/90 border border-white/5", children: item.default }) : /* @__PURE__ */ jsx13("span", { className: "text-zinc-600", children: "\u2014" }) }),
+            /* @__PURE__ */ jsx13("td", { className: "py-3.5 px-4 text-gray-300 leading-relaxed font-sans", children: item.description })
           ]
         },
         item.prop || idx
-      )) : /* @__PURE__ */ jsx8("tr", { children: /* @__PURE__ */ jsxs6(
+      )) : /* @__PURE__ */ jsx13("tr", { children: /* @__PURE__ */ jsxs10(
         "td",
         {
           colSpan: 4,
@@ -1961,17 +3735,27 @@ function PropsTable({
   ] });
 }
 export {
+  ACCENT_PRESETS,
   BlobMorphHero,
+  CodeTypewriter,
+  CurvedGridCanvas,
   DEFAULT_PRESETS,
   DEFAULT_SCROLL_IMAGES,
+  DEFAULT_STACKED_CARDS,
+  CurvedGridCanvas as FullpageCurvedGrid,
   ImageScroll,
   InfiniteImageScroll,
   InfiniteTunnelHero,
   InstallTabs,
   InteractiveAsciiFace,
+  InteractiveSnakeGrid,
   LiquidGlassButton,
   PropsTable,
   SmoothScrollProvider,
-  liquidGlassButton
+  StackedCardsScroll,
+  ThemeCustomizer,
+  applyAccent,
+  liquidGlassButton,
+  useAutoCycleAccent
 };
 //# sourceMappingURL=index.js.map

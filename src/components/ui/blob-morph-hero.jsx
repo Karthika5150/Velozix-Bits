@@ -73,10 +73,10 @@ const EDGES = [
 
 function heightAt(x, y, t) {
   return (
-    Math.sin(x * 1.1 + t * 0.55) +
-    Math.sin(y * 1.4 - t * 0.45) +
-    Math.sin((x + y) * 0.8 + t * 0.35) +
-    Math.sin(Math.hypot(x - 2.5, y - 1.8) * 1.3 - t * 0.5)
+    Math.sin(x * 1.1 + t * 0.28) +
+    Math.sin(y * 1.4 - t * 0.22) +
+    Math.sin((x + y) * 0.8 + t * 0.18) +
+    Math.sin(Math.hypot(x - 2.5, y - 1.8) * 1.3 - t * 0.25)
   );
 }
 
@@ -227,6 +227,27 @@ function ensureSize(canvas, w, h) {
   }
 }
 
+/**
+ * Calculates cover bounds to draw a source image into a destination rect
+ * preserving its natural aspect ratio without any stretching or distortion.
+ */
+function getCoverBounds(sw, sh, dw, dh) {
+  if (!sw || !sh || !dw || !dh) return { sx: 0, sy: 0, sWidth: sw || 1, sHeight: sh || 1 };
+  const sRatio = sw / sh;
+  const dRatio = dw / dh;
+  let sx = 0, sy = 0, sWidth = sw, sHeight = sh;
+  if (sRatio > dRatio) {
+    // source is wider than destination -> crop equal parts left and right
+    sWidth = sh * dRatio;
+    sx = (sw - sWidth) / 2;
+  } else {
+    // source is taller than destination -> crop equal parts top and bottom
+    sHeight = sw / dRatio;
+    sy = (sh - sHeight) / 2;
+  }
+  return { sx, sy, sWidth, sHeight };
+}
+
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
@@ -235,12 +256,18 @@ export function BlobMorphHero({
   baseImage = "",
   equippedImage = "",
   blobMode = "roam",
-  speed = 1.0,
+  speed = 0.5,
   autoPlay = true,
+  interactive = true,
+  cornerRadius = 25,
+  borderRadius,
+  aspectRatio = "auto",
+  imageScale = 0.85,
+  widthScale = 0.85,
+  heightScale = 0.85,
   showTopography = true,
   showAmbientBlobs = true,
   showHud = true,
-  showNextRace = false,
   accentColor,
   topoColor,
   bgColor,
@@ -268,6 +295,7 @@ export function BlobMorphHero({
   const baseSrc = baseImage || active.baseImage;
   const equippedSrc = equippedImage || active.equippedImage;
   const headline = active.title.split("//")[0].trim();
+  const radius = borderRadius ?? cornerRadius ?? 25;
   const [autoHead, setAutoHead] = useState(null);
   const hb = {
     ...DEFAULT_HEAD_BOX,
@@ -285,6 +313,14 @@ export function BlobMorphHero({
   const eqImgRef = useRef(null);
   const wipeRef = useRef(null);
   const scanRef = useRef(null);
+  const mouseRef = useRef({
+    x: 0.5,
+    y: 0.5,
+    targetX: 0.5,
+    targetY: 0.5,
+    active: false,
+    intensity: 0,
+  });
   const uid = useId().replace(/:/g, "");
   const shellId = "bmh-shell-" + uid;
   const wipeId = "bmh-wipe-" + uid;
@@ -293,20 +329,57 @@ export function BlobMorphHero({
   const [aspect, setAspect] = useState(0.8);
 
   // subject box (where base image + reveal canvas live)
+  // Occupies 85% width of the container, centered with equal margins!
   const box = useMemo(() => {
-    let h = size.h * 0.9;
-    let w = h * aspect;
-    if (w > size.w * 0.9) {
-      w = size.w * 0.9;
-      h = w / aspect;
+    if (!size.w || !size.h) return { x: 0, y: 0, w: 0, h: 0 };
+
+    const wFraction = typeof widthScale === "number" ? widthScale : (typeof imageScale === "number" ? imageScale : 0.85);
+    const hFraction = typeof heightScale === "number" ? heightScale : (typeof imageScale === "number" ? imageScale : 0.85);
+
+    let w = Math.round(size.w * Math.min(1, Math.max(0.1, wFraction)));
+    let h = Math.round(size.h * Math.min(1, Math.max(0.1, hFraction)));
+
+    if (aspectRatio === "square" || aspectRatio === 1) {
+      const s = Math.min(w, h);
+      w = s;
+      h = s;
+    } else if (typeof aspectRatio === "number" && aspectRatio > 0) {
+      h = Math.round(w / aspectRatio);
+      if (h > size.h * 0.95) {
+        h = Math.round(size.h * 0.95);
+        w = Math.round(h * aspectRatio);
+      }
     }
+
     return {
       x: Math.round((size.w - w) / 2),
       y: Math.round((size.h - h) / 2),
-      w: Math.round(w),
-      h: Math.round(h),
+      w,
+      h,
     };
-  }, [size, aspect]);
+  }, [size, aspectRatio, imageScale, widthScale, heightScale]);
+
+  const handlePointerMove = (e) => {
+    if (!rootRef.current || !interactive) return;
+    const rect = rootRef.current.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      mouseRef.current.targetX = Math.max(0, Math.min(1, x));
+      mouseRef.current.targetY = Math.max(0, Math.min(1, y));
+      mouseRef.current.active = true;
+    }
+  };
+
+  const handlePointerEnter = (e) => {
+    if (!interactive) return;
+    mouseRef.current.active = true;
+    handlePointerMove(e);
+  };
+
+  const handlePointerLeave = () => {
+    mouseRef.current.active = false;
+  };
 
   // keep latest values readable inside the animation loop
   const propsRef = useRef({});
@@ -315,6 +388,7 @@ export function BlobMorphHero({
     flipEquipped,
     debugAlign,
     autoPlay,
+    interactive,
     blobMode,
     showTopography,
     showAmbientBlobs,
@@ -340,22 +414,28 @@ export function BlobMorphHero({
     return () => ro.disconnect();
   }, []);
 
-  // load images
+  // load images and compute true natural aspect ratio
   useEffect(() => {
+    const src = baseSrc || equippedSrc;
+    if (!src) return;
     const im = new Image();
     im.onload = () => {
       if (im.naturalWidth && im.naturalHeight) {
         setAspect(im.naturalWidth / im.naturalHeight);
       }
     };
-    im.src = baseSrc;
-  }, [baseSrc]);
+    im.src = src;
+  }, [baseSrc, equippedSrc]);
 
   useEffect(() => {
+    if (!equippedSrc) return;
     const im = new Image();
     im.decoding = "async";
     setAutoHead(null);
     im.onload = () => {
+      if (!baseSrc && im.naturalWidth && im.naturalHeight) {
+        setAspect(im.naturalWidth / im.naturalHeight);
+      }
       // The helmet cut-out is transparent around the helmet, so its opaque
       // bounding box is exactly where the head is. Needs a same-origin image
       // (e.g. from /public); remote images without CORS just skip this.
@@ -443,22 +523,57 @@ export function BlobMorphHero({
       const minD = Math.min(mw, mh);
 
       const live = BLOBS.map((b) => {
-        const rad = b.r * minD * 1.5 * (1 + 0.18 * Math.sin(t * 0.9 + b.px));
+        const rad = b.r * minD * 1.4 * (1 + 0.12 * Math.sin(t * 0.5 + b.px));
         return {
-          x: (0.5 + b.ax * Math.sin(t * b.fx + b.px)) * mw,
-          y: (0.5 + b.ay * Math.sin(t * b.fy + b.py)) * mh,
+          x: (0.5 + b.ax * Math.sin(t * (b.fx * 0.7) + b.px)) * mw,
+          y: (0.5 + b.ay * Math.sin(t * (b.fy * 0.7) + b.py)) * mh,
           r2: rad * rad,
         };
       });
 
-      if (p.blobMode === "flood") {
-        const surge = 0.5 + 0.5 * Math.sin(t * 0.7);
-        const rad = minD * (0.16 + 0.24 * surge);
+      // Mouse interactive metaball (reveals equipped layer when cursor enters banner)
+      const m = mouseRef.current;
+      if (p.interactive) {
+        m.x += (m.targetX - m.x) * 0.14;
+        m.y += (m.targetY - m.y) * 0.14;
+        if (m.active) {
+          m.intensity += (1 - m.intensity) * 0.08;
+        } else {
+          m.intensity += (0 - m.intensity) * 0.05;
+        }
+      } else {
+        m.intensity = 0;
+      }
+
+      if (m.intensity > 0.005) {
+        const mouseRad = minD * (0.16 + 0.02 * Math.sin(t * 1.2)) * m.intensity;
         live.push({
-          x: ((bx.x + bx.w / 2) / W) * mw,
-          y: ((bx.y + bx.h / 2) / H) * mh,
-          r2: rad * rad,
+          x: m.x * mw,
+          y: m.y * mh,
+          r2: mouseRad * mouseRad,
         });
+      }
+
+      if (p.blobMode === "flood") {
+        const surge = 0.5 + 0.5 * Math.sin(t * 0.45);
+        const rad = minD * (0.26 + 0.28 * surge);
+        live.push(
+          {
+            x: ((bx.x + bx.w * 0.5) / W) * mw,
+            y: ((bx.y + bx.h * 0.5) / H) * mh,
+            r2: rad * rad,
+          },
+          {
+            x: ((bx.x + bx.w * 0.38) / W) * mw,
+            y: ((bx.y + bx.h * 0.46) / H) * mh,
+            r2: rad * rad * 0.65,
+          },
+          {
+            x: ((bx.x + bx.w * 0.62) / W) * mw,
+            y: ((bx.y + bx.h * 0.54) / H) * mh,
+            r2: rad * rad * 0.65,
+          }
+        );
       }
 
       // subject box in mask space (for progress)
@@ -469,8 +584,7 @@ export function BlobMorphHero({
       let covered = 0;
       let total = 0;
 
-      // separable noise tables: cheap, and breaks the round metaballs up into
-      // ragged shards, rings and holes like the reference
+      // separable noise tables: smooth organic flow without high-frequency jitter
       if (nx1.length !== mw) {
         nx1 = new Float32Array(mw);
         nx2 = new Float32Array(mw);
@@ -480,12 +594,12 @@ export function BlobMorphHero({
         ny2 = new Float32Array(mh);
       }
       for (let x = 0; x < mw; x++) {
-        nx1[x] = Math.sin(x * 0.025 + t * 0.9);
-        nx2[x] = Math.sin(x * 0.045 - t * 1.4);
+        nx1[x] = Math.sin(x * 0.025 + t * 0.4);
+        nx2[x] = Math.sin(x * 0.045 - t * 0.55);
       }
       for (let y = 0; y < mh; y++) {
-        ny1[y] = Math.cos(y * 0.03 - t * 1.1);
-        ny2[y] = Math.sin(y * 0.05 + t * 0.8);
+        ny1[y] = Math.cos(y * 0.03 - t * 0.45);
+        ny2[y] = Math.sin(y * 0.05 + t * 0.35);
       }
 
       const d = imgData.data;
@@ -544,14 +658,20 @@ export function BlobMorphHero({
         rctx.globalCompositeOperation = "source-over";
         rctx.clearRect(0, 0, bx.w, bx.h);
         if (eq && eq.complete && eq.naturalWidth) {
+          const { sx, sy, sWidth, sHeight } = getCoverBounds(
+            eq.naturalWidth,
+            eq.naturalHeight,
+            bx.w,
+            bx.h
+          );
           if (p.flipEquipped) {
             rctx.save();
             rctx.translate(bx.w, 0);
             rctx.scale(-1, 1);
-            rctx.drawImage(eq, 0, 0, bx.w, bx.h);
+            rctx.drawImage(eq, sx, sy, sWidth, sHeight, 0, 0, bx.w, bx.h);
             rctx.restore();
           } else {
-            rctx.drawImage(eq, 0, 0, bx.w, bx.h);
+            rctx.drawImage(eq, sx, sy, sWidth, sHeight, 0, 0, bx.w, bx.h);
           }
           if (!p.debugAlign) {
             rctx.globalCompositeOperation = "destination-in";
@@ -615,6 +735,9 @@ export function BlobMorphHero({
   return (
     <div
       ref={rootRef}
+      onPointerMove={handlePointerMove}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
       className={`relative h-full w-full overflow-hidden ${className}`}
       style={{ background: bg }}
     >
@@ -646,20 +769,32 @@ export function BlobMorphHero({
 
       {/* subject: base image + blob-revealed equipped image + HUD */}
       <div
-        className="absolute"
-        style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
+        className="absolute overflow-hidden"
+        style={{
+          left: box.x,
+          top: box.y,
+          width: box.w,
+          height: box.h,
+          borderRadius: `${radius}px`,
+        }}
       >
         <img
           src={baseSrc}
           alt=""
           draggable={false}
-          className="absolute inset-0 h-full w-full select-none"
-          style={flipBase ? { transform: "scaleX(-1)" } : undefined}
+          className="absolute inset-0  h-full w-full select-none object-cover pointer-events-none"
+          style={{
+            borderRadius: `${radius}px`,
+            transform: flipBase ? "scaleX(-1)" : undefined,
+          }}
         />
         <canvas
           ref={revRef}
-          className="absolute inset-0 h-full w-full"
-          style={debugAlign ? { opacity: 0.5 } : undefined}
+          className="absolute inset-0 h-full w-full pointer-events-none"
+          style={{
+            borderRadius: `${radius}px`,
+            opacity: debugAlign ? 0.5 : undefined,
+          }}
         />
 
         {showHud && (
@@ -741,15 +876,6 @@ export function BlobMorphHero({
         )}
       </div>
 
-      {showNextRace && (
-        <div
-          className="pointer-events-none absolute left-6 top-6 text-xs"
-          style={{ color: "#111111" }}
-        >
-          <div className="opacity-60">Next race</div>
-          <div className="text-sm font-semibold">Las Vegas GP</div>
-        </div>
-      )}
     </div>
   );
 }

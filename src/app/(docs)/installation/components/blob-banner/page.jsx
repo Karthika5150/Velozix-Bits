@@ -1,17 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  BlobMorphHero,
-  DEFAULT_PRESETS,
-} from "@/components/ui/blob-morph-hero";
+import { BlobMorphHero } from "@/components/ui/blob-morph-hero";
 import { PropsTable } from "@/components/ui/props-table";
-import { InstallTabs } from "@/components/ui/install-tabs";
 import {
   Copy,
   Check,
-  Play,
-  Pause,
   Sliders,
   Sparkles,
   Upload,
@@ -19,8 +13,9 @@ import {
   Eye,
   Terminal,
   Layers,
-  Zap,
   Globe2,
+  MousePointer,
+  RotateCcw,
 } from "lucide-react";
 
 // Reusable Props Definition Data passed into <PropsTable data={bannerPropsData} />
@@ -44,21 +39,49 @@ const bannerPropsData = [
     type: "string",
     default: "Preset equipped",
     description:
-      "URL or local asset path for the equipped helmet/product image revealed dynamically as blobs roam over the portrait.",
+      "URL or local asset path for the equipped helmet/product image dynamically revealed by wandering blobs and cursor interaction.",
   },
   {
-    prop: "blobMode",
-    type: '"roam" | "flood"',
-    default: '"roam"',
+    prop: "interactive",
+    type: "boolean",
+    default: "true",
     description:
-      'In "roam" mode (default), liquid blobs sweep continuously across the entire banner container like dynamic lenses, revealing the equipped layer strictly where blobs contact the subject. In "flood" mode, the blobs also surge harmonically over the center subject.',
+      "When enabled, entering and hovering the mouse over the banner creates an interactive liquid metaball that reveals the equipped image beneath the cursor.",
+  },
+  {
+    prop: "cornerRadius",
+    type: "number",
+    default: "25",
+    description:
+      "Corner radius in pixels applied to the base and equipped images card. Preserves image proportions with zero stretching.",
+  },
+  {
+    prop: "aspectRatio",
+    type: 'number | "square" | "auto"',
+    default: "1",
+    description:
+      'Aspect ratio of the image card. Defaults to 1 ("square") for 4 sides equal with equal top-to-bottom spacing.',
+  },
+  {
+    prop: "imageScale",
+    type: "number",
+    default: "0.75",
+    description:
+      "Target percentage scale of the image card relative to the banner (0.75 = 75% of container height/width).",
+  },
+  {
+    prop: "minImageScale",
+    type: "number",
+    default: "0.30",
+    description:
+      "Minimum responsive scale percentage on low-width / mobile screens so the card never gets too tiny (0.30 = 30%).",
   },
   {
     prop: "speed",
     type: "number",
-    default: "1.0",
+    default: "0.5",
     description:
-      "Animation playback multiplier for both topographic wave frequency and fluid blob trajectory speed.",
+      "Animation playback multiplier. Default is relaxed at 0.5 for calm, organic liquid movement.",
   },
   {
     prop: "autoPlay",
@@ -127,39 +150,20 @@ const bannerPropsData = [
 export default function BannerComponentPage() {
   const [activeTab, setActiveTab] = useState("preview"); // "preview" | "code"
   const [copied, setCopied] = useState(false);
-  const [selectedPresetId, setSelectedPresetId] = useState(
-    DEFAULT_PRESETS[0].id,
-  );
 
   // Playground interactive state
-  const activePreset =
-    DEFAULT_PRESETS.find((p) => p.id === selectedPresetId) ||
-    DEFAULT_PRESETS[0];
-
-  const [speed, setSpeed] = useState(1.0);
-  const [autoPlay, setAutoPlay] = useState(true);
-  const [blobMode, setBlobMode] = useState("roam"); // "roam" | "flood"
-  const [accentColor, setAccentColor] = useState(activePreset.accentColor);
-  const [topoColor, setTopoColor] = useState(activePreset.topoColor);
-  const [showTopography, setShowTopography] = useState(true);
-  const [showAmbientBlobs, setShowAmbientBlobs] = useState(true);
+  const [speed, setSpeed] = useState(0.5);
   const [customImgs, setCustomImgs] = useState({ base: "", equipped: "" });
   const [liveProgress, setLiveProgress] = useState(0);
-
-  const handlePresetChange = (presetId) => {
-    setSelectedPresetId(presetId);
-    const p = DEFAULT_PRESETS.find((item) => item.id === presetId);
-    if (p) {
-      setAccentColor(p.accentColor);
-      setTopoColor(p.topoColor);
-      setCustomImgs({ base: "", equipped: "" });
-    }
-  };
 
   const handleImageUpload = (slot, e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setCustomImgs((prev) => ({ ...prev, [slot]: URL.createObjectURL(file) }));
+  };
+
+  const handleResetImages = () => {
+    setCustomImgs({ base: "", equipped: "" });
   };
 
   const copyToClipboard = async (text) => {
@@ -189,9 +193,12 @@ export default function HeroSection() {
   return (
     <div className="h-screen w-full">
       <BlobMorphHero
-        preset="lando-f1"
-        blobMode="flood" // "flood" surges and floods card; "roam" sweeps across banner & card
-        speed={1.0}
+        baseImage="/images/banner-crypto-base.webp" // URL or local asset path (any size)
+        equippedImage="/images/banner-crypto-equipped.png" // revealed dynamically by blobs & mouse
+        imageScale={0.85} // 85% width of the container
+        cornerRadius={25} // 25px rounded corners
+        speed={0.5} // calm, relaxed liquid animation speed
+        interactive={true} // enables mouse cursor blob reveal on hover
         showTopography={true}
         showAmbientBlobs={true}
         showHud={false}
@@ -294,198 +301,87 @@ export default function HeroSection() {
 
         {/* Tab 1: Interactive Preview Playground */}
         {activeTab === "preview" && (
-          <div className="relative rounded-2xl border border-white/10 overflow-hidden bg-black/60 shadow-2xl">
+          <div className="rounded-2xl border border-white/10 overflow-hidden bg-black/60 shadow-2xl">
             {/* The Embedded Hero Component Canvas */}
-            <div className="relative h-[660px] md:h-[740px] w-full">
+            <div className="relative h-[560px] md:h-[620px] w-full">
               <BlobMorphHero
-                preset={selectedPresetId}
                 baseImage={customImgs.base}
                 equippedImage={customImgs.equipped}
-                accentColor={accentColor}
-                topoColor={topoColor}
+                cornerRadius={25}
+                imageScale={0.85}
                 speed={speed}
-                autoPlay={autoPlay}
-                showTopography={showTopography}
+                autoPlay={true}
+                interactive={true}
+                showTopography={true}
+                showAmbientBlobs={true}
                 showHud={false}
-                showNextRace={true}
                 onProgressChange={(p) => setLiveProgress(p)}
               />
             </div>
 
-            {/* Floating Live Controls Bar (React Bits Style) */}
-            <div className="absolute bottom-4 left-4 right-4 z-30 flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-zinc-950/90 backdrop-blur-md border border-white/15 text-xs text-white shadow-2xl">
-              {/* Presets Selector */}
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {/* Docked Live Controls Bar */}
+            
+            <div className="border-t border-white/10 bg-zinc-950/90 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs text-white">
+              {/* Custom Image Assets Direct Controls */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[11px] font-mono uppercase text-zinc-400 mr-1 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                  Preset:
+                  <Upload className="w-3.5 h-3.5 text-lime-400" />
+                  Custom Assets:
                 </span>
-                {DEFAULT_PRESETS.map((p) => (
+                <label className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-zinc-300 hover:text-white cursor-pointer transition">
+                  <span>Base Image</span>
+                  {customImgs.base && <span className="w-1.5 h-1.5 rounded-full bg-lime-400" />}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload("base", e)}
+                    className="hidden"
+                  />
+                </label>
+                <label className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-mono text-zinc-300 hover:text-white cursor-pointer transition">
+                  <span>Equipped Layer</span>
+                  {customImgs.equipped && <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload("equipped", e)}
+                    className="hidden"
+                  />
+                </label>
+                {(customImgs.base || customImgs.equipped) && (
                   <button
-                    key={p.id}
-                    onClick={() => handlePresetChange(p.id)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition cursor-pointer ${
-                      selectedPresetId === p.id
-                        ? "bg-white text-black font-bold shadow-sm"
-                        : "bg-white/5 text-zinc-300 hover:bg-white/10 border border-white/5"
-                    }`}
+                    onClick={handleResetImages}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono text-zinc-400 hover:text-rose-400 transition cursor-pointer"
+                    title="Reset to default images"
                   >
-                    {p.title.split("//")[0].trim()}
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset</span>
                   </button>
-                ))}
+                )}
               </div>
 
-              {/* Animation Play/Pause & Speed Controls */}
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <button
-                  onClick={() => setAutoPlay(!autoPlay)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-mono text-xs transition cursor-pointer ${
-                    autoPlay
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                      : "bg-zinc-800 text-zinc-300 border border-white/10"
-                  }`}
-                >
-                  {autoPlay ? (
-                    <>
-                      <Pause className="w-3 h-3" />
-                      <span>Pause</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3 h-3" />
-                      <span>Play</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Blob Surge Mode Toggle */}
-                <button
-                  onClick={() =>
-                    setBlobMode(blobMode === "flood" ? "roam" : "flood")
-                  }
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg font-mono text-xs transition cursor-pointer ${
-                    blobMode === "flood"
-                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold"
-                      : "bg-zinc-800 text-zinc-400 border border-white/10"
-                  }`}
-                  title="Toggle between flood surge vs roaming liquid lens across the banner"
-                >
-                  <Zap className="w-3 h-3" />
-                  <span>
-                    {blobMode === "flood" ? "Flood Surge" : "Roaming Lens"}
-                  </span>
-                </button>
-
+              {/* Speed Slider & Mouse Interactive Indicator */}
+              <div className="flex items-center gap-3.5 flex-wrap">
                 {/* Speed Slider */}
-                <div className="hidden md:flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <span className="text-[11px] font-mono text-zinc-400">
                     Speed: {speed.toFixed(1)}x
                   </span>
                   <input
                     type="range"
-                    min="0.2"
-                    max="2.5"
-                    step="0.1"
+                    min="0.1"
+                    max="1.5"
+                    step="0.05"
                     value={speed}
                     onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                    className="w-20 accent-white cursor-pointer"
+                    className="w-20 accent-lime-400 cursor-pointer"
                   />
                 </div>
 
-                {/* Color Pickers */}
-                <div className="hidden lg:flex items-center gap-2">
-                  <label
-                    className="flex items-center gap-1 cursor-pointer"
-                    title="Accent & SVG Color"
-                  >
-                    <span className="text-[10px] font-mono text-zinc-400">
-                      Accent:
-                    </span>
-                    <input
-                      type="color"
-                      value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
-                    />
-                  </label>
-                  <label
-                    className="flex items-center gap-1 cursor-pointer"
-                    title="Topography Line Color"
-                  >
-                    <span className="text-[10px] font-mono text-zinc-400">
-                      Topo:
-                    </span>
-                    <input
-                      type="color"
-                      value={topoColor}
-                      onChange={(e) => setTopoColor(e.target.value)}
-                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
-                    />
-                  </label>
-                </div>
-
-                {/* Layer Toggles */}
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setShowAmbientBlobs(!showAmbientBlobs)}
-                    className={`px-2 py-1 rounded text-[11px] font-mono transition cursor-pointer ${
-                      showAmbientBlobs
-                        ? "bg-lime-400/20 text-lime-300 border border-lime-400/30"
-                        : "text-zinc-500 hover:text-zinc-300 border border-transparent"
-                    }`}
-                    title="Toggle gooey metaball visibility across full topography banner"
-                  >
-                    Banner Blobs: {showAmbientBlobs ? "ON" : "OFF"}
-                  </button>
-                  <button
-                    onClick={() => setShowTopography(!showTopography)}
-                    className={`px-2 py-1 rounded text-[11px] font-mono transition cursor-pointer ${
-                      showTopography
-                        ? "bg-white/10 text-white"
-                        : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    Topo: {showTopography ? "ON" : "OFF"}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Custom Uploads Accordion Tray */}
-            <div className="absolute top-4 right-4 z-30">
-              <div className="group relative">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900/80 backdrop-blur-md border border-white/15 text-xs text-zinc-300 hover:text-white transition cursor-pointer">
-                  <Upload className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>Custom Assets</span>
-                </button>
-                <div className="hidden group-hover:flex group-focus-within:flex flex-col gap-2 p-3 absolute right-0 top-full mt-2 w-64 rounded-xl bg-zinc-950/95 backdrop-blur-md border border-white/15 shadow-2xl text-xs z-40">
-                  <span className="font-mono text-[10px] uppercase text-zinc-400 font-bold">
-                    Upload Custom Layers
-                  </span>
-                  <label className="flex items-center justify-between text-zinc-300 hover:text-white cursor-pointer py-1 border-b border-white/5">
-                    <span>1. Base (Driver Portrait)</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload("base", e)}
-                      className="hidden"
-                    />
-                    <span className="text-lime-400 font-mono text-[11px] underline">
-                      Upload
-                    </span>
-                  </label>
-                  <label className="flex items-center justify-between text-zinc-300 hover:text-white cursor-pointer py-1 border-b border-white/5">
-                    <span>2. Equipped (Helmet Photo)</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload("equipped", e)}
-                      className="hidden"
-                    />
-                    <span className="text-lime-400 font-mono text-[11px] underline">
-                      Upload
-                    </span>
-                  </label>
+                {/* Mouse Hover Indicator Badge */}
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400 text-[11px] font-mono">
+                  <MousePointer className="w-3 h-3" />
+                  <span>Cursor Reveal Active</span>
                 </div>
               </div>
             </div>
@@ -524,36 +420,8 @@ export default function HeroSection() {
         )}
       </div>
 
-      {/* Installation & Guide Section */}
+      {/* Architecture & Props Reference */}
       <div className="mt-12 space-y-10">
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <h2 className="text-xl md:text-2xl font-bold font-sans text-white">
-              Installation
-            </h2>
-            <p className="text-sm text-gray-400">
-              Install the component using the Adaptive UI CLI or your preferred package manager.
-            </p>
-          </div>
-          <div className="max-w-2xl">
-            <InstallTabs packages="adaptive-ui" component="blob-banner" />
-          </div>
-        </div>
-
-        {/* Step-by-step Setup */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">
-            1. Create the Component File
-          </h3>
-          <p className="text-sm text-gray-400">
-            Copy the full component implementation to{" "}
-            <code className="text-zinc-200 bg-zinc-900 px-2 py-0.5 rounded border border-white/10 font-mono text-xs">
-              src/components/ui/blob-morph-hero.jsx
-            </code>
-            .
-          </p>
-        </div>
-
         {/* Component Architecture & Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="p-5 rounded-2xl border border-white/10 bg-zinc-900/40 space-y-2">

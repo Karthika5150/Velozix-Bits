@@ -66,10 +66,20 @@ export interface InteractiveAsciiFaceProps {
   alt?: string;
   /** Whether the portrait shifts interactively on pointer move. Default: true */
   followPointer?: boolean;
-  /** Maximum pixel offset for pointer parallax. Default: 22 */
+  /** Maximum pixel offset for pointer parallax. Default: 6 */
   maxOffset?: number;
   /** Hex or CSS color of the ASCII characters. Default: "#60ed83" */
   color?: string;
+  /** Falling particle style: "characters" (matrix alphanumeric code) or "lines" (sleek falling cyber light streaks). Default: "characters" */
+  dropType?: "characters" | "lines";
+  /** Array of colors for raindrop trail gradient from head to tail. E.g. ["#ffffff", "#5cfc87", "#056526"] */
+  gradient?: string[];
+  /** Custom characters or letters string for falling digital rain. E.g. "01" or "MATRIX" */
+  characters?: string;
+  /** Size in pixels for rain drops and character glyphs. Default: 7 */
+  dropSize?: number;
+  /** When true, renders pure matrix digital rain without the facial portrait. Default: false */
+  rainOnly?: boolean;
   /** Animation speed multiplier for falling digital rain. Default: 1 */
   lineSpeed?: number;
   /** Sensitivity to pointer movements. Default: 1 */
@@ -112,14 +122,24 @@ export interface BlobMorphHeroProps {
   speed?: number;
   /** Whether the animation runs automatically. Default: true */
   autoPlay?: boolean;
+  /** Enable mouse entry and cursor blob reveal. Default: true */
+  interactive?: boolean;
+  /** Corner radius in pixels applied to the subject image card. Default: 25 */
+  cornerRadius?: number;
+  /** Alias for cornerRadius */
+  borderRadius?: number;
+  /** Aspect ratio of the image card ("square", 1, or number). Default: 1 */
+  aspectRatio?: number | "square" | "auto";
+  /** Target percentage scale of the image card relative to banner (0.1 to 1.0). Default: 0.75 (75%) */
+  imageScale?: number;
+  /** Minimum scale percentage on low-width / mobile screens (0.05 to 1.0). Default: 0.30 (30%) */
+  minImageScale?: number;
   /** Toggle background topographic contour lines. Default: true */
   showTopography?: boolean;
   /** Toggle ambient background blobs. Default: true */
   showAmbientBlobs?: boolean;
   /** Toggle helmet HUD wireframe overlay. Default: true */
   showHud?: boolean;
-  /** Show next race info banner. Default: false */
-  showNextRace?: boolean;
   /** Custom accent color override */
   accentColor?: string;
   /** Custom topography line color override */
@@ -231,5 +251,92 @@ export interface PropsTableProps {
   description?: string;
   className?: string;
 }
+
+export interface StackedCardSpec {
+  label: string;
+  value: string;
+}
+
+export interface StackedCardItem {
+  id: string | number;
+  number: string;
+  tag: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  accent: string;
+  gradient?: string;
+  borderGlow?: string;
+  specs?: StackedCardSpec[];
+}
+
+export interface StackedCardsScrollProps {
+  /** Array of 10 card items. Defaults to built-in 10-card deck */
+  cards?: StackedCardItem[];
+  /** Initially active card index (0-9). Default: 0 */
+  initialIndex?: number;
+  /** Enables mouse wheel trigger to flip through cards. Default: true */
+  enableWheelScroll?: boolean;
+  /** Enables ScrollTrigger sticky pinning behavior during page scroll. Default: false */
+  pin?: boolean;
+  /** Height of the pin scroll track (e.g. '280vh'). Default: '280vh' */
+  pinHeight?: string;
+  /** Enables auto-playing transitions across the deck. Default: false */
+  autoPlay?: boolean;
+  /** Interval in milliseconds between autoplay steps. Default: 4000 */
+  autoPlayInterval?: number;
+  /** Additional CSS class name */
+  className?: string;
+  /** Callback fired when the active card changes */
+  onChange?: (index: number, card: StackedCardItem) => void;
+}
+
+export declare const StackedCardsScroll: React.FC<StackedCardsScrollProps>;
+export declare const DEFAULT_STACKED_CARDS: StackedCardItem[];
+
+export interface CurvedGridCanvasProps {
+  /** Size in pixels of each square cell in the grid. Default: 50 */
+  cellSize?: number;
+  /** Custom accent color override for grid lines, glowing borders, and curves */
+  accentColor?: string;
+  /** Energy decay rate per second for trail fading. Default: 0.65 */
+  fadeSpeed?: number;
+  /** Additional CSS class name */
+  className?: string;
+}
+
+export declare const CurvedGridCanvas: React.FC<CurvedGridCanvasProps>;
+export declare const FullpageCurvedGrid: React.FC<CurvedGridCanvasProps>;
+
+export interface InteractiveSnakeGridProps {
+  accentColor?: string;
+  className?: string;
+  showControls?: boolean;
+}
+
+export declare const InteractiveSnakeGrid: React.FC<InteractiveSnakeGridProps>;
+
+export interface CodeTypewriterProps {
+  className?: string;
+}
+
+export declare const CodeTypewriter: React.FC<CodeTypewriterProps>;
+
+export interface ThemeCustomizerProps {
+  className?: string;
+  compact?: boolean;
+}
+
+export declare const ThemeCustomizer: React.FC<ThemeCustomizerProps>;
+export declare function useAutoCycleAccent(enabled?: boolean, intervalMs?: number): void;
+export declare function applyAccent(accentId: string, persist?: boolean): void;
+export declare const ACCENT_PRESETS: Array<{
+  id: string;
+  name: string;
+  color: string;
+  glow: string;
+  muted: string;
+  rgb: string;
+}>;
 
 export declare const PropsTable: React.FC<PropsTableProps>;
