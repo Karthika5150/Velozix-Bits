@@ -545,16 +545,7 @@ export function StackedCardsScroll({
                     </p>
                   </div>
 
-                  {/* Card Bottom */}
-                  <div className="relative z-10 border-t border-purple-500/20 pt-3 flex items-center justify-between text-[11px] font-mono text-purple-300/70">
-                    <span className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-full bg-purple-400 animate-ping" />
-                      <span className="font-medium text-white">Active Vector</span>
-                    </span>
-                    <span>
-                      Deck {index + 1} of {totalCards}
-                    </span>
-                  </div>
+                 
                 </div>
               );
             })}
@@ -653,7 +644,7 @@ export function StackedCardsScroll({
                         <span
                           className={`font-sans tracking-tight transition-all duration-300 ${
                             isActive
-                              ? "text-2xl sm:text-3xl md:text-4xl font-extrabold text-white"
+                              ? "text-xl font-extrabold text-white"
                               : "text-lg sm:text-xl font-medium text-zinc-400 group-hover:text-purple-200"
                           }`}
                           style={
@@ -694,16 +685,7 @@ export function StackedCardsScroll({
             </div>
           </div>
 
-          {/* Bottom Arc HUD Progress */}
-          <div className="pt-4 border-t border-purple-500/20 mt-4 flex items-center justify-between text-xs font-mono text-purple-300/70">
-            <span className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-purple-400 animate-ping" />
-              <span>Means & Methods Active Scrollytelling</span>
-            </span>
-            <span className="font-bold text-white">
-              {Math.round(((activeIndex + 1) / totalCards) * 100)}% Complete
-            </span>
-          </div>
+         
         </div>
       </div>
     </div>

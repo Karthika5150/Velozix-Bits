@@ -13,7 +13,7 @@ export default function SideNav() {
   return (
     <aside
       data-lenis-prevent
-      className="w-[18%] h-[calc(100vh-3.5rem)] z-40 flex flex-col justify-between fixed top-14 left-0 overflow-y-auto no-scrollbar bg-[#030712] border-r border-white/5"
+      className="w-[18%] h-[calc(100vh-3.5rem)] z-40 scroll-smooth flex flex-col justify-between fixed top-14 left-0 overflow-y-auto no-scrollbar bg-[#030712] border-r border-white/5"
     >
       <div className="text-white flex flex-col gap-6 py-6 px-3">
         {SideNavData.map((val) => (
@@ -57,13 +57,7 @@ export default function SideNav() {
       </div>
 
       {/* Manual Accent Color Switcher inside Docs ("ulla naa accent click pannatha change aaganum") */}
-      <div className="sticky bottom-0 p-3 bg-[#030712]/95 backdrop-blur-md border-t border-white/10">
-        <div className="flex items-center gap-1.5 text-zinc-400 mb-2 font-mono text-[11px] uppercase tracking-wider">
-          <Palette size={12} style={{ color: "var(--brand-accent, #a855f7)" }} />
-          <span>Accent Theme</span>
-        </div>
-        <ThemeCustomizer compact={true} />
-      </div>
+      
     </aside>
   );
 }

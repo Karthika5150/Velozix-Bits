@@ -65,9 +65,10 @@ body {
 
 :root {
   --brand-accent: #a855f7;
-  --brand-accent-glow: rgba(168, 85, 247, 0.4);
+  --brand-accent-glow: rgba(168, 85, 247, 0.45);
   --brand-accent-muted: rgba(168, 85, 247, 0.15);
   --brand-accent-dark: #6b21a8;
+  --brand-accent-rgb: 168, 85, 247;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

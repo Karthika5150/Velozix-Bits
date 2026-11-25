@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${plexMono.variable} ${inter.variable} antialiased dark`}
     >
-      <body className="min-h-screen flex flex-col bg-[#030712] text-white selection:bg-emerald-500/20 selection:text-emerald-300 font-mono">
+      <body className="min-h-screen flex flex-col bg-[#030712] text-white selection:bg-purple-500/30 selection:text-purple-200 font-mono">
         <SmoothScrollProvider>
           <NavComponent />
           <div className="flex-1 mt-14">{children}</div>

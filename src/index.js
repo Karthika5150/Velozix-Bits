@@ -5,6 +5,7 @@ export {
 } from "./components/ui/image-scroll";
 
 export { InteractiveAsciiFace } from "./components/ui/interactive-ascii-face";
+export { AsciiObject } from "./components/ui/ascii-object";
 
 export {
   BlobMorphHero,

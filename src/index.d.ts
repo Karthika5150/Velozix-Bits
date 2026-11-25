@@ -60,32 +60,50 @@ export declare const InfiniteImageScroll: React.FC<ImageScrollProps>;
 /* ===================================================================== */
 
 export interface InteractiveAsciiFaceProps {
-  /** Source image URL, File, or Blob to render as ASCII portrait */
+  /** 3D ASCII Object model: "ant" (3D Cyber Ant), "torus-knot" (Canvas UI Knot), "crystal", "drone", "monolith", "duck", "face", "bolt", or "logo". Default: "ant" */
+  model?: "ant" | "torus-knot" | "crystal" | "drone" | "monolith" | "duck" | "face" | "bolt" | "logo" | string;
+  /** Source image URL, 3D model (.glb/.gltf) URL, File, or Blob */
   src?: string | Blob | File;
-  /** Alt text for accessibility. Default: "Human portrait formed from green ASCII characters" */
+  /** Whether to tint characters with the 3D scene colors (e.g. cyber armor or yellow duck). Default: true */
+  colored?: boolean;
+  /** Alt text for accessibility. Default: "3D ASCII Object simulation" */
   alt?: string;
-  /** Whether the portrait shifts interactively on pointer move. Default: true */
+  /** Whether the object shifts interactively on pointer move. Default: true */
   followPointer?: boolean;
+  /** Whether the 3D model automatically rotates when not dragging. Default: true */
+  autoRotate?: boolean;
   /** Maximum pixel offset for pointer parallax. Default: 6 */
   maxOffset?: number;
-  /** Hex or CSS color of the ASCII characters. Default: "#60ed83" */
+  /** Rendering mode: "face" (pure 3D ASCII Object), "face-rain" (3D face with matrix rainfall), or "rain" (digital rainfall). Default: "face" */
+  mode?: "face" | "face-rain" | "rain";
+  /** Hex or CSS color of the ASCII characters. Default: "#5cfc87" */
   color?: string;
+  /** Matrix rainfall stream color. Earlier top letters hide progressively as the drop moves downward. Default: "#5cfc87" */
+  rainColor?: string;
   /** Falling particle style: "characters" (matrix alphanumeric code) or "lines" (sleek falling cyber light streaks). Default: "characters" */
   dropType?: "characters" | "lines";
   /** Array of colors for raindrop trail gradient from head to tail. E.g. ["#ffffff", "#5cfc87", "#056526"] */
   gradient?: string[];
   /** Custom characters or letters string for falling digital rain. E.g. "01" or "MATRIX" */
   characters?: string;
-  /** Size in pixels for rain drops and character glyphs. Default: 7 */
+  /** Size in pixels for rain drops and character glyphs. Default: 8 */
   dropSize?: number;
+  /** Alias for dropSize */
+  cellSize?: number;
+  /** Edge contour snap contrast. Default: 2.0 */
+  edgeContrast?: number;
   /** When true, renders pure matrix digital rain without the facial portrait. Default: false */
   rainOnly?: boolean;
   /** Animation speed multiplier for falling digital rain. Default: 1 */
   lineSpeed?: number;
+  /** Alias for lineSpeed */
+  speed?: number;
   /** Sensitivity to pointer movements. Default: 1 */
   mouseSpeed?: number;
   /** Contrast/clarity factor for face sampling. Default: 1.35 */
   imageClarity?: number;
+  /** Alias for imageClarity */
+  contrast?: number;
   /** Additional CSS class names */
   className?: string;
 }

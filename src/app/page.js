@@ -25,13 +25,9 @@ import {
 import { StackedCardsScroll } from "@/components/ui/stacked-cards-scroll";
 import { CodeTypewriter } from "@/components/ui/code-typewriter";
 import { InstallTabs } from "@/components/ui/install-tabs";
-import { useAutoCycleAccent } from "@/components/layout/theme-customizer";
 
 export default function Home() {
   const [copied, setCopied] = useState(false);
-
-  // Landing page automatically cycles accent colors smoothly!
-  useAutoCycleAccent(true, 3600);
 
   const handleCopyInstall = async () => {
     try {
@@ -81,36 +77,35 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#030712] text-white selection:bg-purple-500/30 selection:text-purple-200 overflow-x-clip font-mono">
-      {/* GOOEY GRID CURSOR WITH DYNAMIC ACCENT COLORS */}
+    <div className="relative min-h-screen bg-[#030014] text-white selection:bg-purple-500/30 selection:text-purple-200 overflow-x-clip font-mono">
+      {/* GOOEY GRID CURSOR LOCKED TO VIOLET */}
       <GooeyGridCursor
-        color="auto"
+        color="#a855f7"
         cellSize={50}
         borderRadius="20%"
         trailDuration={220}
         blurAmount={6.0}
         blendMode="screen"
         showGridLines={true}
+        gridLineColor="rgba(168, 85, 247, 0.05)"
       />
 
-      {/* Ambient background glows */}
-      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.22),rgba(126,34,206,0.06)_50%,transparent_100%)] blur-2xl" />
-      <div className="pointer-events-none absolute top-[750px] left-1/4 size-[550px] rounded-full bg-purple-600/10 blur-[130px]" />
-      <div className="pointer-events-none absolute top-[1400px] right-1/4 size-[550px] rounded-full bg-purple-500/10 blur-[130px]" />
+      {/* Ambient background glows - Deep Black, Violet, Purple & Lavender */}
+      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[650px] bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(168,85,247,0.30),rgba(126,34,206,0.10)_50%,transparent_100%)] blur-2xl" />
+      <div className="pointer-events-none absolute top-[750px] left-1/4 size-[550px] rounded-full bg-purple-600/12 blur-[140px]" />
+      <div className="pointer-events-none absolute top-[1400px] right-1/4 size-[550px] rounded-full bg-violet-600/12 blur-[140px]" />
+      <div className="pointer-events-none absolute top-[2200px] left-1/3 size-[600px] rounded-full bg-fuchsia-600/10 blur-[150px]" />
 
       {/* HERO SECTION */}
       <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28 pb-20 flex flex-col items-center text-center">
         {/* Release Announcement Pill */}
         <Link
           href="/installation/components/lorenzo-grid-cursor"
-          className="group relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-xl text-xs font-mono text-purple-200 hover:text-white transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_0_20px_rgba(168,85,247,0.15)] mb-8 cursor-pointer"
+          className="group relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/30 bg-purple-950/40 hover:bg-purple-900/50 backdrop-blur-xl text-xs font-mono text-purple-200 hover:text-white transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1),0_0_20px_rgba(168,85,247,0.2)] mb-8 cursor-pointer hover:border-purple-400/60"
         >
-          <span
-            className="flex size-2 rounded-full animate-pulse transition-colors duration-500"
-            style={{ backgroundColor: "var(--brand-accent, #a855f7)" }}
-          />
+          <span className="flex size-2 rounded-full animate-pulse bg-purple-400 shadow-[0_0_8px_#a855f7]" />
           <span>Velozix Bits v0.1.5 is Live</span>
-          <span className="text-zinc-400 group-hover:text-purple-200 transition-colors">
+          <span className="text-purple-300/70 group-hover:text-purple-200 transition-colors">
             • Gooey Grid Cursor + Pinned Scrollytelling Deck
           </span>
           <ArrowRight
@@ -120,13 +115,12 @@ export default function Home() {
         </Link>
 
         {/* Hero Title (Inter font) */}
-        <h1 className="font-sans text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight max-w-4xl leading-[1.1]">
+        <h1 className="font-sans text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight max-w-4xl leading-[1.1]">
           Craft High-Velocity,{" "}
           <span
-            className="transition-colors duration-500"
             style={{
               background:
-                "linear-gradient(135deg, var(--brand-accent, #a855f7) 0%, #ffffff 80%)",
+                "linear-gradient(135deg, #c084fc 0%, #a855f7 45%, #f3e8ff 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -137,16 +131,16 @@ export default function Home() {
         </h1>
 
         {/* Subtitle (IBM Plex Mono font) */}
-        <p className="mt-6 font-mono text-xs sm:text-sm md:text-base text-purple-200/80 max-w-2xl leading-relaxed">
+        <p className="mt-6 font-mono text-xs sm:text-sm md:text-base text-purple-200/90 max-w-2xl leading-relaxed">
           A production collection of interactive React & Next.js animated components.
-          Move your cursor across the screen to experience fluid gooey grid merges with dynamic theme colors.
+          Move your cursor across the screen to experience fluid gooey grid merges in rich violet & lavender shades.
         </p>
 
         {/* CTAs & Terminal Copy Pill */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/installation"
-            className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-black font-semibold font-sans text-sm hover:bg-purple-100 transition-all shadow-[0_0_25px_rgba(255,255,255,0.25)] hover:scale-[1.02] cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#0a0418] font-semibold font-sans text-sm hover:bg-purple-100 transition-all shadow-[0_0_25px_rgba(168,85,247,0.35)] hover:scale-[1.02] cursor-pointer"
           >
             <span>Get Started</span>
             <ArrowRight size={16} />
@@ -154,9 +148,9 @@ export default function Home() {
 
           <Link
             href="/installation/components/lorenzo-grid-cursor"
-            className="flex items-center gap-2 px-6 py-3 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-xl text-white font-medium font-sans text-sm transition-all hover:border-purple-400/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 rounded-full border border-purple-500/30 bg-purple-950/30 hover:bg-purple-900/50 backdrop-blur-xl text-purple-100 font-medium font-sans text-sm transition-all hover:border-purple-400/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] cursor-pointer"
           >
-            <Grid size={16} style={{ color: "var(--brand-accent, #a855f7)" }} />
+            <Grid size={16} className="text-purple-400" />
             <span>Gooey Grid Cursor</span>
           </Link>
 
@@ -164,57 +158,51 @@ export default function Home() {
           <button
             type="button"
             onClick={handleCopyInstall}
-            className="flex items-center gap-2.5 px-5 py-3 rounded-full border border-white/12 bg-black/60 hover:bg-black/80 backdrop-blur-xl font-mono text-xs text-purple-200 hover:text-white transition-all cursor-pointer group shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]"
+            className="flex items-center gap-2.5 px-5 py-3 rounded-full border border-purple-500/30 bg-[#070214]/90 hover:bg-[#0c0422] backdrop-blur-xl font-mono text-xs text-purple-200 hover:text-white transition-all cursor-pointer group shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_0_20px_rgba(168,85,247,0.15)] hover:border-purple-400/60"
           >
-            <Terminal size={14} style={{ color: "var(--brand-accent, #a855f7)" }} />
+            <Terminal size={14} className="text-purple-400" />
             <span>npm i velozix-bits</span>
             {copied ? (
               <Check size={14} className="text-emerald-400 ml-1" />
             ) : (
-              <Copy size={14} className="text-zinc-500 group-hover:text-purple-300 ml-1" />
+              <Copy size={14} className="text-purple-400/70 group-hover:text-purple-200 ml-1" />
             )}
           </button>
         </div>
 
         {/* Interactive hint banner */}
-        <div className="mt-12 inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-black/40 backdrop-blur-md text-xs font-mono text-zinc-400">
-          <MousePointer2 size={13} style={{ color: "var(--brand-accent, #a855f7)" }} />
+        <div className="mt-12 inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-purple-500/25 bg-[#080318]/70 backdrop-blur-md text-xs font-mono text-purple-300/80">
+          <MousePointer2 size={13} className="text-purple-400" />
           <span>Gooey Grid Cursor: Move across the screen to experience fluid gooey curved square merges</span>
         </div>
 
         {/* Metric Badges */}
-        <div className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-10 border-t border-white/10 pt-8 w-full max-w-3xl font-mono">
+        <div className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-10 border-t border-purple-500/20 pt-8 w-full max-w-3xl font-mono">
           <div>
             <div className="text-2xl font-bold font-mono text-white">60 FPS</div>
-            <div className="text-xs text-purple-300/60 mt-0.5">
+            <div className="text-xs text-purple-300/70 mt-0.5">
               Hardware Accelerated
             </div>
           </div>
           <div>
-            <div
-              className="text-2xl font-bold font-mono transition-colors duration-500"
-              style={{ color: "var(--brand-accent, #a855f7)" }}
-            >
+            <div className="text-2xl font-bold font-mono text-purple-400">
               100%
             </div>
-            <div className="text-xs text-purple-300/60 mt-0.5">
+            <div className="text-xs text-purple-300/70 mt-0.5">
               TypeScript Typings
             </div>
           </div>
           <div>
             <div className="text-2xl font-bold font-mono text-white">Zero</div>
-            <div className="text-xs text-purple-300/60 mt-0.5">
+            <div className="text-xs text-purple-300/70 mt-0.5">
               Config Setup Required
             </div>
           </div>
           <div>
-            <div
-              className="text-2xl font-bold font-mono transition-colors duration-500"
-              style={{ color: "var(--brand-accent, #a855f7)" }}
-            >
+            <div className="text-2xl font-bold font-mono text-purple-400">
               &lt; 14KB
             </div>
-            <div className="text-xs text-purple-300/60 mt-0.5">
+            <div className="text-xs text-purple-300/70 mt-0.5">
               Tree-Shakeable Core
             </div>
           </div>
@@ -294,7 +282,7 @@ export default function Home() {
                   <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,rgba(168,85,247,0.8)_25%,rgba(216,180,254,0.7)_50%,transparent_75%)] opacity-0 group-hover:opacity-100 group-hover:animate-[spin_4s_linear_infinite] transition-opacity duration-300 pointer-events-none" />
                   <div className="absolute inset-0 rounded-xl border border-purple-500/20 group-hover:border-transparent transition-colors duration-300 pointer-events-none" />
 
-                  <div className="relative rounded-[11px] bg-[#090615]/95 backdrop-blur-xl p-4 flex items-start gap-3.5">
+                  <div className="relative rounded-[11px] bg-[#070214]/95 backdrop-blur-xl p-4 flex items-start gap-3.5">
                     <div className="size-8 rounded-lg flex items-center justify-center shrink-0 border border-purple-500/30 bg-purple-500/15 text-purple-300 mt-0.5">
                       <ItemIcon size={16} />
                     </div>
@@ -302,7 +290,7 @@ export default function Home() {
                       <h4 className="font-sans text-sm font-semibold text-white group-hover:text-purple-300 transition-colors">
                         {item.title}
                       </h4>
-                      <p className="font-mono text-xs text-purple-200/70 mt-1 leading-relaxed">
+                      <p className="font-mono text-xs text-purple-200/80 mt-1 leading-relaxed">
                         {item.desc}
                       </p>
                     </div>
@@ -340,7 +328,7 @@ export default function Home() {
               <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,rgba(168,85,247,0.95)_25%,rgba(216,180,254,0.85)_50%,transparent_75%)] opacity-0 group-hover:opacity-100 group-hover:animate-[spin_4s_linear_infinite] transition-opacity duration-300 pointer-events-none" />
               <div className="absolute inset-0 rounded-2xl border border-purple-500/20 group-hover:border-transparent transition-colors duration-300 pointer-events-none" />
 
-              <div className="relative h-full rounded-[15px] bg-[#090615]/95 backdrop-blur-xl p-6 sm:p-8 flex flex-col justify-between">
+              <div className="relative h-full rounded-[15px] bg-[#070214]/95 backdrop-blur-xl p-6 sm:p-8 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-mono uppercase text-purple-400/80">
@@ -379,7 +367,7 @@ export default function Home() {
         <div className="relative group rounded-3xl p-[1px] overflow-hidden shadow-[0_0_60px_rgba(168,85,247,0.2)]">
           <div className="absolute inset-[-100%] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,rgba(168,85,247,0.95)_25%,rgba(216,180,254,0.85)_50%,transparent_75%)] opacity-40 group-hover:opacity-100 group-hover:animate-[spin_4s_linear_infinite] transition-opacity duration-500 pointer-events-none" />
 
-          <div className="relative rounded-[23px] bg-gradient-to-b from-[#150a28] to-[#080414] p-8 sm:p-12 flex flex-col items-center">
+          <div className="relative rounded-[23px] bg-gradient-to-b from-[#180a32] via-[#0d0422] to-[#04010e] p-8 sm:p-12 flex flex-col items-center">
             <h2 className="font-sans text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
               Ready to Build with Velozix Bits?
             </h2>
@@ -407,8 +395,10 @@ export default function Home() {
       {/* FOOTER */}
       <footer className="relative z-10 border-t border-purple-500/15 py-8 px-4 sm:px-8 text-center text-xs font-mono text-purple-300/60 flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto gap-4">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-white">Velozix Bits</span>
-          <span>• Released under MIT License</span>
+          <span> &#169; 2026</span>
+          <span className="font-bold text-white">Velozix Bits </span>
+          <span>• Built by Karthika</span>
+          <span>• License</span>
         </div>
         <div className="flex items-center gap-6">
           <Link href="/installation" className="hover:text-white transition-colors">

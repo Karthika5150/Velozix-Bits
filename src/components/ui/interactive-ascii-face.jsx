@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import rawStyles from "./interactive-ascii-face.module.css";
+import { AsciiObject } from "./ascii-object";
 
 const fallbackStyles = {
   stage: "adaptive-ascii-stage",
@@ -28,9 +29,12 @@ const EMBEDDED_ASCII_STYLES = `
   border-radius: 1rem;
   background: radial-gradient(ellipse at center, #06190d 0%, #010603 85%);
   box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9), 0 20px 45px rgba(0, 0, 0, 0.7);
-  cursor: crosshair;
+  cursor: grab;
   user-select: none;
   touch-action: none;
+}
+.adaptive-ascii-stage:active {
+  cursor: grabbing;
 }
 .adaptive-ascii-field {
   position: absolute;
@@ -46,7 +50,7 @@ const EMBEDDED_ASCII_STYLES = `
   background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.32) 50%);
   background-size: 100% 4px;
   z-index: 10;
-  opacity: 0.75;
+  opacity: 0.65;
 }
 .adaptive-ascii-vignette {
   position: absolute;
@@ -55,12 +59,6 @@ const EMBEDDED_ASCII_STYLES = `
   background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.8) 100%);
   border-radius: 1rem;
   z-index: 11;
-}
-.adaptive-ascii-frame {
-  position: relative;
-  width: min(100%, 34rem, 65svh);
-  aspect-ratio: 500 / 610;
-  pointer-events: none;
 }
 .adaptive-ascii-status {
   display: grid;
@@ -74,62 +72,21 @@ const EMBEDDED_ASCII_STYLES = `
 }
 `;
 
-const REFERENCE = "/images/ascii-portrait.png";
 const GLYPHS = [".:;|`", "il/+=:", "xovucz", "7TZH28", "NWM#@%"];
-// High-resolution luminance sampling keeps uploaded facial features readable
-// instead of reducing the portrait to a handful of broad glyph blocks.
-const MASK_WIDTH = 360;
-const MASK_HEIGHT = 432;
-const CELL_WIDTH = 5;
-const CELL_HEIGHT = 7;
 
-function sampleImage(image, cropReference) {
-  const canvas = document.createElement("canvas");
-  canvas.width = MASK_WIDTH;
-  canvas.height = MASK_HEIGHT;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Canvas unavailable");
-
-  const sourceHeight = cropReference ? 610 : image.naturalHeight;
-  // Uploaded photos are cover-cropped to the portrait window. A contained
-  // landscape image makes the person too small to read as a portrait.
-  const scale = cropReference
-    ? Math.min(500 / image.naturalWidth, 610 / sourceHeight)
-    : Math.max(500 / image.naturalWidth, 610 / sourceHeight);
-  const width = image.naturalWidth * scale * MASK_WIDTH / 500;
-  const height = sourceHeight * scale * MASK_HEIGHT / 610;
-  const left = (MASK_WIDTH - width) / 2;
-  const top = (MASK_HEIGHT - height) / 2;
-  context.drawImage(image, 0, 0, image.naturalWidth, sourceHeight, left, top, width, height);
-  const { data } = context.getImageData(0, 0, MASK_WIDTH, MASK_HEIGHT);
-
-  const tones = Float32Array.from({ length: MASK_WIDTH * MASK_HEIGHT }, (_, i) => {
-    const index = i * 4;
-    const luminance = (0.2126 * data[index] + 0.7152 * data[index + 1] + 0.0722 * data[index + 2]) / 255;
-    return luminance * data[index + 3] / 255;
-  });
-
-  const visibleTones = Array.from(tones).filter((_, i) => data[i * 4 + 3] >= 245).sort((a, b) => a - b);
-  const shadow = Math.min(0.10, (visibleTones[Math.floor(visibleTones.length * 0.08)] ?? 0) * 0.8);
-  const highlight = Math.max(0.48, visibleTones[Math.floor(visibleTones.length * 0.92)] ?? 1);
-
-  const detailed = tones.map((tone, i) => {
-    if (data[i * 4 + 3] === 0) return 0;
-    const x = i % MASK_WIDTH;
-    const neighbors = (
-      (x > 0 ? tones[i - 1] : tone) + (x < MASK_WIDTH - 1 ? tones[i + 1] : tone) +
-      (tones[i - MASK_WIDTH] ?? tone) + (tones[i + MASK_WIDTH] ?? tone)
-    ) / 4;
-    const detailedTone = tone + (tone - neighbors) * 0.45;
-    if (cropReference) return Math.min(1, Math.max(0, (detailedTone - 0.045) / 0.91)) ** 0.55;
-    return Math.min(1, Math.max(0, (detailedTone - shadow) / (highlight - shadow))) ** 0.75;
-  });
-
-  const foreground = cropReference
-    ? undefined
-    : Uint8Array.from(data, (_, index) => data[index * 4 + 3] > 12 ? 1 : 0);
-  return { tones: detailed, foreground };
-}
+const DEFAULT_MODELS = {
+  ant: "procedural:ant",
+  "torus-knot": "procedural:torus-knot",
+  knot: "procedural:torus-knot",
+  torus: "procedural:torus-knot",
+  face: "procedural:face",
+  duck: "procedural:duck",
+  crystal: "procedural:crystal",
+  drone: "procedural:drone",
+  monolith: "procedural:monolith",
+  bolt: "procedural:crystal",
+  logo: "procedural:ant",
+};
 
 function parseColor(c, fallback = [92, 252, 135]) {
   if (!c || typeof c !== "string") return fallback;
@@ -165,152 +122,127 @@ function interpolateGradient(ratio, stops) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-function animateRain(canvas, portrait, image, pointer, settings) {
+/**
+ * Matrix Rain Canvas Overlay (Active in "face-rain" and "rain" modes)
+ * Authentic vanishing stream: as each drop moves downward, the top/earlier
+ * characters progressively fade and disappear (first letters hide as the drop advances).
+ */
+function animateRainOverlay(canvas, pointer, settings) {
   const context = canvas.getContext("2d");
   if (!context) return;
 
   let renderWidth = 1;
   let renderHeight = 1;
-  let rainTime = 0;
   let frame = 0;
   let lastPaint = -Infinity;
-  let offsetX = 0;
-  let offsetY = 0;
+
+  let columns = [];
+
+  function initColumns(width, height, cellW, cellH) {
+    const colCount = Math.max(1, Math.floor(width / cellW));
+    columns = [];
+    for (let i = 0; i < colCount; i++) {
+      const trailRows = 12 + ((i * 7) % 14); // 12 to 26 characters
+      const speed = 75 + ((i * 31) % 110); // fall speed
+      const x = i * cellW + cellW / 2;
+      // Stagger drops across and above canvas
+      const headY = -Math.random() * (height * 1.5) - trailRows * cellH;
+      columns.push({
+        x,
+        headY,
+        trailLength: trailRows * cellH,
+        speed,
+        mutationTick: Math.random() * 100,
+      });
+    }
+  }
 
   function paint(delta = 1000 / 60) {
     if (!context) return;
     const width = renderWidth;
     const height = renderHeight;
-    const portraitWidth = portrait.offsetWidth;
-    const portraitHeight = portrait.offsetHeight;
+
     const {
-      color,
+      color = "#5cfc87",
+      rainColor,
+      mode = "face-rain",
       dropType = "characters",
       gradient,
       characters,
-      dropSize = 7,
-      rainOnly = false,
-      imageClarity,
-      mouseSpeed,
+      dropSize = 8,
+      mouseSpeed = 0.8,
     } = settings.current;
-
-    const interaction = pointer.current;
-    const response = Math.min(1.2, Math.max(0.2, (mouseSpeed || 0.8) * 0.6));
-    const follow = 1 - Math.exp(-delta * 0.007 * response);
-    offsetX += ((interaction?.offset.x ?? 0) - offsetX) * follow;
-    offsetY += ((interaction?.offset.y ?? 0) - offsetY) * follow;
-    const left = (width - portraitWidth) / 2 + offsetX;
-    const top = (height - portraitHeight) / 2 + offsetY;
 
     context.globalAlpha = 1;
     context.clearRect(0, 0, width, height);
-    const mask = rainOnly ? null : image?.tones;
 
-    // Sizing: dropSize controls cell dimensions and font size
-    const sizeVal = Math.max(4, Math.min(24, Number(dropSize) || 7));
+    if (mode === "face") return; // Pure 3D Object mode: clean studio without rain
+
+    const activeRainColor = rainColor || color || "#5cfc87";
+    const sizeVal = Math.max(4, Math.min(24, Number(dropSize) || 8));
     const cellW = Math.max(3, Math.round(sizeVal * 0.72));
     const cellH = sizeVal;
     const fontSize = Math.max(4, Math.round(sizeVal * 0.88));
+
+    if (columns.length === 0) {
+      initColumns(width, height, cellW, cellH);
+    }
 
     context.font = `${fontSize}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace`;
     context.textAlign = "center";
     context.textBaseline = "middle";
 
-    const customChars =
-      typeof characters === "string" && characters.length > 0 ? characters : null;
+    const customChars = typeof characters === "string" && characters.length > 0 ? characters : null;
+    const parsedGradient = Array.isArray(gradient) && gradient.length > 0 ? gradient.map((c) => parseColor(c)) : null;
 
-    const parsedGradient =
-      Array.isArray(gradient) && gradient.length > 0
-        ? gradient.map((c) => parseColor(c))
-        : null;
+    const mouseX = pointer.current?.position?.x;
+    const mouseY = pointer.current?.position?.y;
+    const repulsionRadius = 55 * Math.min(1.4, Math.max(0.3, mouseSpeed || 0.8));
+    const speedMultiplier = Number(settings.current.speed ?? settings.current.lineSpeed ?? 1.0);
+    const dt = delta / 1000;
 
-    const mouseX = interaction?.position?.x;
-    const mouseY = interaction?.position?.y;
-    const repulsionRadius = 45 * Math.min(1.4, Math.max(0.3, mouseSpeed || 0.8));
+    for (let c = 0; c < columns.length; c++) {
+      const col = columns[c];
+      col.headY += col.speed * dt * Math.max(0.1, speedMultiplier);
+      col.mutationTick += delta;
 
-    for (let x = cellW / 2, column = 0; x < width; x += cellW, column++) {
-      const speed = 42 + ((column * 17) % 28);
-      const trail = 160 + ((column * 41) % 66);
-      const cycle = trail + 72 + ((column * 13) % 45);
-      const travel = (rainTime * speed) / 1000 + column * 137;
-      const head = travel % cycle;
-      const traveledRows = Math.floor(travel / cellH);
-      const maskX = Math.floor(((x - left) / portraitWidth) * MASK_WIDTH);
+      // When the tail drops past the bottom, respawn above the screen
+      if (col.headY - col.trailLength > height) {
+        const trailRows = 12 + ((c * 7) % 14);
+        col.trailLength = trailRows * cellH;
+        col.speed = 75 + ((c * 31) % 110);
+        col.headY = -Math.random() * 180 - col.trailLength;
+      }
 
-      for (let y = cellH / 2, row = 0; y < height; y += cellH, row++) {
-        const maskY = Math.floor(((y - top) / portraitHeight) * MASK_HEIGHT);
-        const tone =
-          mask && maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT
-            ? mask[maskY * MASK_WIDTH + maskX]
-            : 0;
+      // Only draw rows within the active drop window [headY - trailLength, headY]
+      // Any character above this window has disappeared/hidden (earlier letters hide as drop moves down)
+      const startRow = Math.max(0, Math.floor((col.headY - col.trailLength) / cellH));
+      const endRow = Math.min(Math.floor(height / cellH), Math.floor(col.headY / cellH));
 
-        const distance = (head - (y % cycle) + cycle) % cycle;
-        const strength = Math.max(0, 1 - distance / trail) ** 1.25;
-        const glyphRow = row - traveledRows;
-        const seed = Math.imul(column + 1, 374761393) ^ Math.imul(glyphRow, 668265263);
+      if (startRow > endRow) continue;
 
-        const imageIndex =
-          maskX >= 0 && maskX < MASK_WIDTH && maskY >= 0 && maskY < MASK_HEIGHT
-            ? maskY * MASK_WIDTH + maskX
-            : -1;
+      for (let r = startRow; r <= endRow; r++) {
+        const y = r * cellH + cellH / 2;
+        const distFromHead = col.headY - y;
+        if (distFromHead < 0 || distFromHead > col.trailLength) continue;
 
-        const belongsToUpload =
-          !rainOnly && imageIndex >= 0 && image?.foreground?.[imageIndex] === 1;
-        const belongsToPortrait =
-          !rainOnly &&
-          imageIndex >= 0 &&
-          (belongsToUpload || (!image?.foreground && tone > 0.035));
+        const progress = 1 - distFromHead / col.trailLength; // 1.0 at head, 0.0 at tail
 
-        const imageTone = belongsToUpload
-          ? Math.min(1, 0.36 + tone * Math.max(0.5, imageClarity))
-          : Math.min(1, tone * Math.max(0.5, imageClarity));
-
-        if (!belongsToPortrait && strength < 0.08) continue;
-        const visualTone = belongsToPortrait ? imageTone : strength * 0.78;
-
-        // Choose character/glyph
-        let glyphChar = "";
-        if (customChars) {
-          if (belongsToPortrait) {
-            const charIdx = Math.min(
-              customChars.length - 1,
-              Math.floor(visualTone * customChars.length)
-            );
-            glyphChar = customChars[charIdx];
-          } else {
-            const glyphSeed =
-              ((seed ^ (seed >>> 13) ^ Math.imul(traveledRows, 1274126177)) >>> 0) %
-              customChars.length;
-            glyphChar = customChars[glyphSeed];
+        // Hybrid mode: fade center area to let the 3D model shine
+        let densityFactor = 1.0;
+        if (mode === "face-rain") {
+          const dxCenter = Math.abs(col.x - width / 2) / (width * 0.35);
+          const dyCenter = Math.abs(y - height / 2) / (height * 0.35);
+          if (dxCenter < 1 && dyCenter < 1) {
+            densityFactor = 0.35;
           }
-        } else {
-          const group = Math.round(visualTone * (GLYPHS.length - 1));
-          const glyphs = GLYPHS[group];
-          const glyph =
-            ((seed ^ (seed >>> 13) ^ Math.imul(traveledRows, 1274126177)) >>> 0) %
-            glyphs.length;
-          glyphChar = glyphs[glyph];
         }
 
-        // Color & Gradient
-        const dropRatio = Math.max(0, Math.min(1, distance / trail));
-        if (belongsToPortrait) {
-          context.fillStyle = color;
-          context.globalAlpha = Math.min(1, 0.28 + imageTone * 0.72);
-        } else {
-          if (parsedGradient && parsedGradient.length >= 2) {
-            context.fillStyle = interpolateGradient(dropRatio, parsedGradient);
-          } else {
-            context.fillStyle = color;
-          }
-          context.globalAlpha = Math.min(0.9, 0.08 + strength * 0.82);
-        }
-
-        // Cursor particle repulsion/dispersion (calm, gentle move)
-        let drawX = x;
+        let drawX = col.x;
         let drawY = y;
+
         if (mouseX !== undefined && mouseY !== undefined) {
-          const dx = x - mouseX;
+          const dx = col.x - mouseX;
           const dy = y - mouseY;
           const dist = Math.hypot(dx, dy);
           if (dist < repulsionRadius && dist > 0) {
@@ -320,29 +252,59 @@ function animateRain(canvas, portrait, image, pointer, settings) {
           }
         }
 
-        if (dropType === "lines") {
-          const lineH = belongsToPortrait
-            ? Math.max(3, cellH * (0.4 + visualTone * 0.9))
-            : Math.max(4, cellH * (0.6 + strength * 1.5));
-          const lineThickness = Math.max(1, Math.min(3, Math.round(cellW * 0.35)));
+        // Mutation seed: characters slowly flicker like real Matrix code
+        const mutateCycle = Math.floor(col.mutationTick / 120);
+        const rainSeed = Math.imul(c + 1, 374761393) ^ Math.imul(r + mutateCycle, 668265263);
 
+        let rainChar = "";
+        if (customChars) {
+          const glyphSeed = ((rainSeed ^ (rainSeed >>> 13)) >>> 0) % customChars.length;
+          rainChar = customChars[glyphSeed];
+        } else {
+          const group = Math.min(GLYPHS.length - 1, Math.floor(progress * GLYPHS.length));
+          const glyphs = GLYPHS[group];
+          const glyph = ((rainSeed ^ (rainSeed >>> 13)) >>> 0) % glyphs.length;
+          rainChar = glyphs[glyph];
+        }
+
+        const isHead = distFromHead < cellH * 1.15;
+
+        if (isHead) {
+          // Leading First Drop: Radiant White Glowing Head
+          context.fillStyle = "#ffffff";
+          context.shadowColor = activeRainColor;
+          context.shadowBlur = 8;
+          context.globalAlpha = 1.0 * densityFactor;
+        } else {
+          // Trailing Letters: Fading progressively upward until hidden
+          context.shadowBlur = 0;
+          if (parsedGradient && parsedGradient.length >= 2) {
+            context.fillStyle = interpolateGradient(1 - progress, parsedGradient);
+          } else {
+            context.fillStyle = activeRainColor;
+          }
+          context.globalAlpha = Math.max(0.06, Math.min(0.85, (progress ** 1.3) * 0.85)) * densityFactor;
+        }
+
+        if (dropType === "lines") {
+          const lineH = Math.max(4, cellH * (0.6 + progress * 1.5));
           context.beginPath();
           context.strokeStyle = context.fillStyle;
-          context.lineWidth = lineThickness;
+          context.lineWidth = Math.max(1, Math.min(3, Math.round(cellW * 0.35)));
           context.lineCap = "round";
           context.moveTo(drawX, drawY - lineH / 2);
           context.lineTo(drawX, drawY + lineH / 2);
           context.stroke();
         } else {
-          context.fillText(glyphChar, drawX, drawY);
+          context.fillText(rainChar, drawX, drawY);
         }
       }
     }
+    context.shadowBlur = 0;
   }
 
   function tick(time) {
     const delta = Number.isFinite(lastPaint) ? Math.min(34, time - lastPaint) : 1000 / 60;
-    rainTime += delta * Math.max(0, settings.current.lineSpeed ?? 1);
     paint(delta);
     lastPaint = time;
     frame = requestAnimationFrame(tick);
@@ -357,7 +319,11 @@ function animateRain(canvas, portrait, image, pointer, settings) {
     canvas.height = renderHeight * pixelRatio;
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     context.imageSmoothingEnabled = false;
-    paint();
+    const sizeVal = Math.max(4, Math.min(24, Number(settings.current.dropSize) || 8));
+    const cellW = Math.max(3, Math.round(sizeVal * 0.72));
+    const cellH = sizeVal;
+    initColumns(renderWidth, renderHeight, cellW, cellH);
+    paint(16);
   }
 
   const observer = new ResizeObserver(resize);
@@ -375,140 +341,132 @@ function animateRain(canvas, portrait, image, pointer, settings) {
 }
 
 export function InteractiveAsciiFace({
+  model = "ant", // "ant" (3D Cyber Ant) | "crystal" | "drone" | "monolith" | "duck" | "face"
   src,
-  alt = "Human portrait formed from green ASCII characters",
-  followPointer = true,
-  maxOffset = 6,
-  color = "#60ed83",
+  alt = "3D ASCII Object simulation",
+  mode = "face", // "face" (pure 3D object) | "face-rain" | "rain"
+  colored = true,
+  color = "#5cfc87",
+  rainColor,
+  autoRotate = true,
+  speed = 1.0,
+  lineSpeed = 1.0,
+  contrast = 1.5,
+  imageClarity = 1.5,
+  edgeContrast = 2.0,
+  dropSize = 8,
+  cellSize,
+  characters,
+  charset = "full",
+  rainOnly = false,
   dropType = "characters",
   gradient,
-  characters,
-  dropSize = 7,
-  rainOnly = false,
-  lineSpeed = 1,
   mouseSpeed = 0.8,
-  imageClarity = 1.35,
   className = "",
 }) {
-  const fieldRef = useRef(null);
-  const portraitRef = useRef(null);
-  const pointer = useRef(null);
+  const rainCanvasRef = useRef(null);
+  const pointer = useRef({ position: null });
+  const [modelLoaded, setModelLoaded] = useState(false);
+
+  const effectiveMode = rainOnly ? "rain" : mode;
+  const effectiveSpeed = Number(speed ?? lineSpeed ?? 1.0);
+  const effectiveContrast = Number(contrast ?? imageClarity ?? 1.5);
+  const effectiveCellSize = Number(cellSize ?? dropSize ?? 8);
+  const effectiveRainColor = rainColor || color || "#5cfc87";
+
+  const resolvedSrc = src ?? (DEFAULT_MODELS[model] || "procedural:ant");
+
   const settings = useRef({
     color,
+    rainColor: effectiveRainColor,
+    mode: effectiveMode,
     dropType,
     gradient,
     characters,
-    dropSize,
-    rainOnly,
-    imageClarity,
-    lineSpeed,
+    dropSize: effectiveCellSize,
+    speed: effectiveSpeed,
     mouseSpeed,
   });
-  const renderer = useRef(undefined);
-  const source = src ?? REFERENCE;
-  const [result, setResult] = useState();
-  const current = result?.source === source ? result : undefined;
-  const mask = current?.mask;
-
-  useEffect(() => {
-    if (rainOnly) return;
-    const objectUrl = typeof source === "string" ? undefined : URL.createObjectURL(source);
-    const image = new window.Image();
-    image.crossOrigin = "anonymous";
-    image.onload = () => {
-      try {
-        setResult({ source, mask: sampleImage(image, source === REFERENCE) });
-      } catch {
-        setResult({ source });
-      }
-    };
-    image.onerror = () => setResult({ source });
-    image.src = objectUrl ?? String(source);
-
-    return () => {
-      image.onload = null;
-      image.onerror = null;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [source, rainOnly]);
-
-  useEffect(() => {
-    if (fieldRef.current && portraitRef.current) {
-      const animation = animateRain(fieldRef.current, portraitRef.current, mask, pointer, settings);
-      renderer.current = animation;
-      return () => {
-        animation?.dispose();
-        renderer.current = undefined;
-      };
-    }
-  }, [mask, rainOnly]);
 
   useEffect(() => {
     settings.current = {
       color,
+      rainColor: effectiveRainColor,
+      mode: effectiveMode,
       dropType,
       gradient,
       characters,
-      dropSize,
-      rainOnly,
-      imageClarity,
-      lineSpeed,
+      dropSize: effectiveCellSize,
+      speed: effectiveSpeed,
       mouseSpeed,
     };
-    renderer.current?.paint();
-  }, [
-    color,
-    dropType,
-    gradient,
-    characters,
-    dropSize,
-    rainOnly,
-    imageClarity,
-    lineSpeed,
-    mouseSpeed,
-  ]);
+  }, [color, effectiveRainColor, effectiveMode, dropType, gradient, characters, effectiveCellSize, effectiveSpeed, mouseSpeed]);
 
-  function movePortrait(event) {
-    if (!followPointer || event.pointerType === "touch") return;
-    const bounds = fieldRef.current?.getBoundingClientRect();
+  useEffect(() => {
+    if (effectiveMode !== "face" && rainCanvasRef.current) {
+      const animation = animateRainOverlay(rainCanvasRef.current, pointer, settings);
+      return () => animation?.dispose();
+    }
+  }, [effectiveMode]);
+
+  function handlePointerMove(event) {
+    const bounds = event.currentTarget.getBoundingClientRect();
     if (!bounds?.width || !bounds.height) return;
-    const offset = Number.isFinite(maxOffset) ? Math.max(0, maxOffset) : 6;
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    pointer.current = {
-      position: { x, y },
-      offset: {
-        x: ((x / bounds.width) * 2 - 1) * offset,
-        y: ((y / bounds.height) * 2 - 1) * offset,
-      },
-    };
+    pointer.current.position = { x, y };
+  }
+
+  function handlePointerLeave() {
+    pointer.current.position = null;
   }
 
   return (
     <div
       className={[styles.stage, className].filter(Boolean).join(" ")}
-      onPointerMove={movePortrait}
-      onPointerLeave={() => {
-        pointer.current = null;
-      }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
     >
       <style dangerouslySetInnerHTML={{ __html: EMBEDDED_ASCII_STYLES }} />
-      <canvas
-        ref={fieldRef}
-        className={styles.field}
-        role={mask && !rainOnly ? "img" : undefined}
-        aria-label={mask && !rainOnly ? alt : undefined}
-        aria-hidden={!mask || rainOnly}
-      />
-      <div ref={portraitRef} className={styles.frame}>
-        {!mask && !rainOnly && (
-          <p className={styles.status} role="status">
-            {current
-              ? "Couldn’t read this image. Try a PNG, JPEG, or WebP."
-              : "Converting image to ASCII…"}
-          </p>
-        )}
-      </div>
+
+      {/* Official Canvas UI GPU AsciiObject Renderer (3D WebGL Scene + Glyph Atlas Shader) */}
+      {effectiveMode !== "rain" && (
+        <div className="absolute inset-0 z-0 h-full w-full">
+          <AsciiObject
+            src={resolvedSrc}
+            cellSize={effectiveCellSize}
+            cellAspect={0.6}
+            charset={characters || charset}
+            colored={colored}
+            color={color}
+            contrast={effectiveContrast}
+            edgeContrast={edgeContrast}
+            autoRotate={autoRotate}
+            autoRotateSpeed={effectiveSpeed * 2.2}
+            orbit={true}
+            zoom={true}
+            scale={model === "duck" ? 3.2 : model === "ant" ? 3.3 : model === "torus-knot" || model === "knot" ? 3.1 : model === "crystal" ? 3.0 : model === "drone" ? 3.0 : 2.8}
+            highlight={colored ? "#066aff" : color}
+            onLoad={() => setModelLoaded(true)}
+            className="h-full w-full"
+            style={{ position: "absolute", inset: 0 }}
+          />
+        </div>
+      )}
+
+      {/* Matrix Rainfall Canvas Overlay (in "face-rain" and "rain" modes) */}
+      {effectiveMode !== "face" && (
+        <canvas
+          ref={rainCanvasRef}
+          className={`${styles.field} pointer-events-none z-10`}
+          role="img"
+          aria-label={alt}
+        />
+      )}
+
+      {/* CRT Scanlines and Screen Corner Vignette */}
+      <div className={styles.scanlines} />
+      <div className={styles.vignette} />
     </div>
   );
 }
